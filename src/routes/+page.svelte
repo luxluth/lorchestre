@@ -1,18 +1,13 @@
 <script lang="ts">
-	import { invoke } from '@tauri-apps/api/core';
 	import { convertFileSrc } from '@tauri-apps/api/core';
-	import { toast, player } from '$lib/events';
+	import { player } from '$lib/events';
 	import { Play } from 'lucide-svelte';
-	import { ToastKind, type AudioMedia, type Media } from '$lib/type';
+	import { type AudioMedia, type Media } from '$lib/type';
+	import type { PageData } from './$types';
 
-	let media = $state<Media>();
+	let { data }: { data: PageData } = $props();
 
-	$effect(() => {
-		(async () => {
-			toast.show("Librarie en cours d'indexation", ToastKind.Loading);
-			media = await invoke<Media>('index');
-		})();
-	});
+	let media: Media = data.media;
 
 	function play(audio: AudioMedia) {
 		player.play(audio);
@@ -20,46 +15,37 @@
 </script>
 
 <h1 class="__page_title ns">Bibliothèque</h1>
-<p class="__page_subtitle ns">Explorer votre musique</p>
 
-{#if media}
-	<div class="__medias">
-		{#each media.audios as audio}
-			<div class="__audio">
-				{#if audio.cover}
-					<div
-						class="cover ns"
-						style="--clr: {audio.color
-							? `rgb(${audio.color.r}, ${audio.color.g}, ${audio.color.b})`
-							: 'rgb(255, 255, 255)'};"
+<div class="__medias">
+	{#each media.audios as audio}
+		<div class="__audio">
+			{#if audio.cover}
+				<div
+					class="cover ns"
+					style="--clr: {audio.color
+						? `rgb(${audio.color.r}, ${audio.color.g}, ${audio.color.b})`
+						: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(audio.cover)}');"
+				>
+					<button
+						onclick={() => {
+							play(audio);
+						}}
 					>
-						<img src={convertFileSrc(audio.cover)} alt="" />
-						<button
-							onclick={() => {
-								play(audio);
-							}}
-						>
-							<Play fill={'var(--bg)'} color={'var(--bg)'} />
-						</button>
-					</div>
-				{/if}
-				<p class="title ns">{audio.title ?? 'Titre inconnu'}</p>
-				<p class="artist ns">{audio.artists.join(', ') ?? 'Artiste inconnu'}</p>
-			</div>
-		{/each}
-	</div>
-{:else}
-	Aucune musique trouvée ou indexation non terminé
-{/if}
+						<Play fill={'var(--bg)'} color={'var(--bg)'} />
+					</button>
+				</div>
+			{/if}
+			<p class="title ns">{audio.title ?? 'Titre inconnu'}</p>
+			<p class="artist ns">{audio.artists.join(', ') ?? 'Artiste inconnu'}</p>
+		</div>
+	{/each}
+</div>
 
 <style>
 	.__page_title {
 		font-weight: 800;
-	}
-
-	.__page_subtitle {
-		opacity: 0.5;
-		padding-top: 0.3em;
+		font-size: 4em;
+		padding-bottom: 0.5em;
 	}
 
 	.__medias {
@@ -67,7 +53,7 @@
 		grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
 		gap: 2em;
 		padding-top: 2em;
-		padding-inline: 2em;
+		/* padding-inline: 2em; */
 		padding-bottom: 15em;
 	}
 
@@ -106,17 +92,12 @@
 		opacity: 0.5;
 	}
 
-	/* .__audio .cover .__img_loader { */
-	/* 	width: 100%; */
-	/* 	height: 100%; */
-	/* 	aspect-ratio: 1/1; */
-	/* 	background-color: var(--clr); */
-	/* } */
-
-	.__audio .cover img {
-		width: 100%;
-		height: 100%;
+	.__audio .cover {
+		aspect-ratio: 1/1;
+		background-color: var(--clr);
 		border-radius: 10px;
+		margin-bottom: 0.3em;
+		background-size: cover;
 	}
 
 	.__audio .artist {

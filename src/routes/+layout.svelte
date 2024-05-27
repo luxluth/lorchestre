@@ -21,7 +21,7 @@
 
 <style>
 	.layout {
-		padding-inline: 1em;
-		padding-block: 1.5em;
+		padding-inline: 3em;
+		padding-block: 3em;
 	}
 </style>

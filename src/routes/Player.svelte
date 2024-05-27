@@ -145,7 +145,10 @@
 	style="--clr: {media?.color
 		? `rgb(${media?.color.r}, ${media?.color.g}, ${media?.color.b})`
 		: 'var(--bg)'}; --text: {media?.is_light ? '#181818' : '#ffffff'}; --r: {media?.color
-		?.r}; --g: {media?.color?.g}; --b: {media?.color?.b}; --percent: {percentage}%;"
+		?.r}; --g: {media?.color?.g}; --b: {media?.color
+		?.b}; --percent: {percentage}%; --rd: {media?.is_light ? '24' : '255'}; --gd: {media?.is_light
+		? '24'
+		: '255'}; --bd: {media?.is_light ? '24' : '255'};"
 >
 	<button
 		class="close"
@@ -157,23 +160,14 @@
 	</button>
 	{#if media}
 		<section class="player">
-			<div class="cover">
-				{#if media.cover}
-					<div class="cover">
-						<img class="ns" src={convertFileSrc(media.cover)} alt="" />
-					</div>
-				{/if}
-			</div>
+			{#if media.cover}
+				<div class="cover" style="background-image: url({convertFileSrc(media.cover)});"></div>
+			{/if}
 			<div class="infos">
 				<h2 class="ns">{media.title ?? 'Titre inconnu'}</h2>
 				<p class="artist ns">{media.artists.join(', ') ?? 'Artiste inconnu'}</p>
 			</div>
-			<div
-				class="controls"
-				style="--percent: {percentage}%; --rd: {media?.is_light
-					? '24'
-					: '255'}; --gd: {media?.is_light ? '24' : '255'}; --bd: {media?.is_light ? '24' : '255'};"
-			>
+			<div class="controls" style="--percent: {percentage}%;">
 				<div class="actions">
 					<button>
 						<Rewind fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
@@ -253,9 +247,8 @@
 					}}
 					role="button"
 					tabindex="0"
-				>
-					<img class="ns" src={convertFileSrc(media.cover)} alt="" />
-				</div>
+					style="background-image: url('{convertFileSrc(media.cover)}');"
+				></div>
 			{/if}
 			<div class="a-n">
 				<p class="title ns">{media.title ?? 'Titre inconnu'}</p>
@@ -392,7 +385,7 @@
 	}
 
 	.__player .controls .progressbar {
-		background-color: rgba(var(--rd), var(--gd), var(--bd), 0.5);
+		background-color: rgba(var(--rd), var(--gd), var(--bd), 0.2);
 	}
 
 	.__player .controls .progressbar {
@@ -461,13 +454,8 @@
 		height: 100%;
 		aspect-ratio: 1/1;
 		cursor: pointer;
-	}
-
-	.__mini_player .cover img {
-		width: 100%;
-		height: 100%;
 		border-radius: 8px;
-		cursor: pointer;
+		background-size: cover;
 	}
 
 	.__mini_player .infos {
@@ -534,29 +522,27 @@
 	.__player .lrc {
 		height: 100%;
 		overflow-y: auto;
-		width: 50em;
+		max-width: 50em;
 		position: relative;
 	}
 
-	.__player .lrc::before {
-		content: '';
-		position: fixed;
-		top: 0;
-		width: 50em;
-		height: 5em;
-		/* -webkit-backdrop-filter: blur(4px); */
-		background: linear-gradient(var(--clr), rgba(var(--r), var(--g), var(--b), 0));
-	}
-
-	.__player .lrc::after {
-		content: '';
-		position: fixed;
-		bottom: 0;
-		width: 50em;
-		height: 5em;
-		/* -webkit-backdrop-filter: blur(4px); */
-		background: linear-gradient(360deg, var(--clr), rgba(var(--r), var(--g), var(--b), 0));
-	}
+	/* .__player .lrc::before { */
+	/* 	content: ''; */
+	/* 	position: fixed; */
+	/* 	top: 0; */
+	/* 	width: 50em; */
+	/* 	height: 5em; */
+	/* 	background: linear-gradient(var(--clr), rgba(var(--r), var(--g), var(--b), 0)); */
+	/* } */
+	/**/
+	/* .__player .lrc::after { */
+	/* 	content: ''; */
+	/* 	position: fixed; */
+	/* 	bottom: 0; */
+	/* 	width: 50em; */
+	/* 	height: 5em; */
+	/* 	background: linear-gradient(360deg, var(--clr), rgba(var(--r), var(--g), var(--b), 0)); */
+	/* } */
 
 	.__player .lrc .line:first-child {
 		margin-top: 50%;
@@ -568,38 +554,40 @@
 
 	.__player .lrc .line {
 		font-size: 3em;
-		padding-block: 0.25em;
+		padding: 0.25em;
 		font-weight: 800;
 		opacity: 0.3;
 		transition: all 0.2s ease-in-out;
 		cursor: pointer;
 		line-height: 1;
+		border-radius: 8px;
 	}
 
 	.__player .lrc .line.active {
 		opacity: 1;
 	}
 
+	.__player .lrc .line:active {
+		transform: scale(0.98);
+	}
+
 	.__player .lrc .line:hover {
 		opacity: 0.5;
+		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
+	}
+
+	.__player .lrc .line.active:hover {
+		opacity: 1;
+		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
 	}
 
 	.__player .cover {
 		width: 40em;
-		height: 40em;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		aspect-ratio: 1/1;
 		box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
 		border-radius: 10px;
 		/* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
-	}
-
-	.__player .cover img {
-		border-radius: 10px;
-		width: 100%;
-		height: 100%;
+		background-position: cover;
 	}
 
 	.__player .infos {
