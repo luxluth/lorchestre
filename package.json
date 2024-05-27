@@ -16,11 +16,13 @@
 	},
 	"license": "MIT",
 	"dependencies": {
+		"@fontsource-variable/noto-sans-jp": "^5.0.19",
+		"@fontsource-variable/noto-sans-kr": "^5.0.6",
+		"@fontsource-variable/noto-sans-sc": "^5.0.6",
 		"@fontsource-variable/readex-pro": "^5.0.13",
 		"@tauri-apps/api": ">=2.0.0-beta.0",
 		"@tauri-apps/plugin-fs": "2.0.0-beta.3",
 		"@tauri-apps/plugin-shell": ">=2.0.0-beta.0",
-		"howler": "^2.2.4",
 		"lucide-svelte": "^0.379.0",
 		"svelte": "5.0.0-next.141"
 	},

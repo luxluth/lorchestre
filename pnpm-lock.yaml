@@ -8,6 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@fontsource-variable/noto-sans-jp':
+        specifier: ^5.0.19
+        version: 5.0.19
+      '@fontsource-variable/noto-sans-kr':
+        specifier: ^5.0.6
+        version: 5.0.6
+      '@fontsource-variable/noto-sans-sc':
+        specifier: ^5.0.6
+        version: 5.0.6
       '@fontsource-variable/readex-pro':
         specifier: ^5.0.13
         version: 5.0.13
@@ -20,9 +29,6 @@ importers:
       '@tauri-apps/plugin-shell':
         specifier: '>=2.0.0-beta.0'
         version: 2.0.0-beta.4
-      howler:
-        specifier: ^2.2.4
-        version: 2.2.4
       lucide-svelte:
         specifier: ^0.379.0
         version: 0.379.0(svelte@5.0.0-next.141)
@@ -207,6 +213,15 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/noto-sans-jp@5.0.19':
+    resolution: {integrity: sha512-fAhvax6qyagBBf5x8WoIMxNsofgytN4e0cBn1eGgYHhbr4snWA+NxCHkaH+jlOv7nSv9ZzzsSusslkcsRJwGYg==}
+
+  '@fontsource-variable/noto-sans-kr@5.0.6':
+    resolution: {integrity: sha512-BaSaI2Bxv0YQupgDYolxMWv8abe/XyxuWkyO0dtwY/yzDWHeToy2qK2vPqp347TTDdUlnj/Qs3NsPTfJwEZbiw==}
+
+  '@fontsource-variable/noto-sans-sc@5.0.6':
+    resolution: {integrity: sha512-aw43cFuLAo+at9lfzbejCSkusivMQ1uUPlWeqde+eAkMvhtMkO2LjSp0QJCyVDf22NtLNbOX0WYNPtocHXFuiA==}
 
   '@fontsource-variable/readex-pro@5.0.13':
     resolution: {integrity: sha512-C6d0oaHUoGTo3fV7ghYF0iRSVVyNy1QBvJnD+CB4dzTRUM+ujZuYSNBgH5Cb4d1tVEnBugef2WXzaX0Dc+zq6A==}
@@ -569,9 +584,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  howler@2.2.4:
-    resolution: {integrity: sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==}
 
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
@@ -940,6 +952,12 @@ snapshots:
   '@esbuild/win32-x64@0.20.2':
     optional: true
 
+  '@fontsource-variable/noto-sans-jp@5.0.19': {}
+
+  '@fontsource-variable/noto-sans-kr@5.0.6': {}
+
+  '@fontsource-variable/noto-sans-sc@5.0.6': {}
+
   '@fontsource-variable/readex-pro@5.0.13': {}
 
   '@jridgewell/gen-mapping@0.3.5':
@@ -1267,8 +1285,6 @@ snapshots:
   globrex@0.1.2: {}
 
   graceful-fs@4.2.11: {}
-
-  howler@2.2.4: {}
 
   import-fresh@3.3.0:
     dependencies:

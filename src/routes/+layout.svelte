@@ -1,4 +1,7 @@
 <script lang="ts">
+	import '@fontsource-variable/noto-sans-kr';
+	import '@fontsource-variable/noto-sans-jp';
+	import '@fontsource-variable/noto-sans-sc';
 	import '@fontsource-variable/readex-pro';
 	import '../styles/global.css';
 

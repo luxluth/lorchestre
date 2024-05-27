@@ -4,7 +4,8 @@ html {
 }
 
 :root {
-	font-family: 'Product Sans', 'Readex Pro Variable', sans-serif;
+	font-family: 'Product Sans', 'Readex Pro Variable', 'Noto Sans KR Variable',
+		'Noto Sans JP Variable', 'Noto Sans SC Variable', sans-serif;
 	font-size: 16px;
 	line-height: 24px;
 	font-weight: 400;

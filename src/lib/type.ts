@@ -21,6 +21,14 @@ export type LyricLine = {
 	text: string;
 };
 
+type u8 = number;
+
+export type Color = {
+	r: u8;
+	g: u8;
+	b: u8;
+};
+
 export type Cover = {
 	data: number[];
 	mime: string;
@@ -32,7 +40,7 @@ export type AudioMedia = {
 	album?: string;
 	lyrics: LyricLine[];
 	cover?: string;
-	color?: string;
+	color?: Color;
 	is_light?: boolean;
 	file_path: string;
 	duration: number;
@@ -40,4 +48,11 @@ export type AudioMedia = {
 
 export type Media = {
 	audios: AudioMedia[];
+};
+
+export type Line = {
+	startTime: number;
+	endTime: number;
+	text: string;
+	id: number;
 };

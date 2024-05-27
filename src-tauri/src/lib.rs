@@ -7,6 +7,9 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
+use lofty::prelude::*;
+use lofty::probe::Probe;
+
 #[derive(serde::Serialize, Debug)]
 pub struct LyricLine {
     pub start_time: i64,
@@ -19,6 +22,23 @@ pub struct Cover {
     ext: String,
 }
 
+#[derive(serde::Serialize, Debug, Clone, Copy)]
+pub struct Color {
+    r: u8,
+    g: u8,
+    b: u8,
+}
+
+impl Color {
+    pub fn is_light_color(&self) -> bool {
+        let luminance =
+            0.2126 * (self.r as f64) + 0.7152 * (self.g as f64) + 0.0722 * (self.b as f64);
+        let threshold = 200.0;
+
+        luminance > threshold
+    }
+}
+
 #[derive(serde::Serialize, Default, Debug)]
 pub struct Audio {
     pub title: Option<String>,
@@ -26,10 +46,10 @@ pub struct Audio {
     pub album: Option<String>,
     pub lyrics: Vec<LyricLine>,
     pub cover: Option<String>,
-    pub color: Option<String>,
+    pub color: Option<Color>,
     pub is_light: Option<bool>,
     pub file_path: String,
-    pub duration: f64,
+    pub duration: u64,
 }
 
 // fn random() {
@@ -51,13 +71,6 @@ fn check_cache_dir(dir: PathBuf) {
 }
 
 mod utils {
-    pub fn is_light_color(r: u8, g: u8, b: u8) -> bool {
-        let luminance = 0.2126 * (r as f64) + 0.7152 * (g as f64) + 0.0722 * (b as f64);
-        let threshold = 128.0;
-
-        luminance > threshold
-    }
-
     pub fn get_image_buffer(img: image::DynamicImage) -> Vec<u8> {
         match img {
             image::DynamicImage::ImageRgb8(buffer) => buffer.to_vec(),
@@ -84,6 +97,10 @@ impl Media {
                                 .first_or("text/plain".parse().unwrap());
 
                             if guess.type_() == mime::AUDIO {
+                                let tagged_file = Probe::open(&inode).unwrap().read().unwrap();
+                                let properties = tagged_file.properties();
+                                let duration = properties.duration();
+
                                 let tag = Tag::new().read_from_path(&inode).unwrap();
                                 let mut audio: Audio = Audio {
                                     file_path: inode.to_str().unwrap().to_string(),
@@ -132,15 +149,13 @@ impl Media {
                                         color_thief::get_palette(&pixels, ColorFormat::Rgb, 1, 2)
                                             .unwrap();
 
-                                    audio.is_light = Some(utils::is_light_color(
-                                        color[0].r, color[0].g, color[0].b,
-                                    ));
+                                    let color = Color {
+                                        r: color[0].r,
+                                        g: color[0].g,
+                                        b: color[0].b,
+                                    };
 
-                                    let color = format!(
-                                        "rgb({}, {}, {})",
-                                        color[0].r, color[0].g, color[0].b
-                                    );
-
+                                    audio.is_light = Some(color.is_light_color());
                                     audio.color = Some(color);
 
                                     let path = cover_path.to_str().unwrap().to_string();
@@ -148,9 +163,7 @@ impl Media {
                                     audio.cover = Some(path);
                                 }
 
-                                if let Some(duration) = tag.duration() {
-                                    audio.duration = duration;
-                                }
+                                audio.duration = duration.as_secs();
 
                                 let lrc_path = inode.with_extension("lrc");
                                 if lrc_path.exists() {

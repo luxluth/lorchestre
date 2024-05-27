@@ -27,7 +27,12 @@
 		{#each media.audios as audio}
 			<div class="__audio">
 				{#if audio.cover}
-					<div class="cover ns" style="--clr: {audio.color ?? 'rgb(255, 255, 255)'};">
+					<div
+						class="cover ns"
+						style="--clr: {audio.color
+							? `rgb(${audio.color.r}, ${audio.color.g}, ${audio.color.b})`
+							: 'rgb(255, 255, 255)'};"
+					>
 						<img src={convertFileSrc(audio.cover)} alt="" />
 						<button
 							onclick={() => {
@@ -63,6 +68,7 @@
 		gap: 2em;
 		padding-top: 2em;
 		padding-inline: 2em;
+		padding-bottom: 15em;
 	}
 
 	.__audio {
