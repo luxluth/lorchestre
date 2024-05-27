@@ -13,8 +13,9 @@
 		"windows": [
 			{
 				"title": "mu",
-				"width": 1600,
-				"height": 900,
+				"width": 1700,
+				"height": 950,
+				"decorations": false,
 				"theme": "Dark",
 				"minWidth": 800,
 				"minHeight": 600
