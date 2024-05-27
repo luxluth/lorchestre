@@ -7,10 +7,26 @@
 	let media = $state<AudioMedia>();
 	let active = $state<boolean>(false);
 	let playing = $state<boolean>(false);
+	let srcUrl = $state<string>('');
+	//@ts-ignore
+	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
 
 	async function play(e: CustomEvent<AudioMedia>) {
 		media = e.detail;
 		active = true;
+		await getSrc(media.file_path);
+
+		if (sound) {
+			sound.pause();
+		}
+		sound.src = srcUrl;
+		sound.currentTime = 0;
+		await sound.play();
+	}
+
+	async function getSrc(path: string) {
+		let blob = await (await fetch(convertFileSrc(path))).blob();
+		srcUrl = URL.createObjectURL(blob);
 	}
 
 	$effect(() => {
@@ -23,6 +39,8 @@
 		};
 	});
 </script>
+
+<div class="__mini_player" class:active={!active}>lul</div>
 
 <div
 	class:active
@@ -43,17 +61,15 @@
 			<div class="cover">
 				{#if media.cover}
 					<div class="cover">
-						<img src={convertFileSrc(media.cover)} alt="" />
+						<img class="ns" src={convertFileSrc(media.cover)} alt="" />
 					</div>
 				{/if}
 			</div>
 			<div class="infos">
-				<h2>{media.title ?? 'Titre inconnu'}</h2>
-				<p class="artist">{media.artists.join(', ') ?? 'Artiste inconnu'}</p>
+				<h2 class="ns">{media.title ?? 'Titre inconnu'}</h2>
+				<p class="artist ns">{media.artists.join(', ') ?? 'Artiste inconnu'}</p>
 			</div>
-			<audio controls>
-				<source src={convertFileSrc(media.file_path)} type="audio/mp3" />
-			</audio>
+			<audio controls crossorigin="anonymous" bind:this={sound}></audio>
 		</section>
 		{#if media.lyrics.length > 0}
 			<section class="lrc">
@@ -66,6 +82,13 @@
 </div>
 
 <style>
+	.__mini_player {
+		width: 100%;
+		left: 0;
+		top: 0;
+		position: fixed;
+	}
+
 	.close {
 		color: var(--text);
 		position: absolute;
@@ -89,8 +112,8 @@
 	.__player {
 		background: var(--clr);
 		color: var(--text);
-		width: 100vw;
-		height: 100vh;
+		width: 100%;
+		height: 100%;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -117,6 +140,14 @@
 		width: 50em;
 	}
 
+	.__player .lrc .line:first-child {
+		padding-top: 50%;
+	}
+
+	.__player .lrc .line:last-child {
+		padding-bottom: 50%;
+	}
+
 	.__player .lrc .line {
 		font-size: 3em;
 		padding-block: 0.25em;
@@ -141,7 +172,6 @@
 	}
 
 	.__player .cover img {
-		user-select: none;
 		border-radius: 10px;
 		width: 100%;
 		height: 100%;

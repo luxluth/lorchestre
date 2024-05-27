@@ -21,18 +21,12 @@
 			}
 		],
 		"security": {
-			"csp": null,
+			"csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost; media-src 'self' asset: https://asset.localhost",
+			"dangerousDisableAssetCspModification": true,
 			"capabilities": [],
 			"assetProtocol": {
 				"enable": true,
-				"scope": [
-					"$APPCACHE/*",
-					"$APPCACHE/covers/*",
-					"$APPCACHE/**/*",
-					"$AUDIO",
-					"$AUDIO/*",
-					"$AUDIO/**/*"
-				]
+				"scope": ["$APPCACHE/*", "$APPCACHE/**/*", "$AUDIO", "$AUDIO/*", "$AUDIO/**/*"]
 			}
 		}
 	},

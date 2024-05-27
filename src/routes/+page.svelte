@@ -19,15 +19,15 @@
 	}
 </script>
 
-<h1 class="__page_title">Bibliothèque</h1>
-<p class="__page_subtitle">Explorer votre musique</p>
+<h1 class="__page_title ns">Bibliothèque</h1>
+<p class="__page_subtitle ns">Explorer votre musique</p>
 
 {#if media}
 	<div class="__medias">
 		{#each media.audios as audio}
 			<div class="__audio">
 				{#if audio.cover}
-					<div class="cover" style="--clr: {audio.color ?? 'rgb(255, 255, 255)'};">
+					<div class="cover ns" style="--clr: {audio.color ?? 'rgb(255, 255, 255)'};">
 						<img src={convertFileSrc(audio.cover)} alt="" />
 						<button
 							onclick={() => {
@@ -38,8 +38,8 @@
 						</button>
 					</div>
 				{/if}
-				<p class="title">{audio.title ?? 'Titre inconnu'}</p>
-				<p class="artist">{audio.artists.join(', ') ?? 'Artiste inconnu'}</p>
+				<p class="title ns">{audio.title ?? 'Titre inconnu'}</p>
+				<p class="artist ns">{audio.artists.join(', ') ?? 'Artiste inconnu'}</p>
 			</div>
 		{/each}
 	</div>
@@ -50,13 +50,11 @@
 <style>
 	.__page_title {
 		font-weight: 800;
-		user-select: none;
 	}
 
 	.__page_subtitle {
 		opacity: 0.5;
 		padding-top: 0.3em;
-		user-select: none;
 	}
 
 	.__medias {

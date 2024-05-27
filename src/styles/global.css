@@ -28,3 +28,8 @@ html {
 html {
 	height: 100%;
 }
+
+.ns {
+	-webkit-user-select: none;
+	cursor: default;
+}
