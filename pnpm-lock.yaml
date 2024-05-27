@@ -7,7 +7,7 @@ settings:
 importers:
 
   .:
-    dependencies:
+    devDependencies:
       '@fontsource-variable/noto-sans-jp':
         specifier: ^5.0.19
         version: 5.0.19
@@ -20,54 +20,53 @@ importers:
       '@fontsource-variable/readex-pro':
         specifier: ^5.0.13
         version: 5.0.13
-      '@tauri-apps/api':
-        specifier: '>=2.0.0-beta.0'
-        version: 2.0.0-beta.12
-      '@tauri-apps/plugin-fs':
-        specifier: 2.0.0-beta.3
-        version: 2.0.0-beta.3
-      '@tauri-apps/plugin-shell':
-        specifier: '>=2.0.0-beta.0'
-        version: 2.0.0-beta.4
-      lucide-svelte:
-        specifier: ^0.379.0
-        version: 0.379.0(svelte@5.0.0-next.141)
-      svelte:
-        specifier: 5.0.0-next.141
-        version: 5.0.0-next.141
-    devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.1
         version: 3.0.1(@sveltejs/kit@2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@5.0.0-next.141)(vite@5.2.11))(svelte@5.0.0-next.141)(vite@5.2.11))
       '@sveltejs/kit':
-        specifier: ^2.0.0
+        specifier: ^2.5.10
         version: 2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@5.0.0-next.141)(vite@5.2.11))(svelte@5.0.0-next.141)(vite@5.2.11)
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^3.0.0
+        specifier: ^3.1.0
         version: 3.1.0(svelte@5.0.0-next.141)(vite@5.2.11)
+      '@tauri-apps/api':
+        specifier: 2.0.0-beta.12
+        version: 2.0.0-beta.12
       '@tauri-apps/cli':
-        specifier: '>=2.0.0-beta.0'
+        specifier: 2.0.0-beta.18
         version: 2.0.0-beta.18
+      '@tauri-apps/plugin-fs':
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3
+      '@tauri-apps/plugin-shell':
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4
       '@types/howler':
         specifier: ^2.2.11
         version: 2.2.11
+      lucide-svelte:
+        specifier: ^0.379.0
+        version: 0.379.0(svelte@5.0.0-next.141)
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
       prettier-plugin-svelte:
         specifier: ^3.2.3
         version: 3.2.3(prettier@3.2.5)(svelte@5.0.0-next.141)
+      svelte:
+        specifier: 5.0.0-next.141
+        version: 5.0.0-next.141
       svelte-check:
-        specifier: ^3.6.0
+        specifier: ^3.7.1
         version: 3.7.1(postcss@8.4.38)(svelte@5.0.0-next.141)
       tslib:
-        specifier: ^2.4.1
+        specifier: ^2.6.2
         version: 2.6.2
       typescript:
-        specifier: ^5.0.0
+        specifier: ^5.4.5
         version: 5.4.5
       vite:
-        specifier: ^5.0.3
+        specifier: ^5.2.11
         version: 5.2.11
 
 packages:
