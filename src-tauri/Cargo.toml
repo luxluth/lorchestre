@@ -1,0 +1,26 @@
+[package]
+name = "mu"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-beta", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0-beta", features = ["protocol-asset"] }
+tauri-plugin-shell = "2.0.0-beta"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+audiotags = "0.5.0"
+glob = "0.3.1"
+mime_guess = "2.0.4"
+lrc = "0.1.8"
+dirs = "5.0.1"
+md5 = "0.7.0"
+tauri-plugin-fs = "2.0.0-beta.7"
+color-thief = "0.2.2"
+image = "0.25.1"
