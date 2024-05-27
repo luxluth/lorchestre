@@ -1,17 +1,13 @@
 <script lang="ts">
-	import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+	import { convertFileSrc } from '@tauri-apps/api/core';
 	import { player } from '$lib/events';
 	import { Play } from 'lucide-svelte';
 	import { type AudioMedia, type Media } from '$lib/type';
-	import { browser } from '$app/environment';
+	import type { PageData } from './$types';
 
-	let media: Media | undefined = $state();
+	let { data }: { data: PageData } = $props();
 
-	if (browser) {
-		(async () => {
-			media = await invoke<Media>('index');
-		})();
-	}
+	let media: Media = data.media;
 
 	function play(audio: AudioMedia) {
 		player.play(audio);
@@ -20,32 +16,30 @@
 
 <h1 class="__page_title ns">Bibliothèque</h1>
 
-{#if media}
-	<div class="__medias">
-		{#each media.audios as audio}
-			<div class="__audio">
-				{#if audio.cover}
-					<div
-						class="cover ns"
-						style="--clr: {audio.color
-							? `rgb(${audio.color.r}, ${audio.color.g}, ${audio.color.b})`
-							: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(audio.cover)}');"
+<div class="__medias">
+	{#each media.audios as audio}
+		<div class="__audio">
+			{#if audio.cover}
+				<div
+					class="cover ns"
+					style="--clr: {audio.color
+						? `rgb(${audio.color.r}, ${audio.color.g}, ${audio.color.b})`
+						: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(audio.cover)}');"
+				>
+					<button
+						onclick={() => {
+							play(audio);
+						}}
 					>
-						<button
-							onclick={() => {
-								play(audio);
-							}}
-						>
-							<Play fill={'var(--bg)'} color={'var(--bg)'} />
-						</button>
-					</div>
-				{/if}
-				<p class="title ns">{audio.title ?? 'Titre inconnu'}</p>
-				<p class="artist ns">{audio.artists.join(', ') ?? 'Artiste inconnu'}</p>
-			</div>
-		{/each}
-	</div>
-{/if}
+						<Play fill={'var(--bg)'} color={'var(--bg)'} />
+					</button>
+				</div>
+			{/if}
+			<p class="title ns">{audio.title ?? 'Titre inconnu'}</p>
+			<p class="artist ns">{audio.artists.join(', ') ?? 'Artiste inconnu'}</p>
+		</div>
+	{/each}
+</div>
 
 <style>
 	.__page_title {
