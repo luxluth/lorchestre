@@ -1,5 +1,4 @@
-import { createUrlFrom } from '$lib';
-import { ToastKind, type AudioMedia, type ToastEvent } from './type';
+import { ToastKind, type Track, type PlayerDispatch, type ToastEvent } from './type';
 
 export namespace toast {
 	export const SHOW_EV = '__toast::show';
@@ -34,11 +33,36 @@ export namespace toast {
 
 export namespace player {
 	export const PLAY_EV = '__player::play';
+	export const PLAY_AT = '__player::play_at';
+	export const PLAYER_DISPATCH = '__player::dispatch';
+	export const PLAYER_ACTIVATE = '__player::activate';
 
-	export function play(media: AudioMedia) {
-		let ev: CustomEvent<AudioMedia> = new CustomEvent(PLAY_EV, {
-			detail: media
+	export function play(track: Track) {
+		let ev: CustomEvent<Track> = new CustomEvent(PLAY_EV, {
+			detail: track
 		});
+
+		document.dispatchEvent(ev);
+	}
+
+	export function setTimeTo(time: number) {
+		let ev: CustomEvent<number> = new CustomEvent(PLAY_AT, {
+			detail: time
+		});
+
+		document.dispatchEvent(ev);
+	}
+
+	export function dispatch(detail: PlayerDispatch) {
+		let ev: CustomEvent<PlayerDispatch> = new CustomEvent(PLAYER_DISPATCH, {
+			detail
+		});
+
+		document.dispatchEvent(ev);
+	}
+
+	export function activate() {
+		let ev: CustomEvent = new CustomEvent(PLAYER_ACTIVATE);
 
 		document.dispatchEvent(ev);
 	}

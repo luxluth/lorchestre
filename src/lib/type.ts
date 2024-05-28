@@ -34,20 +34,35 @@ export type Cover = {
 	mime: string;
 };
 
-export type AudioMedia = {
-	title?: string;
+type u32 = number;
+type u64 = number;
+
+export type Album = {
+	name: string;
+	artist: string;
+	tracks: Track[];
+	year?: u32;
+	id: string;
+};
+
+export type Track = {
+	title: string;
 	artists: string[];
-	album?: string;
+	track: u32;
+	album: string;
+	album_artist?: string;
+	album_id: string;
+	album_year?: u32;
 	lyrics: LyricLine[];
 	cover?: string;
 	color?: Color;
 	is_light?: boolean;
 	file_path: string;
-	duration: number;
+	duration: u64;
 };
 
 export type Media = {
-	audios: AudioMedia[];
+	albums: Album[];
 };
 
 export type Line = {
@@ -56,3 +71,23 @@ export type Line = {
 	text: string;
 	id: number;
 };
+
+export enum PlayerDispatchKind {
+	TimeUpdate,
+	NewMedia,
+	PlayPause
+}
+
+export type PlayerDispatch =
+	| {
+			kind: PlayerDispatchKind.TimeUpdate;
+			data: number;
+	  }
+	| {
+			kind: PlayerDispatchKind.NewMedia;
+			data: Track;
+	  }
+	| {
+			kind: PlayerDispatchKind.PlayPause;
+			data: 'play' | 'paused';
+	  };

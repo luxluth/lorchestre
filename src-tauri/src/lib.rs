@@ -1,16 +1,16 @@
-use audiotags::Tag;
 use color_thief::ColorFormat;
 use glob::glob;
 use lrc::Lyrics;
 use mime_guess::{self, mime};
+use std::collections::HashMap;
 use std::fs;
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use lofty::prelude::*;
 use lofty::probe::Probe;
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
     pub start_time: i64,
     pub text: String,
@@ -22,7 +22,7 @@ pub struct Cover {
     ext: String,
 }
 
-#[derive(serde::Serialize, Debug, Clone, Copy)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]
 pub struct Color {
     r: u8,
     g: u8,
@@ -33,17 +33,30 @@ impl Color {
     pub fn is_light_color(&self) -> bool {
         let luminance =
             0.2126 * (self.r as f64) + 0.7152 * (self.g as f64) + 0.0722 * (self.b as f64);
-        let threshold = 200.0;
+        let threshold = 180.0;
 
         luminance > threshold
     }
 }
 
-#[derive(serde::Serialize, Default, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+pub struct Album {
+    pub name: String,
+    pub artist: String,
+    pub tracks: Vec<Audio>,
+    pub year: Option<i32>,
+    pub id: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct Audio {
-    pub title: Option<String>,
+    pub title: String,
     pub artists: Vec<String>,
-    pub album: Option<String>,
+    pub track: u16,
+    pub album: String,
+    pub album_artist: Option<String>,
+    pub album_id: String,
+    pub album_year: Option<i32>,
     pub lyrics: Vec<LyricLine>,
     pub cover: Option<String>,
     pub color: Option<Color>,
@@ -52,43 +65,144 @@ pub struct Audio {
     pub duration: u64,
 }
 
-// fn random() {
-//     eprintln!("{}", tauri::path::PathResolver::app_cache_dir(x))
-// }
-
-#[derive(serde::Serialize, Default)]
-pub struct Media {
-    pub audios: Vec<Audio>,
-}
-
-fn check_cache_dir(dir: PathBuf) {
-    if !dir.exists() {
-        fs::DirBuilder::new()
-            .recursive(true)
-            .create(format!("{}/covers", dir.display()))
-            .unwrap();
+impl Default for Audio {
+    fn default() -> Self {
+        Self {
+            title: "@UNKNOWN@".to_string(),
+            artists: vec![],
+            track: 0,
+            album: "@UNKNOWN@".to_string(),
+            album_artist: None,
+            album_id: String::new(),
+            album_year: None,
+            lyrics: vec![],
+            cover: None,
+            color: None,
+            is_light: None,
+            file_path: String::new(),
+            duration: 0,
+        }
     }
 }
 
-mod utils {
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
+pub struct Songs {
+    pub audios: Vec<Audio>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+pub struct Media {
+    pub albums: Vec<Album>,
+}
+
+impl Media {
+    pub fn new(songs: Songs) -> Self {
+        Self {
+            albums: songs.get_albums(),
+        }
+    }
+
+    pub fn get_album(&self, id: String) -> Option<Album> {
+        for album in self.albums.iter() {
+            if album.id == id {
+                return Some(Album {
+                    name: album.name.clone(),
+                    artist: album.artist.clone(),
+                    tracks: album.tracks.clone(),
+                    year: album.year.clone(),
+                    id: album.id.clone(),
+                });
+            }
+        }
+
+        None
+    }
+}
+
+impl Songs {
+    pub fn get_albums(self) -> Vec<Album> {
+        let mut albums = vec![];
+        let mut album_map: HashMap<String, Vec<Audio>> = HashMap::new();
+        for audio in self.audios {
+            album_map
+                .entry(audio.album_id.clone())
+                .or_insert_with(Vec::new) // Insert a new Vec<Audio> if the key does not exist
+                .push(audio);
+        }
+
+        for (k, v) in album_map {
+            albums.push(Album {
+                name: v[0].album.clone(),
+                artist: v[0].album_artist.clone().unwrap_or(String::from(
+                    v[0].artists
+                        .clone()
+                        .get(0)
+                        .unwrap_or(&"@UNKNOWN@".to_string()),
+                )),
+                year: v[0].album_year,
+                tracks: v,
+                id: k,
+            });
+        }
+
+        albums
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+pub struct MediaCache {
+    pub media: Media,
+    pub md5: String,
+}
+
+fn check_cache_covers(dir: String) {
+    let dir = Path::new(&dir);
+    if !dir.exists() {
+        fs::DirBuilder::new().recursive(true).create(dir).unwrap();
+    }
+}
+
+pub mod utils {
+    use crate::glob;
+
     pub fn get_image_buffer(img: image::DynamicImage) -> Vec<u8> {
         match img {
             image::DynamicImage::ImageRgb8(buffer) => buffer.to_vec(),
             _ => unreachable!(),
         }
     }
+
+    pub fn music_dir_md5() -> String {
+        let mut files = vec![];
+        if let Some(music_dir) = dirs::audio_dir() {
+            if let Ok(paths) = glob(&format!("{}/**/*", music_dir.display())) {
+                for p in paths {
+                    if p.is_ok() {
+                        let path_buf = p.unwrap();
+                        files.extend(path_buf.to_str().unwrap().as_bytes());
+                    }
+                }
+
+                let digest = md5::compute(files);
+
+                return format!("{digest:x}");
+            } else {
+                String::new()
+            }
+        } else {
+            String::new()
+        }
+    }
 }
 
-impl Media {
+impl Songs {
     pub fn new(cache_dir: PathBuf) -> Self {
-        check_cache_dir(cache_dir.clone());
-
+        check_cache_covers(format!("{}/covers", cache_dir.display()));
         let covers_dir = format!("{}/covers", cache_dir.display());
 
         if let Some(music_dir) = dirs::audio_dir() {
-            let music_dir = music_dir.to_str().unwrap();
             let mut audios = vec![];
-            glob(&format!("{music_dir}/**/*"))
+            glob(&format!("{}/**/*", music_dir.display()))
                 .expect("Failed to read glob pattern")
                 .for_each(|entry| {
                     if let Ok(inode) = entry {
@@ -101,22 +215,47 @@ impl Media {
                                 let properties = tagged_file.properties();
                                 let duration = properties.duration();
 
-                                let tag = Tag::new().read_from_path(&inode).unwrap();
+                                let tag = audiotags::Tag::new().read_from_path(&inode).unwrap();
                                 let mut audio: Audio = Audio {
                                     file_path: inode.to_str().unwrap().to_string(),
                                     ..Default::default()
                                 };
 
+                                if let Some(year) = tag.year() {
+                                    audio.album_year = Some(year);
+                                }
+
                                 if let Some(title) = tag.title() {
-                                    audio.title = Some(title.to_string());
+                                    audio.title = title.to_string();
                                 }
                                 if let Some(artists) = tag.artists() {
                                     audio.artists =
                                         artists.into_iter().map(|x| x.to_string()).collect();
                                 }
                                 if let Some(album) = tag.album_title() {
-                                    audio.album = Some(album.to_string());
+                                    audio.album = album.to_string();
                                 }
+
+                                if let Some(album_artist) = tag.album_artist() {
+                                    audio.album_artist = Some(album_artist.to_string());
+                                }
+
+                                if let Some(no) = tag.track_number() {
+                                    audio.track = no;
+                                }
+
+                                let mut bytes = audio.album.as_bytes().to_vec();
+                                bytes.extend(
+                                    audio
+                                        .artists
+                                        .get(0)
+                                        .unwrap_or(&"@UNKNOWN@".to_string())
+                                        .as_bytes(),
+                                );
+
+                                let digest = md5::compute(bytes);
+
+                                audio.album_id = format!("{digest:x}");
 
                                 if let Some(cover) = tag.album_cover() {
                                     let cover = Cover {
@@ -129,10 +268,6 @@ impl Media {
                                             audiotags::MimeType::Gif => ".gif".to_string(),
                                         },
                                     };
-
-                                    let digest = md5::compute(
-                                        audio.album.clone().unwrap_or(String::from("NoName")),
-                                    );
 
                                     let pathstr = format!("{covers_dir}/{digest:x}{}", cover.ext);
                                     let cover_path = std::path::Path::new(&pathstr);

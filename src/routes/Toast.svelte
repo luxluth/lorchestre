@@ -40,6 +40,7 @@
 	}
 
 	$effect(() => {
+		console.log('toast mounted');
 		//@ts-ignore
 		document.addEventListener(toast.SHOW_EV, handleShow);
 		document.addEventListener(toast.CLOSE_EV, handleClose);
