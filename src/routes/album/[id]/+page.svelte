@@ -119,8 +119,8 @@
 	}
 
 	.track {
-		border-top: 1px solid rgba(255, 255, 255, 0.18);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+		border-top: 1px solid rgba(100, 100, 100, 0.18);
+		border-bottom: 1px solid rgba(100, 100, 100, 0.18);
 	}
 
 	.tracks .track:only-child {

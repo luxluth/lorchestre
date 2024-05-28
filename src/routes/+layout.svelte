@@ -17,7 +17,7 @@
 
 <div class="layout">
 	<section class="__navigation">
-		<Navigation pathId={data.route as string} />
+		<Navigation pathId={data.route as string} platform={data.platform} />
 	</section>
 	<section class="__content">
 		<header>

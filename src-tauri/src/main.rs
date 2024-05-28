@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{
+    env::consts::OS,
     fs,
     io::{Read, Write},
     path::{Path, PathBuf},
@@ -77,11 +78,21 @@ fn get_album(app: tauri::AppHandle, id: String) -> Option<Album> {
     cache.media.get_album(id)
 }
 
+#[tauri::command]
+fn platform() -> String {
+    OS.to_string()
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![index, update_cache, get_album])
+        .invoke_handler(tauri::generate_handler![
+            index,
+            update_cache,
+            get_album,
+            platform
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

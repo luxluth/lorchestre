@@ -1,9 +1,16 @@
 html {
-	--fg: #ffffff;
-	--bg: #181818;
+	--dark-fg: #ffffff;
+	--dark-bg: #181818;
+
+	--light-fg: #000000;
+	--light-bg: #ffffff;
 }
 
 :root {
+	--fg: var(--light-fg);
+	--bg: var(--light-bg);
+
+	color-scheme: ligth dark;
 	font-family:
 		'Product Sans',
 		system-ui,
@@ -17,14 +24,24 @@ html {
 	font-weight: 400;
 	line-height: 1;
 
-	color: var(--fg);
-	background-color: var(--bg);
+	color: var(--light-fg);
+	background-color: var(--light-bg);
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--fg: var(--dark-fg);
+		--bg: var(--dark-bg);
+
+		color: var(--dark-fg);
+		background-color: var(--dark-bg);
+	}
 }
 
 * {

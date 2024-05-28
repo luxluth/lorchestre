@@ -15,8 +15,10 @@
 				"title": "mu",
 				"width": 1700,
 				"height": 1020,
-				"decorations": false,
-				"theme": "Dark",
+				"decorations": true,
+        "center": true,
+        "titleBarStyle": "Transparent",
+        "shadow": true,
 				"minWidth": 800,
 				"minHeight": 600
 			}

@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { GalleryHorizontalEnd, Clock } from 'lucide-svelte';
-
-	let { pathId }: { pathId: string } = $props();
-	console.log(pathId);
+	let { pathId, platform }: { pathId: string; platform: string } = $props();
 </script>
 
-<div class="nav ns">
+<div class="nav ns" style="--top-by: {platform === 'macos' ? '3em' : '1em'}">
 	<section>
 		<h4>Bibliothèque</h4>
 		<div class="links">
@@ -24,6 +22,7 @@
 <style>
 	.nav {
 		padding-block: 2em;
+		padding-top: var(--top-by);
 		padding-inline: 1em;
 	}
 	h4 {
@@ -46,8 +45,8 @@
 		align-items: center;
 		gap: 0.5em;
 		padding-inline: 0.5em;
-		padding-block: 0.3em;
-		border-radius: 8px;
+		padding-block: 0.5em;
+		border-radius: 6px;
 		transition: all ease-in-out 0.1s;
 	}
 
@@ -60,9 +59,7 @@
 	}
 
 	section div.links a.active {
-		background: rgba(45, 45, 45, 0.25);
-		backdrop-filter: blur(4px);
-		-webkit-backdrop-filter: blur(4px);
+		background: rgba(100, 100, 100, 0.18);
 		opacity: 1;
 	}
 </style>
