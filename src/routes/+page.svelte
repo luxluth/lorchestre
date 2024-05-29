@@ -1,26 +1,23 @@
 <script lang="ts">
 	import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 	import { type Album, type Media } from '$lib/type';
-	import { browser } from '$app/environment';
 	// import { getContext, hasContext, setContext } from 'svelte';
 	// import createMediaState from '$lib/media.svelte';
 
 	type Albums = { albums: Album[] };
 
-	let media = $state<Albums>();
-
-	if (browser) {
-		(async () => {
-			const nctx = await invoke<Media>('index');
-			media = { albums: nctx.albums };
-		})();
+	async function getAlbums(): Promise<Albums> {
+		const nctx = await invoke<Media>('index');
+		return { albums: nctx.albums };
 	}
 </script>
 
 <h1 class="__page_title ns">Albums</h1>
 
 <div class="__medias">
-	{#if media}
+	{#await getAlbums()}
+		<div class="shell"></div>
+	{:then media}
 		{#each media.albums as { tracks, artist, name, id }}
 			<a class="__audio" data-id={id} href="album/{id}">
 				{#if tracks[0].cover}
@@ -35,7 +32,7 @@
 				<p class="artist ns">{artist}</p>
 			</a>
 		{/each}
-	{/if}
+	{/await}
 </div>
 
 <style>

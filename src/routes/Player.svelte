@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Slider from '$lib/components/Slider.svelte';
 	import { player } from '$lib/events';
 	import LrcManager from '$lib/lrc.svelte';
 	import { PlayerDispatchKind, type Track, type Line } from '$lib/type';
@@ -16,13 +17,12 @@
 	let srcUrl = $state<string>('');
 	let duration = $state(0);
 	let currentTime = $state(0);
-	let percentage = $derived(((currentTime * 100) / duration).toFixed(3));
+	let percentage = $derived((currentTime * 100) / duration);
 	let paused = $state<boolean>(true);
 	let lrcMngr = new LrcManager(duration, []);
 	let activeLines: Line[] = $state([]);
 
 	$effect(() => {
-		console.log('time update');
 		lrcMngr.update(currentTime);
 	});
 
@@ -68,10 +68,9 @@
 	}
 
 	async function play(e: CustomEvent<Track>) {
-		player.dispatch({ kind: PlayerDispatchKind.NewMedia, data: e.detail });
+		player.dispatch({ kind: PlayerDispatchKind.NewTrack, data: e.detail });
 
 		track = e.detail;
-		active = true;
 		await getSrc(track.file_path);
 		duration = track.duration;
 		lrcMngr.reset(track.duration, track.lyrics);
@@ -85,7 +84,6 @@
 			sound.pause();
 		}
 		sound.src = srcUrl;
-		sound.volume = 0.1;
 		sound.currentTime = 0;
 		sound.onpause = () => {
 			paused = true;
@@ -99,6 +97,10 @@
 
 		sound.ontimeupdate = () => {
 			player.dispatch({ kind: PlayerDispatchKind.TimeUpdate, data: currentTime });
+		};
+
+		sound.onvolumechange = () => {
+			player.dispatch({ kind: PlayerDispatchKind.VolumeChange, data: sound.volume });
 		};
 
 		await sound.play();
@@ -119,14 +121,20 @@
 		document.addEventListener(player.PLAY_EV, play);
 		//@ts-ignore
 		document.addEventListener(player.PLAY_AT, playAtEv);
+		//@ts-ignore
+		document.addEventListener(player.PLAYER_VOLUME_AT, volAt);
 		document.addEventListener(player.PLAYER_ACTIVATE, activate);
+		document.addEventListener(player.PLAYER_TOGGLE_PP, toggleMediaPlayState);
 
 		return () => {
 			//@ts-ignore
 			document.removeEventListener(player.PLAY_EV, play);
 			//@ts-ignore
 			document.removeEventListener(player.PLAY_AT, playAtEv);
+			//@ts-ignore
+			document.removeEventListener(player.PLAYER_VOLUME_AT, volAt);
 			document.removeEventListener(player.PLAYER_ACTIVATE, activate);
+			document.removeEventListener(player.PLAYER_TOGGLE_PP, toggleMediaPlayState);
 		};
 	});
 
@@ -154,10 +162,22 @@
 		playAt(e.detail);
 	}
 
+	function volAt(e: CustomEvent<number>) {
+		sound.volume = e.detail;
+	}
+
 	function playAt(time: number) {
 		if (sound) {
 			sound.currentTime = time;
 		}
+
+		setTimeout(() => {
+			activeLines = lrcMngr.activeLines;
+			if (activeLines.length > 0) {
+				let child = lyricsParent.children[activeLines[0].id];
+				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}, 30);
 	}
 </script>
 
@@ -213,9 +233,16 @@
 						</span>
 					</div>
 					<div class="progressbar">
-						<div class="progress">
-							<div class="shadow"></div>
-						</div>
+						<Slider
+							value={percentage / 100}
+							color={'var(--text)'}
+							thumbColor={'var(--text)'}
+							style="thick"
+							backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
+							oninput={(data) => {
+								playAt(data * duration);
+							}}
+						/>
 					</div>
 					<div class="time ns">
 						<span>
@@ -224,7 +251,13 @@
 					</div>
 				</div>
 			</div>
-			<audio crossorigin="anonymous" bind:paused bind:this={sound} bind:currentTime></audio>
+			<audio
+				crossorigin="anonymous"
+				onvolumechange={() => {}}
+				bind:paused
+				bind:this={sound}
+				bind:currentTime
+			></audio>
 		</section>
 		{#if track.lyrics.length > 0}
 			<section class="lrc" bind:this={lyricsParent}>
@@ -279,41 +312,7 @@
 	.__player .controls .progressbar {
 		flex-grow: 1;
 		width: 100%;
-		height: 0.5em;
-		border-radius: 5px;
-		background-color: #333;
-		position: relative;
-	}
-
-	.__player .controls .progressbar {
-		background-color: rgba(var(--rd), var(--gd), var(--bd), 0.2);
-	}
-
-	.__player .controls .progressbar {
-		margin-inline: 1em;
-	}
-
-	.__player .controls .progressbar .progress {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: 100%;
-		overflow: hidden;
-		border-radius: 5px;
-	}
-
-	.__player .controls .progressbar .shadow {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: var(--percent);
-		background-color: var(--fg);
-	}
-
-	.__player .controls .progressbar .shadow {
-		background-color: var(--text);
+		padding-inline: 2em;
 	}
 
 	.__player .controls .actions {
@@ -456,7 +455,7 @@
 		box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
 		border-radius: 10px;
 		/* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
-		background-position: cover;
+		background-size: cover;
 	}
 
 	.__player .infos {

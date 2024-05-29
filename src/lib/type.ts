@@ -74,8 +74,9 @@ export type Line = {
 
 export enum PlayerDispatchKind {
 	TimeUpdate,
-	NewMedia,
-	PlayPause
+	NewTrack,
+	PlayPause,
+	VolumeChange
 }
 
 export type PlayerDispatch =
@@ -84,10 +85,14 @@ export type PlayerDispatch =
 			data: number;
 	  }
 	| {
-			kind: PlayerDispatchKind.NewMedia;
+			kind: PlayerDispatchKind.NewTrack;
 			data: Track;
 	  }
 	| {
 			kind: PlayerDispatchKind.PlayPause;
 			data: 'play' | 'paused';
+	  }
+	| {
+			kind: PlayerDispatchKind.VolumeChange;
+			data: number;
 	  };

@@ -1,5 +1,6 @@
 use color_thief::ColorFormat;
 use glob::glob;
+use lofty::picture::{MimeType, PictureType};
 use lrc::Lyrics;
 use mime_guess::{self, mime};
 use std::collections::HashMap;
@@ -44,7 +45,7 @@ pub struct Album {
     pub name: String,
     pub artist: String,
     pub tracks: Vec<Audio>,
-    pub year: Option<i32>,
+    pub year: Option<u32>,
     pub id: String,
 }
 
@@ -52,11 +53,11 @@ pub struct Album {
 pub struct Audio {
     pub title: String,
     pub artists: Vec<String>,
-    pub track: u16,
+    pub track: u32,
     pub album: String,
     pub album_artist: Option<String>,
     pub album_id: String,
-    pub album_year: Option<i32>,
+    pub album_year: Option<u32>,
     pub lyrics: Vec<LyricLine>,
     pub cover: Option<String>,
     pub color: Option<Color>,
@@ -172,6 +173,26 @@ pub mod utils {
         }
     }
 
+    pub fn remove_lyrics_tags(buf: String) -> String {
+        let strings: Vec<String> = buf
+            .lines()
+            .filter(|x| !x.is_empty())
+            .filter(|x| {
+                let mut chars = x.chars();
+                let openparen = chars.next().unwrap();
+                let nextdata = chars.next().unwrap();
+                if openparen == '[' && nextdata.is_ascii_digit() {
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            .map(|x| x.to_string())
+            .collect();
+
+        strings.join("\n")
+    }
+
     pub fn music_dir_md5() -> String {
         let mut files = vec![];
         if let Some(music_dir) = dirs::audio_dir() {
@@ -215,7 +236,16 @@ impl Songs {
                                 let properties = tagged_file.properties();
                                 let duration = properties.duration();
 
-                                let tag = audiotags::Tag::new().read_from_path(&inode).unwrap();
+                                let default_tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+
+                                let tag = match tagged_file.primary_tag() {
+                                    Some(primary_tag) => primary_tag,
+                                    // If the "primary" tag doesn't exist, we just grab the
+                                    // first tag we can find. Realistically, a tag reader would likely
+                                    // iterate through the tags to find a suitable one.
+                                    None => tagged_file.first_tag().unwrap_or(&default_tag),
+                                };
+
                                 let mut audio: Audio = Audio {
                                     file_path: inode.to_str().unwrap().to_string(),
                                     ..Default::default()
@@ -228,19 +258,24 @@ impl Songs {
                                 if let Some(title) = tag.title() {
                                     audio.title = title.to_string();
                                 }
-                                if let Some(artists) = tag.artists() {
-                                    audio.artists =
-                                        artists.into_iter().map(|x| x.to_string()).collect();
-                                }
-                                if let Some(album) = tag.album_title() {
+                                if let Some(artists) = tag.get_string(&ItemKey::TrackArtist) {
+                                    audio.artists = artists
+                                        .split(';')
+                                        .filter(|x| !x.is_empty())
+                                        .map(|x| x.trim().to_string())
+                                        .collect();
+                                };
+
+                                if let Some(album) = tag.album() {
                                     audio.album = album.to_string();
                                 }
 
-                                if let Some(album_artist) = tag.album_artist() {
+                                if let Some(album_artist) = tag.get_string(&ItemKey::OriginalArtist)
+                                {
                                     audio.album_artist = Some(album_artist.to_string());
                                 }
 
-                                if let Some(no) = tag.track_number() {
+                                if let Some(no) = tag.track() {
                                     audio.track = no;
                                 }
 
@@ -257,15 +292,19 @@ impl Songs {
 
                                 audio.album_id = format!("{digest:x}");
 
-                                if let Some(cover) = tag.album_cover() {
+                                let cover = tag.get_picture_type(PictureType::CoverFront);
+                                if let Some(cover) = cover {
+                                    let mime = cover.mime_type().unwrap();
                                     let cover = Cover {
-                                        data: cover.data.to_vec(),
-                                        ext: match cover.mime_type {
-                                            audiotags::MimeType::Png => ".png".to_string(),
-                                            audiotags::MimeType::Jpeg => ".jpeg".to_string(),
-                                            audiotags::MimeType::Tiff => ".tiff".to_string(),
-                                            audiotags::MimeType::Bmp => ".bmp".to_string(),
-                                            audiotags::MimeType::Gif => ".gif".to_string(),
+                                        data: cover.data().to_vec(),
+                                        ext: match mime {
+                                            MimeType::Png => ".png".to_string(),
+                                            MimeType::Jpeg => ".jpeg".to_string(),
+                                            MimeType::Tiff => ".tiff".to_string(),
+                                            MimeType::Bmp => ".bmp".to_string(),
+                                            MimeType::Gif => ".gif".to_string(),
+                                            MimeType::Unknown(o) => format!(".{o}"),
+                                            _ => ".png".to_string(),
                                         },
                                     };
 
@@ -308,6 +347,7 @@ impl Songs {
                                     let buf = String::from_utf8(buf);
                                     match buf {
                                         Ok(buf) => {
+                                            let buf = utils::remove_lyrics_tags(buf);
                                             let lyrics = Lyrics::from_str(buf).unwrap();
                                             let lines: Vec<LyricLine> = lyrics
                                                 .get_timed_lines()

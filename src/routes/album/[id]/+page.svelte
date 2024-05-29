@@ -165,6 +165,7 @@
 		border-radius: 10px;
 		margin-bottom: 0.3em;
 		background-size: cover;
-		border: 1px solid rgba(255, 255, 255, 0.18);
+
+		box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
 	}
 </style>
