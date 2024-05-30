@@ -5,9 +5,9 @@ const eq = (a: Line[], b: Line[]) => {
 };
 
 export default class LrcManager {
-	private lines: Line[] = $state([]);
+	lines: Line[] = $state([]);
 	private currentActiveLines: Line[] = $state([]);
-	private ch: () => void = $state(() => {});
+	private chs: (() => void)[] = $state([]);
 
 	constructor(duration: number, raw_lines: LyricLine[]) {
 		let lines: Line[] = [];
@@ -61,14 +61,15 @@ export default class LrcManager {
 		}
 
 		this.lines = lines;
-		console.log(this.lines);
 		this.currentActiveLines = [];
 	}
 
 	private set als(val: Line[]) {
 		if (!eq(val, this.currentActiveLines)) {
 			this.currentActiveLines = val;
-			this.ch();
+			this.chs.forEach((f) => {
+				f();
+			});
 		}
 	}
 
@@ -83,6 +84,6 @@ export default class LrcManager {
 	}
 
 	set oncuechange(fn: () => void) {
-		this.ch = fn;
+		this.chs.push(fn);
 	}
 }

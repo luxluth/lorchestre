@@ -1,33 +1,32 @@
 <script lang="ts">
 	import Slider from '$lib/components/Slider.svelte';
-	import { player } from '$lib/events';
 	import LrcManager from '$lib/lrc.svelte';
-	import { PlayerDispatchKind, type Track, type Line } from '$lib/type';
+	import type Manager from '$lib/manager.svelte';
+	import { type Track, type Line } from '$lib/type';
 	import { convertFileSrc } from '@tauri-apps/api/core';
-	import { X, Play, Pause, FastForward, Rewind } from 'lucide-svelte';
+	import { X, Play, Pause, FastForward, Rewind, Volume, Volume1, Volume2 } from 'lucide-svelte';
+
+	import { getContext } from 'svelte';
+
+	let manager = getContext<Manager>('manager');
+	let lrcMngr = getContext<LrcManager>('lm');
 
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 	//@ts-ignore
 	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
 
-	let track = $state<Track>();
 	let active = $state<boolean>(false);
 	let playing = $state<boolean>(false);
 	let srcUrl = $state<string>('');
-	let duration = $state(0);
-	let currentTime = $state(0);
-	let percentage = $derived((currentTime * 100) / duration);
-	let paused = $state<boolean>(true);
-	let lrcMngr = new LrcManager(duration, []);
-	let activeLines: Line[] = $state([]);
+	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 
 	$effect(() => {
-		lrcMngr.update(currentTime);
+		lrcMngr.update(manager.currentTime);
 	});
 
 	lrcMngr.oncuechange = () => {
-		activeLines = lrcMngr.activeLines;
+		const activeLines = lrcMngr.activeLines;
 		if (activeLines.length > 0) {
 			let child = lyricsParent.children[activeLines[0].id];
 			if (isElementVisible(child as HTMLElement) || !active) {
@@ -67,14 +66,32 @@
 		}
 	}
 
-	async function play(e: CustomEvent<Track>) {
-		player.dispatch({ kind: PlayerDispatchKind.NewTrack, data: e.detail });
+	manager.onplayat = (time: number) => {
+		sound.currentTime = time;
+	};
+	manager.ontooglepp = async () => {
+		await toggleMediaPlayState();
+	};
+	manager.onvolumechange = (vol: number) => {
+		sound.volume = vol;
+	};
 
-		track = e.detail;
+	manager.ontimeupdate = (time: number) => {
+		sound.currentTime = time;
+	};
+
+	manager.onPlayerActivate = () => {
+		active = true;
+	};
+
+	manager.onPlayerDeactivate = () => {
+		active = false;
+	};
+
+	manager.onplay = async (track: Track) => {
+		manager.currentTrack = track;
 		await getSrc(track.file_path);
-		duration = track.duration;
 		lrcMngr.reset(track.duration, track.lyrics);
-		activeLines = [];
 
 		if (track.lyrics.length > 0) {
 			lyricsParent.scrollTop = 0;
@@ -86,57 +103,34 @@
 		sound.src = srcUrl;
 		sound.currentTime = 0;
 		sound.onpause = () => {
-			paused = true;
-			player.dispatch({ kind: PlayerDispatchKind.PlayPause, data: 'paused' });
+			manager.paused = true;
 		};
 
 		sound.onplay = () => {
-			paused = false;
-			player.dispatch({ kind: PlayerDispatchKind.PlayPause, data: 'play' });
+			manager.paused = false;
 		};
 
 		sound.ontimeupdate = () => {
-			player.dispatch({ kind: PlayerDispatchKind.TimeUpdate, data: currentTime });
+			if (sound.currentTime) {
+				manager.currentTime = sound.currentTime;
+			}
 		};
 
 		sound.onvolumechange = () => {
-			player.dispatch({ kind: PlayerDispatchKind.VolumeChange, data: sound.volume });
+			manager.volume = sound.volume;
+		};
+
+		sound.onended = async () => {
+			await manager.next();
 		};
 
 		await sound.play();
-	}
+	};
 
 	async function getSrc(path: string) {
 		let blob = await (await fetch(convertFileSrc(path))).blob();
 		srcUrl = URL.createObjectURL(blob);
 	}
-
-	function activate() {
-		active = true;
-	}
-
-	$effect(() => {
-		console.log('player mounted');
-		//@ts-ignore
-		document.addEventListener(player.PLAY_EV, play);
-		//@ts-ignore
-		document.addEventListener(player.PLAY_AT, playAtEv);
-		//@ts-ignore
-		document.addEventListener(player.PLAYER_VOLUME_AT, volAt);
-		document.addEventListener(player.PLAYER_ACTIVATE, activate);
-		document.addEventListener(player.PLAYER_TOGGLE_PP, toggleMediaPlayState);
-
-		return () => {
-			//@ts-ignore
-			document.removeEventListener(player.PLAY_EV, play);
-			//@ts-ignore
-			document.removeEventListener(player.PLAY_AT, playAtEv);
-			//@ts-ignore
-			document.removeEventListener(player.PLAYER_VOLUME_AT, volAt);
-			document.removeEventListener(player.PLAYER_ACTIVATE, activate);
-			document.removeEventListener(player.PLAYER_TOGGLE_PP, toggleMediaPlayState);
-		};
-	});
 
 	async function toggleMediaPlayState() {
 		if (sound) {
@@ -148,31 +142,13 @@
 		}
 	}
 
-	function isActiveLine(id: number) {
-		for (let i = 0; i < activeLines.length; i++) {
-			const element = activeLines[i];
-			if (element.id == id) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function playAtEv(e: CustomEvent<number>) {
-		playAt(e.detail);
-	}
-
-	function volAt(e: CustomEvent<number>) {
-		sound.volume = e.detail;
-	}
-
 	function playAt(time: number) {
 		if (sound) {
 			sound.currentTime = time;
 		}
 
 		setTimeout(() => {
-			activeLines = lrcMngr.activeLines;
+			const activeLines = lrcMngr.activeLines;
 			if (activeLines.length > 0) {
 				let child = lyricsParent.children[activeLines[0].id];
 				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -185,51 +161,95 @@
 	class:active
 	class:playing
 	class="__player"
-	style="--clr: {track?.color
-		? `rgb(${track?.color.r}, ${track?.color.g}, ${track?.color.b})`
-		: 'var(--bg)'}; --text: {track?.is_light ? '#181818' : '#ffffff'}; --r: {track?.color
-		?.r}; --g: {track?.color?.g}; --b: {track?.color
-		?.b}; --percent: {percentage}%; --rd: {track?.is_light ? '24' : '255'}; --gd: {track?.is_light
+	style="--clr: {manager.currentTrack?.color
+		? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
+		: 'var(--bg)'}; --text: {manager.currentTrack?.is_light ? '#181818' : '#ffffff'}; --r: {manager
+		.currentTrack?.color?.r}; --g: {manager.currentTrack?.color?.g}; --b: {manager.currentTrack
+		?.color?.b}; --percent: {percentage}%; --rd: {manager.currentTrack?.is_light
 		? '24'
-		: '255'}; --bd: {track?.is_light ? '24' : '255'};"
+		: '255'}; --gd: {manager.currentTrack?.is_light ? '24' : '255'}; --bd: {manager.currentTrack
+		?.is_light
+		? '24'
+		: '255'};"
 >
-	<button
-		class="close"
-		onclick={() => {
-			active = false;
-		}}
-	>
-		<X size={'3em'} />
-	</button>
-	{#if track}
+	{#if manager.currentTrack}
 		<section class="player">
-			{#if track.cover}
-				<div class="cover" style="background-image: url({convertFileSrc(track.cover)});"></div>
+			{#if manager.currentTrack.cover}
+				<div
+					class="cover"
+					style="background-image: url({convertFileSrc(manager.currentTrack.cover)});"
+				>
+					<div class="actions">
+						<button
+							class="close"
+							onclick={() => {
+								active = false;
+							}}
+						>
+							<X size={'3em'} />
+						</button>
+						<div class="volume">
+							<div class="vol-icon">
+								{#if manager.volume === 0}
+									<Volume size={'1.5em'} />
+								{:else if manager.volume >= 0.7}
+									<Volume2 size={'1.5em'} />
+								{:else if manager.volume > 0}
+									<Volume1 size={'1.5em'} />
+								{/if}
+							</div>
+							<Slider
+								value={manager.volume}
+								style="thick"
+								color={'var(--text)'}
+								thumbColor={'var(--text)'}
+								backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
+								oninput={(data) => {
+									sound.volume = data;
+								}}
+							/>
+						</div>
+					</div>
+				</div>
 			{/if}
 			<div class="infos">
-				<h2 class="ns">{track.title ?? 'Titre inconnu'}</h2>
-				<p class="artist ns">{track.artists.join(', ') ?? 'Artiste inconnu'}</p>
+				<h2 class="ns">{manager.currentTrack.title ?? 'Titre inconnu'}</h2>
+				<p class="artist ns">{manager.currentTrack.artists.join(', ') ?? 'Artiste inconnu'}</p>
 			</div>
 			<div class="controls" style="--percent: {percentage}%;">
 				<div class="actions">
 					<button>
-						<Rewind fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
+						<Rewind
+							fill={'var(--text)'}
+							color={'var(--text)'}
+							size={'2.5em'}
+							onclick={async () => {
+								await manager.prev();
+							}}
+						/>
 					</button>
 					<button class="playpause" onclick={toggleMediaPlayState}>
-						{#if paused}
+						{#if manager.paused}
 							<Play fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
 						{:else}
 							<Pause fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
 						{/if}
 					</button>
 					<button>
-						<FastForward fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
+						<FastForward
+							fill={'var(--text)'}
+							color={'var(--text)'}
+							size={'2.5em'}
+							onclick={async () => {
+								await manager.next();
+							}}
+						/>
 					</button>
 				</div>
 				<div class="progress-area">
 					<div class="time current ns">
 						<span>
-							{formatTime(currentTime)}
+							{formatTime(manager.currentTime)}
 						</span>
 					</div>
 					<div class="progressbar">
@@ -240,36 +260,30 @@
 							style="thick"
 							backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
 							oninput={(data) => {
-								playAt(data * duration);
+								playAt(data * manager.duration);
 							}}
 						/>
 					</div>
 					<div class="time ns">
 						<span>
-							{formatTime(duration)}
+							{formatTime(manager.duration)}
 						</span>
 					</div>
 				</div>
 			</div>
-			<audio
-				crossorigin="anonymous"
-				onvolumechange={() => {}}
-				bind:paused
-				bind:this={sound}
-				bind:currentTime
-			></audio>
+			<audio crossorigin="anonymous" bind:this={sound}></audio>
 		</section>
-		{#if track.lyrics.length > 0}
+		{#if manager.currentTrack.lyrics.length > 0}
 			<section class="lrc" bind:this={lyricsParent}>
-				{#each track.lyrics as { text, start_time }, i}
+				{#each lrcMngr.lines as { text, startTime, id }}
 					<div
 						class="line ns"
-						data-line={i}
-						data-time={start_time}
-						class:active={isActiveLine(i)}
-						onclick={() => playAt(start_time / 1000)}
+						data-time={startTime}
+						class:active={lrcMngr.activeLines.find((i) => i.id === id)}
+						onclick={() => playAt(startTime)}
 						onkeydown={() => {}}
 						role="button"
+						tabindex="0"
 					>
 						{text}
 					</div>
@@ -338,6 +352,17 @@
 	.__player .controls .actions button:active {
 		opacity: 1;
 		transform: scale(0.98);
+	}
+
+	.__player .cover .actions .volume {
+		position: absolute;
+		bottom: 1em;
+		width: 100%;
+		left: 0;
+		padding-inline: 2em;
+		display: flex;
+		gap: 1em;
+		align-items: center;
 	}
 
 	.close {
@@ -456,6 +481,23 @@
 		border-radius: 10px;
 		/* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
 		background-size: cover;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.__player .cover .actions {
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		background: rgba(var(--r), var(--g), var(--b), 0.7);
+		opacity: 0;
+		transition: opacity 0.3s ease-in-out;
+	}
+
+	.__player .cover:hover .actions {
+		opacity: 1;
 	}
 
 	.__player .infos {

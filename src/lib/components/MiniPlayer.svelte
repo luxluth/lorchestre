@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { type Track, type PlayerDispatch, PlayerDispatchKind } from '$lib/type';
-	import { player } from '$lib/events';
 	import {
 		Shuffle,
 		Repeat,
@@ -16,13 +14,11 @@
 	} from 'lucide-svelte';
 	import { convertFileSrc } from '@tauri-apps/api/core';
 	import Slider from './Slider.svelte';
+	import type Manager from '$lib/manager.svelte';
+	import { getContext } from 'svelte';
 
-	let track = $state<Track>();
-	let currentTime = $state(0);
-	let duration = $derived(track ? track.duration : 0);
-	let percentage = $derived((currentTime * 100) / duration);
-	let paused = $state(true);
-	let volume = $state(1);
+	let manager = getContext<Manager>('manager');
+	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 
 	function formatTime(time: number) {
 		if (isNaN(time)) {
@@ -35,67 +31,47 @@
 		}
 	}
 
-	function handleDispatch(e: CustomEvent<PlayerDispatch>) {
-		const ev = e.detail;
-
-		switch (ev.kind) {
-			case PlayerDispatchKind.TimeUpdate:
-				currentTime = ev.data;
-				break;
-			case PlayerDispatchKind.NewTrack:
-				track = ev.data;
-				break;
-			case PlayerDispatchKind.PlayPause:
-				if (ev.data == 'play') {
-					paused = false;
-				} else {
-					paused = true;
-				}
-				break;
-			case PlayerDispatchKind.VolumeChange:
-				volume = ev.data;
-				break;
-		}
-	}
-
-	function toggleMediaPlayState() {
-		player.togglePlayPause();
-	}
-
 	function playAt(pos: number) {
-		player.setTimeTo(pos * duration);
+		manager.timeTo(pos * manager.duration);
 	}
-
-	$effect(() => {
-		//@ts-ignore
-		document.addEventListener(player.PLAYER_DISPATCH, handleDispatch);
-
-		return () => {
-			//@ts-ignore
-			document.removeEventListener(player.PLAYER_DISPATCH, handleDispatch);
-		};
-	});
 </script>
 
-<div class="mp" class:dead={typeof track === 'undefined'}>
-	{#if track}
+<div class="mp" class:dead={typeof manager.currentTrack === 'undefined'}>
+	{#if manager.currentTrack}
 		<section class="controls">
 			<button>
 				<Shuffle size={'1.5em'} />
 			</button>
 			<div class="actions">
 				<button>
-					<Rewind fill={'var(--fg)'} size={'2.5em'} />
+					<Rewind
+						fill={'var(--fg)'}
+						size={'2.5em'}
+						onclick={async () => {
+							await manager.prev();
+						}}
+					/>
 				</button>
-				<button class="playpause" onclick={toggleMediaPlayState}>
-					{#if paused}
+				<button
+					class="playpause"
+					onclick={async () => {
+						await manager.tooglepp();
+					}}
+				>
+					{#if manager.paused}
 						<Play fill={'var(--fg)'} size={'2.5em'} />
 					{:else}
 						<Pause fill={'var(--fg)'} size={'2.5em'} />
 					{/if}
 				</button>
 				<button>
-					<FastForward fill={'var(--fg)'} size={'2.5em'} />
+					<FastForward
+						fill={'var(--fg)'}
+						size={'2.5em'}
+						onclick={async () => {
+							await manager.next();
+						}}
+					/>
 				</button>
 			</div>
 			<button>
@@ -104,16 +80,19 @@
 		</section>
 		<section
 			class="player"
-			style="--clr: {track?.color
-				? `rgb(${track?.color.r}, ${track?.color.g}, ${track?.color.b})`
+			style="--clr: {manager.currentTrack?.color
+				? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
 				: 'var(--bg)'};"
 		>
-			{#if track.cover}
-				<div class="cover" style="background-image: url({convertFileSrc(track.cover)});">
+			{#if manager.currentTrack.cover}
+				<div
+					class="cover"
+					style="background-image: url({convertFileSrc(manager.currentTrack.cover)});"
+				>
 					<div
 						class="expand"
 						onclick={() => {
-							player.activate();
+							manager.activatePlayer();
 						}}
 						role="button"
 						tabindex="0"
@@ -128,7 +107,7 @@
 					<div
 						class="expand"
 						onclick={() => {
-							player.activate();
+							manager.activatePlayer();
 						}}
 						role="button"
 						tabindex="0"
@@ -140,13 +119,16 @@
 			{/if}
 			<div class="details">
 				<div class="track-infos">
-					<h4>{track.title}</h4>
+					<h4>{manager.currentTrack.title}</h4>
 					<p>
-						<span>{track.artists.join(', ')}</span> <span>—</span>
-						<span><a href="/album/{track.album_id}">{track.album}</a></span>
+						<span>{manager.currentTrack.artists.join(', ')}</span> <span>—</span>
+						<span
+							><a href="/album/{manager.currentTrack.album_id}">{manager.currentTrack.album}</a
+							></span
+						>
 					</p>
 				</div>
-				<time class="currtime ns">{formatTime(currentTime)}</time>
+				<time class="currtime ns">{formatTime(manager.currentTime)}</time>
 				<div class="progressbar" style="--percent: {percentage}%;">
 					<Slider
 						value={percentage / 100}
@@ -155,27 +137,25 @@
 							playAt(data);
 						}}
 					/>
-					<!-- <div class="progress"> -->
-					<!-- 	<div class="shadow"></div> -->
-					<!-- </div> -->
 				</div>
-				<time class="remaintime ns">-{formatTime(duration - currentTime)}</time>
+				<time class="remaintime ns">-{formatTime(manager.duration - manager.currentTime)}</time>
 			</div>
 		</section>
 		<section class="volume">
 			<div class="vol-icon">
-				{#if volume === 0}
+				{#if manager.volume === 0}
 					<Volume size={'1.5em'} />
-				{:else if volume >= 0.7}
+				{:else if manager.volume >= 0.7}
 					<Volume2 size={'1.5em'} />
-				{:else if volume > 0}
+				{:else if manager.volume > 0}
 					<Volume1 size={'1.5em'} />
 				{/if}
 			</div>
 			<Slider
-				value={volume}
+				value={manager.volume}
+				style="thick"
 				oninput={(data) => {
-					player.setVolumeTo(data);
+					manager.volumeTo(data);
 				}}
 			/>
 		</section>
@@ -252,7 +232,6 @@
 		width: 40em;
 		border-radius: 3px;
 		overflow: hidden;
-		background-color: var(--bg);
 		border: 1px solid rgba(100, 100, 100, 0.18);
 		display: flex;
 		align-items: center;
@@ -271,7 +250,6 @@
 	.cover,
 	.fakecover {
 		position: relative;
-		border-right: 0.5px solid rgba(100, 100, 100, 0.18);
 	}
 
 	.expand {
@@ -349,24 +327,6 @@
 		width: 100%;
 		height: 2px;
 		background-color: rgba(100, 100, 100, 0.18);
-	}
-
-	.progressbar .progress {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: 100%;
-		overflow: hidden;
-	}
-
-	.progress .shadow {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: var(--percent);
-		background-color: var(--fg);
 	}
 
 	time {

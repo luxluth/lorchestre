@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { GalleryHorizontalEnd, Clock } from 'lucide-svelte';
+	import { GalleryHorizontalEnd, Clock, Settings } from 'lucide-svelte';
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 </script>
 
 <div class="nav ns" style="--top-by: {platform === 'macos' ? '3em' : '1em'}">
+	<section class="search">
+		<input type="search" name="search" placeholder="Recherche" />
+	</section>
 	<section>
 		<h4>Bibliothèque</h4>
 		<div class="links">
@@ -17,13 +20,44 @@
 			>
 		</div>
 	</section>
+	<section class="settings">
+		<div class="links">
+			<a href="/settings" class:active={pathId == '/settings'}>
+				<Settings size={'1em'} />
+				Réglages</a
+			>
+		</div>
+	</section>
 </div>
 
 <style>
+	section.settings {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+	}
+
+	input[type='search'] {
+		-webkit-appearance: none;
+		appearance: none;
+		padding: 0.5em;
+		border-radius: 4px;
+		border: 0px;
+		background: rgba(100, 100, 100, 0.18);
+		color: var(--fg);
+		width: 100%;
+	}
+
 	.nav {
 		padding-block: 2em;
 		padding-top: var(--top-by);
 		padding-inline: 1em;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5em;
+		height: 100%;
+		overflow: auto;
 	}
 	h4 {
 		opacity: 0.5;

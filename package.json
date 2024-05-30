@@ -22,7 +22,7 @@
 		"@fontsource-variable/readex-pro": "^5.0.13",
 		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": "^2.5.10",
-		"@sveltejs/vite-plugin-svelte": "^3.1.0",
+		"@sveltejs/vite-plugin-svelte": "^3.1.1",
 		"@tauri-apps/api": "2.0.0-beta.12",
 		"@tauri-apps/cli": "2.0.0-beta.18",
 		"@tauri-apps/plugin-fs": "2.0.0-beta.3",
@@ -31,10 +31,10 @@
 		"lucide-svelte": "^0.379.0",
 		"prettier": "^3.2.5",
 		"prettier-plugin-svelte": "^3.2.3",
-		"svelte": "5.0.0-next.143",
-		"svelte-check": "^3.7.1",
+		"svelte": "5.0.0-next.144",
+		"svelte-check": "^3.8.0",
 		"tslib": "^2.6.2",
 		"typescript": "^5.4.5",
-		"vite": "^5.2.11"
+		"vite": "^5.2.12"
 	}
 }

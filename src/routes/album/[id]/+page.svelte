@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { convertFileSrc } from '@tauri-apps/api/core';
-	import { Play } from 'lucide-svelte';
+	import { ListStart, Play, ListEnd } from 'lucide-svelte';
 	import type { PageData } from './$types';
-	import type { Track } from '$lib/type';
-	import { player } from '$lib/events';
+	import { type Track, type ContextMenuItem, ContextMenuItemType } from '$lib/type';
+	import type Ctx from '$lib/ctx.svelte';
+	import { getContext } from 'svelte';
+	import type Manager from '$lib/manager.svelte';
+
 	const { data }: { data: PageData } = $props();
+
+	let manager = getContext<Manager>('manager');
 	const album = data.album;
 	const tracks = sortTracks(album.tracks);
+	let ctx = getContext<Ctx>('ctx');
 
 	function sortTracks(t: Track[]) {
 		return t.sort((a, b) => a.track - b.track);
@@ -24,7 +30,28 @@
 	}
 
 	function play(t: Track) {
-		player.play(t);
+		manager.play(t);
+	}
+
+	type MM = MouseEvent & {
+		currentTarget: EventTarget & HTMLDivElement;
+	};
+
+	function showContext(e: MM, track: Track) {
+		const items: ContextMenuItem[] = [
+			{
+				type: ContextMenuItemType.Action,
+				action: async (_data: any) => {
+					manager.addToQueue(track);
+				},
+				label: "Ajouter la file d'attente",
+				icon: ListEnd
+			}
+		];
+		ctx.x = e.x;
+		ctx.y = e.y;
+		ctx.items = items;
+		ctx.visible = true;
 	}
 </script>
 
@@ -47,7 +74,16 @@
 <h2 class="section-title">Morceaux</h2>
 <section class="tracks ns">
 	{#each tracks as track}
-		<div class="track">
+		<div
+			class="track"
+			oncontextmenu={(e) => {
+				e.preventDefault();
+				showContext(e, track);
+			}}
+			role="button"
+			tabindex="0"
+			onkeydown={() => {}}
+		>
 			<div class="trackn">
 				<div class="no">{track.track > 0 ? track.track : ''}</div>
 				<button
@@ -139,7 +175,7 @@
 	.head {
 		display: flex;
 		gap: 1em;
-		height: 25em;
+		width: 100%;
 	}
 
 	.head .data {
@@ -147,8 +183,7 @@
 	}
 
 	.head .data h1 {
-		font-size: 4em;
-		width: 10em;
+		font-size: 4rem;
 		line-height: 1;
 		height: 100%;
 		padding-bottom: 0.1em;
@@ -159,7 +194,8 @@
 	}
 
 	.cover {
-		max-width: 25em;
+		height: 25em;
+		width: 25em;
 		aspect-ratio: 1/1;
 		background-color: var(--clr);
 		border-radius: 10px;

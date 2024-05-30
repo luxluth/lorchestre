@@ -64,6 +64,7 @@ pub struct Audio {
     pub is_light: Option<bool>,
     pub file_path: String,
     pub duration: u64,
+    pub id: String,
 }
 
 impl Default for Audio {
@@ -82,6 +83,7 @@ impl Default for Audio {
             is_light: None,
             file_path: String::new(),
             duration: 0,
+            id: String::new(),
         }
     }
 }
@@ -365,6 +367,19 @@ impl Songs {
                                         }
                                     }
                                 }
+
+                                let data = format!(
+                                    "{}{}{}{}###{}{}",
+                                    audio.title,
+                                    audio.album,
+                                    audio.duration,
+                                    audio.artists.join(";"),
+                                    audio.album_id,
+                                    audio.track,
+                                );
+
+                                let id = md5::compute(data);
+                                audio.id = format!("{id:x}");
 
                                 audios.push(audio);
                             }

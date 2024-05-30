@@ -59,6 +59,7 @@ export type Track = {
 	is_light?: boolean;
 	file_path: string;
 	duration: u64;
+	id: string;
 };
 
 export type Media = {
@@ -76,7 +77,14 @@ export enum PlayerDispatchKind {
 	TimeUpdate,
 	NewTrack,
 	PlayPause,
-	VolumeChange
+	VolumeChange,
+	Ended,
+	RequestNext,
+	RequestPrevious
+}
+
+export enum ManagerMessage {
+	QueueEmptied
 }
 
 export type PlayerDispatch =
@@ -95,4 +103,26 @@ export type PlayerDispatch =
 	| {
 			kind: PlayerDispatchKind.VolumeChange;
 			data: number;
+	  }
+	| {
+			kind:
+				| PlayerDispatchKind.Ended
+				| PlayerDispatchKind.RequestNext
+				| PlayerDispatchKind.RequestPrevious;
+	  };
+
+export enum ContextMenuItemType {
+	Separator,
+	Action
+}
+
+export type ContextMenuItem =
+	| {
+			type: ContextMenuItemType.Separator;
+	  }
+	| {
+			type: ContextMenuItemType.Action;
+			label: string;
+			icon?: any;
+			action: (data?: any) => Promise<void>;
 	  };

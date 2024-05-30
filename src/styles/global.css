@@ -34,6 +34,12 @@ html {
 	-webkit-text-size-adjust: 100%;
 }
 
+.glass {
+	background: rgba(255, 255, 255, 0.9);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
 @media (prefers-color-scheme: dark) {
 	:root {
 		--fg: var(--dark-fg);
@@ -41,6 +47,12 @@ html {
 
 		color: var(--dark-fg);
 		background-color: var(--dark-bg);
+	}
+
+	.glass {
+		background: rgba(24, 24, 24, 0.9);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 	}
 }
 

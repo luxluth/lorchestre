@@ -5,9 +5,7 @@
 		thumbColor = 'var(--fg)',
 		backgroundColor = 'rgba(100, 100, 100, 0.18)',
 		style = 'classic',
-		oninput = (data: number) => {
-			value = data;
-		}
+		oninput = (_data: number) => {}
 	}: {
 		value: number;
 		color?: string;
@@ -20,6 +18,7 @@
 	let sliderElement: HTMLDivElement;
 	let sliderWidth: number = $state(0);
 	let isDragging = $state(false);
+	let innerValue = $state(0);
 
 	$effect(() => {
 		sliderWidth = sliderElement.clientWidth;
@@ -29,7 +28,7 @@
 		const rect = sliderElement.getBoundingClientRect();
 		const newValue = (clientX - rect.left) / sliderWidth;
 		const clampedValue = Math.min(Math.max(newValue, 0), 1);
-		oninput(clampedValue);
+		innerValue = clampedValue;
 	}
 
 	/////// Event Handlers
@@ -49,6 +48,7 @@
 	function handleMouseUp() {
 		if (isDragging) {
 			isDragging = false;
+			oninput(innerValue);
 		}
 	}
 
@@ -97,13 +97,14 @@
 	class="slider"
 	class:isDragging
 	data-style={style}
-	style="--pos: {value *
-		100}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
+	style="--pos: {isDragging
+		? innerValue * 100
+		: value * 100}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
 	bind:this={sliderElement}
 	onmousedown={handleMouseDown}
 	ontouchstart={handleTouchStart}
 	role="slider"
-	aria-valuenow={value}
+	aria-valuenow={isDragging ? innerValue : value}
 	tabindex="0"
 >
 	<div class="hitbox"></div>
@@ -125,6 +126,10 @@
 		height: 0.5em;
 	}
 
+	.slider[data-style='minimal'] {
+		border-radius: 0px;
+	}
+
 	.hitbox {
 		height: 100%;
 		width: var(--pos);
@@ -133,6 +138,10 @@
 		left: 0;
 		background-color: var(--v-color);
 		border-radius: 1em;
+	}
+
+	.slider[data-style='minimal'] .hitbox {
+		border-radius: 0px;
 	}
 
 	.handle {
@@ -158,9 +167,7 @@
 		opacity: 0;
 		top: -200%;
 		width: 5px;
-		border-radius: 0px;
-		border-top-right-radius: 2px;
-		border-top-left-radius: 2px;
+		border-radius: 1px;
 		left: calc(var(--pos) - 2.5px);
 		transition: opacity 0.1s ease-in-out;
 	}

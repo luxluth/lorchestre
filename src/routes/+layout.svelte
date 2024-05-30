@@ -10,9 +10,21 @@
 	import MiniPlayer from '$lib/components/MiniPlayer.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { LayoutData } from './$types';
-	import type { Snippet } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
+	import Manager from '$lib/manager.svelte';
+	import Ctx from '$lib/ctx.svelte';
+	import ContextMenu from './ContextMenu.svelte';
+	import Cmds from '$lib/commands.svelte';
+	import Commands from '$lib/components/Commands.svelte';
+	import Queue from '$lib/components/Queue.svelte';
+	import Lrc from '$lib/components/Lrc.svelte';
+	import LrcManager from '$lib/lrc.svelte';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
+	setContext<Manager>('manager', new Manager());
+	setContext<Ctx>('ctx', new Ctx());
+	setContext<Cmds>('cmds', new Cmds());
+	setContext<LrcManager>('lm', new LrcManager(0, []));
 </script>
 
 <div class="layout">
@@ -20,24 +32,22 @@
 		<Navigation pathId={data.route as string} platform={data.platform} />
 	</section>
 	<section class="__content">
-		<header>
+		<header class="glass">
 			<MiniPlayer />
+			<Commands />
 		</header>
 		<main>
 			{@render children()}
+			<Queue />
+			<Lrc />
 		</main>
 	</section>
 </div>
 <Toast />
 <Player />
+<ContextMenu />
 
 <style>
-	/* .layout { */
-	/* 	padding-inline: 3em; */
-	/* 	padding-block: 3em; */
-	/* 	padding-top: 0; */
-	/* } */
-
 	.layout {
 		display: flex;
 		height: 100vh;
@@ -57,6 +67,7 @@
 	}
 
 	main {
+		position: relative;
 		flex-grow: 1; /* Main content takes up the remaining space in the column */
 		padding: 20px; /* Optional: padding */
 		overflow-y: auto; /* Ensures main content is scrollable if it overflows */
@@ -70,7 +81,6 @@
 		grid-template-columns: 3fr 1fr;
 		gap: 2em;
 		border-bottom: 1px solid rgba(100, 100, 100, 0.18);
-		background: var(--bg);
 	}
 
 	main {
