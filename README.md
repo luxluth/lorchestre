@@ -1,3 +1,3 @@
-# mu
+# ム (mu)
 
 A music player
