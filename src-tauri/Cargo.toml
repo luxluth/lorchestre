@@ -27,3 +27,4 @@ tauri-plugin-fs = "2.0.0-beta.7"
 color-thief = "0.2.2"
 image = "0.25.1"
 lofty = "0.19.2"
+notify = { version = "6.1.1", features = ["serde"] }

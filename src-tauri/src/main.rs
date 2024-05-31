@@ -8,10 +8,46 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use mu::{Album, Media, MediaCache, Songs};
+use mu::{Album, Audio, Media};
 use tauri::Manager;
 
-fn get_chache(app_cache_dir: PathBuf) -> MediaCache {
+enum CacheCompareDiff {
+    ToAdd { files: Vec<PathBuf> },
+    ToRemove { files: Vec<PathBuf> },
+    NoDiff,
+}
+
+fn compare_caches(prev: Vec<PathBuf>, curr: Vec<PathBuf>) -> Vec<CacheCompareDiff> {
+    let mut files_to_add = vec![];
+    let mut files_to_remove = vec![];
+
+    for file in prev.clone().into_iter() {
+        if !curr.contains(&file) {
+            files_to_remove.push(file.clone());
+        }
+    }
+
+    for file in curr {
+        if !prev.contains(&file) {
+            files_to_add.push(file.clone());
+        }
+    }
+
+    if files_to_add.is_empty() && files_to_remove.is_empty() {
+        return vec![CacheCompareDiff::NoDiff];
+    }
+
+    vec![
+        CacheCompareDiff::ToAdd {
+            files: files_to_add,
+        },
+        CacheCompareDiff::ToRemove {
+            files: files_to_remove,
+        },
+    ]
+}
+
+fn get_chache(app_cache_dir: PathBuf) -> Media {
     if !app_cache_dir.exists() {
         fs::DirBuilder::new()
             .recursive(true)
@@ -20,36 +56,59 @@ fn get_chache(app_cache_dir: PathBuf) -> MediaCache {
     }
 
     let p_string = format!("{}/.cache.json", app_cache_dir.display());
-    let mut needs_update = false;
+    let covers_dir = format!("{}/covers", app_cache_dir.display());
+    let ac_string = format!("{}/.cache.audios", app_cache_dir.display());
+    let ac_path = Path::new(&ac_string);
 
-    let mut cache: MediaCache = MediaCache::default();
+    let prev_audio_files = mu::utils::read_cahe_audio_files(ac_path);
+    let curr_audio_files = mu::utils::get_audio_files();
+    mu::utils::cache_audio_files(ac_path);
+
+    let diff = compare_caches(prev_audio_files, curr_audio_files.clone());
+
+    let mut cache = Media::default();
     let cache_file = Path::new(&p_string);
-    let current_md5 = mu::utils::music_dir_md5();
+    let mut needs_update = true;
+
     if cache_file.exists() {
         let mut f = fs::File::open(cache_file).unwrap();
         let mut buf = String::new();
         let _ = f.read_to_string(&mut buf);
-        if let Ok(cache_data) = serde_json::from_str::<MediaCache>(&buf) {
-            if cache_data.md5 != current_md5 {
-                needs_update = true
-            } else {
-                eprintln!("[INFO] __update_cache: cache hit");
-                cache = cache_data;
+        if let Ok(mut cache_data) = serde_json::from_str::<Media>(&buf) {
+            'f: for d in diff {
+                match d {
+                    CacheCompareDiff::ToAdd { files } => {
+                        for file in files {
+                            eprintln!("+ {}", file.display());
+                            cache_data.add_song(Audio::from_file(covers_dir.clone(), file));
+                        }
+                    }
+                    CacheCompareDiff::ToRemove { files } => {
+                        for file in files {
+                            eprintln!("- {}", file.display());
+                            cache_data.remove_song(file);
+                        }
+                    }
+                    CacheCompareDiff::NoDiff => {
+                        needs_update = false;
+                        eprintln!("(~) cache");
+                        break 'f;
+                    }
+                }
             }
-        } else {
-            needs_update = true;
+
+            cache = cache_data;
         }
     } else {
+        for file in curr_audio_files {
+            eprintln!("+ {}", file.display());
+            cache.add_song(Audio::from_file(covers_dir.clone(), file));
+        }
         needs_update = true;
     }
 
     if needs_update {
-        eprintln!("[INFO] __update_cache: cache miss");
-        let songs = Songs::new(app_cache_dir.clone());
-        cache = MediaCache {
-            media: Media::new(songs),
-            md5: current_md5,
-        };
+        eprintln!("(!) cache");
         let jason = serde_json::to_string(&cache).unwrap();
         let mut f = fs::File::create(format!("{}/.cache.json", app_cache_dir.display())).unwrap();
         let _ = f.write_all(jason.as_bytes());
@@ -59,7 +118,7 @@ fn get_chache(app_cache_dir: PathBuf) -> MediaCache {
 }
 
 #[tauri::command]
-fn update_cache(app: tauri::AppHandle) -> MediaCache {
+fn update_cache(app: tauri::AppHandle) -> Media {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
     return get_chache(app_cache_dir);
 }
@@ -68,14 +127,14 @@ fn update_cache(app: tauri::AppHandle) -> MediaCache {
 fn index(app: tauri::AppHandle) -> Media {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
     let cache = get_chache(app_cache_dir);
-    return cache.media;
+    return cache;
 }
 
 #[tauri::command]
 fn get_album(app: tauri::AppHandle, id: String) -> Option<Album> {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
-    let cache = get_chache(app_cache_dir);
-    cache.media.get_album(id)
+    let media = get_chache(app_cache_dir);
+    media.get_album(id)
 }
 
 #[tauri::command]
