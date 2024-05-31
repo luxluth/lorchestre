@@ -10,7 +10,7 @@
 	import MiniPlayer from '$lib/components/MiniPlayer.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { LayoutData } from './$types';
-	import { setContext, type Snippet } from 'svelte';
+	import { getContext, setContext, type Snippet } from 'svelte';
 	import Manager from '$lib/manager.svelte';
 	import Ctx from '$lib/ctx.svelte';
 	import ContextMenu from './ContextMenu.svelte';
@@ -19,12 +19,23 @@
 	import Queue from '$lib/components/Queue.svelte';
 	import Lrc from '$lib/components/Lrc.svelte';
 	import LrcManager from '$lib/lrc.svelte';
+	import MediaState from '$lib/media.svelte';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 	setContext<Manager>('manager', new Manager());
 	setContext<Ctx>('ctx', new Ctx());
 	setContext<Cmds>('cmds', new Cmds());
 	setContext<LrcManager>('lm', new LrcManager(0, []));
+	setContext<MediaState>('media', new MediaState());
+
+	$effect(() => {
+		let media = getContext<MediaState>('media');
+		(async () => {
+			if (!media.loaded) {
+				await media.load();
+			}
+		})();
+	});
 </script>
 
 <div class="layout">

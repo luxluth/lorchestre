@@ -65,7 +65,6 @@
 		gap: 1em;
 		padding: 0.5em;
 		align-items: center;
-		justify-content: center;
 		border-radius: 4px;
 	}
 

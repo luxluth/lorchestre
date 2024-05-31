@@ -73,43 +73,13 @@ export type Line = {
 	id: number;
 };
 
-export enum PlayerDispatchKind {
-	TimeUpdate,
-	NewTrack,
-	PlayPause,
-	VolumeChange,
-	Ended,
-	RequestNext,
-	RequestPrevious
+export enum MessageKind {
+	NeedCacheUpdate
 }
 
-export enum ManagerMessage {
-	QueueEmptied
-}
-
-export type PlayerDispatch =
-	| {
-			kind: PlayerDispatchKind.TimeUpdate;
-			data: number;
-	  }
-	| {
-			kind: PlayerDispatchKind.NewTrack;
-			data: Track;
-	  }
-	| {
-			kind: PlayerDispatchKind.PlayPause;
-			data: 'play' | 'paused';
-	  }
-	| {
-			kind: PlayerDispatchKind.VolumeChange;
-			data: number;
-	  }
-	| {
-			kind:
-				| PlayerDispatchKind.Ended
-				| PlayerDispatchKind.RequestNext
-				| PlayerDispatchKind.RequestPrevious;
-	  };
+export type Payload = {
+	kind: MessageKind;
+};
 
 export enum ContextMenuItemType {
 	Separator,
@@ -126,3 +96,11 @@ export type ContextMenuItem =
 			icon?: any;
 			action: (data?: any) => Promise<void>;
 	  };
+
+export type ContextMenuEvent =
+	| (MouseEvent & {
+			currentTarget: EventTarget & HTMLDivElement;
+	  })
+	| (MouseEvent & {
+			currentTarget: EventTarget & HTMLAnchorElement;
+	  });

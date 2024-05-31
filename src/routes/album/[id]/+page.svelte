@@ -2,16 +2,24 @@
 	import { convertFileSrc } from '@tauri-apps/api/core';
 	import { ListStart, Play, ListEnd } from 'lucide-svelte';
 	import type { PageData } from './$types';
-	import { type Track, type ContextMenuItem, ContextMenuItemType } from '$lib/type';
+	import {
+		type Track,
+		type ContextMenuItem,
+		ContextMenuItemType,
+		type ContextMenuEvent,
+		type Album
+	} from '$lib/type';
 	import type Ctx from '$lib/ctx.svelte';
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
+	import MediaState from '$lib/media.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	let manager = getContext<Manager>('manager');
-	const album = data.album;
-	const tracks = sortTracks(album.tracks);
+	let media = getContext<MediaState>('media');
+	const album = media.getAlbum(data.id);
+	const tracks = album ? sortTracks(album.tracks) : [];
 	let ctx = getContext<Ctx>('ctx');
 
 	function sortTracks(t: Track[]) {
@@ -33,11 +41,7 @@
 		manager.play(t);
 	}
 
-	type MM = MouseEvent & {
-		currentTarget: EventTarget & HTMLDivElement;
-	};
-
-	function showContext(e: MM, track: Track) {
+	function showContext(e: ContextMenuEvent, track: Track) {
 		const items: ContextMenuItem[] = [
 			{
 				type: ContextMenuItemType.Action,
@@ -53,53 +57,78 @@
 		ctx.items = items;
 		ctx.visible = true;
 	}
+
+	async function playAlbum() {
+		manager.queue = [];
+		let track = (album as Album).tracks[0];
+		await manager.play(track);
+
+		tracks.forEach((track, i) => {
+			if (i > 0) manager.addToQueue(track);
+		});
+	}
 </script>
 
-<section class="head">
-	{#if album.tracks[0].cover}
-		<div
-			class="cover"
-			style="--clr: {album.tracks[0].color
-				? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
-				: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(album.tracks[0].cover)}');"
-		></div>
-	{/if}
-	<div class="data">
-		<h1>{album.name}</h1>
-		<h3>{album.artist}</h3>
-		<p>{album.year}</p>
-	</div>
-</section>
-
-<h2 class="section-title">Morceaux</h2>
-<section class="tracks ns">
-	{#each tracks as track}
-		<div
-			class="track"
-			oncontextmenu={(e) => {
-				e.preventDefault();
-				showContext(e, track);
-			}}
-			role="button"
-			tabindex="0"
-			onkeydown={() => {}}
-		>
-			<div class="trackn">
-				<div class="no">{track.track > 0 ? track.track : ''}</div>
+{#if album}
+	<section class="head">
+		{#if album.tracks[0].cover}
+			<div
+				class="cover"
+				style="--clr: {album.tracks[0].color
+					? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
+					: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(
+					album.tracks[0].cover
+				)}');"
+			>
 				<button
-					onclick={() => {
-						play(track);
+					class="play"
+					onclick={async () => {
+						await playAlbum();
 					}}
 				>
-					<Play size={'1.5em'} fill={'var(--fg)'} />
+					<Play size={'2em'} fill={'var(--fg)'} />
 				</button>
 			</div>
-			<div class="title">{track.title}</div>
-			<div class="artists">{track.artists.join(', ')}</div>
-			<div class="duration">{formatTime(track.duration)}</div>
+		{/if}
+		<div class="data">
+			<h1>{album.name}</h1>
+			<h3>{album.artist}</h3>
+			<p>{album.year}</p>
 		</div>
-	{/each}
-</section>
+	</section>
+
+	<h2 class="section-title">Morceaux</h2>
+	<section class="tracks ns">
+		{#each tracks as track}
+			<div
+				class="track"
+				oncontextmenu={(e) => {
+					e.preventDefault();
+					showContext(e, track);
+				}}
+				role="button"
+				tabindex="0"
+				onkeydown={() => {}}
+			>
+				<div class="trackn">
+					<div class="no">{track.track > 0 ? track.track : ''}</div>
+					<button
+						onclick={() => {
+							play(track);
+						}}
+					>
+						<Play size={'1.5em'} fill={'var(--fg)'} />
+					</button>
+				</div>
+				<div class="title">{track.title}</div>
+				<div class="artists">{track.artists.join(', ')}</div>
+				<div class="duration">{formatTime(track.duration)}</div>
+			</div>
+		{/each}
+	</section>
+{:else}
+	Album non-existant
+{/if}
 
 <style>
 	.section-title {
@@ -193,7 +222,33 @@
 		opacity: 0.7;
 	}
 
+	.cover button.play {
+		position: absolute;
+		bottom: 1em;
+		left: 1em;
+		padding: 1em;
+		background: var(--bg);
+		color: var(--fg);
+		border: 0px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		opacity: 0;
+		transition: opacity 0.2s ease-in-out;
+		border-radius: 50%;
+		cursor: pointer;
+	}
+
+	button.play:active {
+		transform: scale(0.98);
+	}
+
+	.cover:hover button.play {
+		opacity: 1;
+	}
+
 	.cover {
+		position: relative;
 		height: 25em;
 		width: 25em;
 		aspect-ratio: 1/1;

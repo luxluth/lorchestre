@@ -76,7 +76,7 @@ export default class Manager {
 	}
 
 	async prev() {
-		let track = this.history.shift();
+		let track = this.history.pop();
 		if (track) {
 			if (this.currentTrack) {
 				this.queue = [this.currentTrack, ...this.queue];

@@ -1,26 +1,74 @@
 <script lang="ts">
 	import { convertFileSrc, invoke } from '@tauri-apps/api/core';
-	import { type Album, type Media } from '$lib/type';
-	// import { getContext, hasContext, setContext } from 'svelte';
-	// import createMediaState from '$lib/media.svelte';
-	//
+	import {
+		ContextMenuItemType,
+		type ContextMenuEvent,
+		type ContextMenuItem,
+		type Track
+	} from '$lib/type';
+	import { getContext } from 'svelte';
+	import type Manager from '$lib/manager.svelte';
+	import type Ctx from '$lib/ctx.svelte';
+	import { ListEnd, Play, LoaderCircle } from 'lucide-svelte';
+	import type MediaState from '$lib/media.svelte';
 
-	type Albums = { albums: Album[] };
+	let media = getContext<MediaState>('media');
 
-	async function getAlbums(): Promise<Albums> {
-		const nctx = await invoke<Media>('index');
-		return { albums: nctx.albums };
+	function sortTracks(t: Track[]) {
+		return t.sort((a, b) => a.track - b.track);
+	}
+
+	let manager = getContext<Manager>('manager');
+	let ctx = getContext<Ctx>('ctx');
+
+	function showContext(e: ContextMenuEvent, tracks: Track[]) {
+		let sortedTracks = sortTracks(tracks);
+		const items: ContextMenuItem[] = [
+			{
+				type: ContextMenuItemType.Action,
+				action: async (_data: any) => {
+					let firstTrack = sortedTracks.shift() as Track;
+					manager.queue = [];
+					sortedTracks.forEach((track) => {
+						manager.addToQueue(track);
+					});
+					await manager.play(firstTrack);
+				},
+				label: 'Lancer la lecture',
+				icon: Play
+			},
+			{
+				type: ContextMenuItemType.Action,
+				action: async (_data: any) => {
+					sortedTracks.forEach((track) => {
+						manager.addToQueue(track);
+					});
+				},
+				label: "Ajouter la file d'attente",
+				icon: ListEnd
+			}
+		];
+		ctx.x = e.x;
+		ctx.y = e.y;
+		ctx.items = items;
+		ctx.visible = true;
 	}
 </script>
 
 <h1 class="__page_title ns">Albums</h1>
 
-<div class="__medias">
-	{#await getAlbums()}
-		<div class="shell"></div>
-	{:then media}
+{#if !media.loading}
+	<div class="__medias">
 		{#each media.albums as { tracks, artist, name, id }}
-			<a class="__audio" data-id={id} href="album/{id}">
+			<a
+				class="__audio"
+				data-id={id}
+				href="album/{id}"
+				oncontextmenu={(e) => {
+					e.preventDefault();
+					showContext(e, tracks);
+				}}
+			>
 				{#if tracks[0].cover}
 					<div
 						class="cover"
@@ -33,10 +81,39 @@
 				<p class="artist ns">{artist}</p>
 			</a>
 		{/each}
-	{/await}
-</div>
+	</div>
+{:else}
+	<div class="msg">
+		<div class="icon"><LoaderCircle /></div>
+		Indexation des fichiers locaux...
+	</div>
+{/if}
 
 <style>
+	.msg {
+		height: 100%;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2rem;
+		font-weight: bold;
+		gap: 0.5em;
+	}
+
+	.msg .icon :global(svg) {
+		animation: rotate 0.5s linear infinite;
+	}
+
+	@keyframes rotate {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
 	.__page_title {
 		font-weight: 800;
 		font-size: 1.5em;
