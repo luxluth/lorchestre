@@ -12,13 +12,11 @@
 	import type Ctx from '$lib/ctx.svelte';
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
-	import MediaState from '$lib/media.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	let manager = getContext<Manager>('manager');
-	let media = getContext<MediaState>('media');
-	const album = media.getAlbum(data.id);
+	const album = data.album;
 	const tracks = album ? sortTracks(album.tracks) : [];
 	let ctx = getContext<Ctx>('ctx');
 

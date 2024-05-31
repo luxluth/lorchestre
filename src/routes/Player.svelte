@@ -401,7 +401,7 @@
 		padding-inline: 2em;
 		gap: 2em;
 		transform: translateY(200%);
-		transition: transform 0.3s ease-in-out;
+		transition: all 0.3s ease-in-out;
 	}
 
 	.__player .player {
