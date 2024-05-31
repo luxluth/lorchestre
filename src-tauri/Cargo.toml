@@ -4,8 +4,8 @@ version = "0.0.0"
 description = "Mu music"
 authors = ["luxluth"]
 edition = "2021"
+license = "GPL-3.0"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "2.0.0-beta", features = [] }

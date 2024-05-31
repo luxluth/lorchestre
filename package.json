@@ -14,7 +14,7 @@
 		"lint": "prettier --check .",
 		"format": "prettier --write ."
 	},
-	"license": "MIT",
+	"license": "GPL-3.0",
 	"devDependencies": {
 		"@fontsource-variable/noto-sans-jp": "^5.0.19",
 		"@fontsource-variable/noto-sans-kr": "^5.0.6",
