@@ -1,8 +1,8 @@
 [package]
 name = "mu"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Mu music"
+authors = "luxluth"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -27,4 +27,3 @@ tauri-plugin-fs = "2.0.0-beta.7"
 color-thief = "0.2.2"
 image = "0.25.1"
 lofty = "0.19.2"
-notify = { version = "6.1.1", features = ["serde"] }
