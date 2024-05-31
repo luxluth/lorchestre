@@ -18,7 +18,6 @@
 	let sliderElement: HTMLDivElement;
 	let sliderWidth: number = $state(0);
 	let isDragging = $state(false);
-	let innerValue = $state(0);
 
 	$effect(() => {
 		sliderWidth = sliderElement.clientWidth;
@@ -28,7 +27,7 @@
 		const rect = sliderElement.getBoundingClientRect();
 		const newValue = (clientX - rect.left) / sliderWidth;
 		const clampedValue = Math.min(Math.max(newValue, 0), 1);
-		innerValue = clampedValue;
+		oninput(clampedValue);
 	}
 
 	/////// Event Handlers
@@ -48,7 +47,6 @@
 	function handleMouseUp() {
 		if (isDragging) {
 			isDragging = false;
-			oninput(innerValue);
 		}
 	}
 
@@ -97,9 +95,8 @@
 	class="slider"
 	class:isDragging
 	data-style={style}
-	style="--pos: {isDragging
-		? innerValue * 100
-		: value * 100}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
+	style="--pos: {value *
+		100}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
 	bind:this={sliderElement}
 	onmousedown={handleMouseDown}
 	ontouchstart={handleTouchStart}

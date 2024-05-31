@@ -58,6 +58,7 @@
 		transform: translateX(200%);
 		transition: transform 0.3s ease-in-out;
 		overflow: scroll;
+		border-radius: 8px;
 	}
 
 	.__queue.active {
