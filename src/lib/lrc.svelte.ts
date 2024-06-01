@@ -7,7 +7,7 @@ const eq = (a: Line[], b: Line[]) => {
 export default class LrcManager {
 	lines: Line[] = $state([]);
 	private currentActiveLines: Line[] = $state([]);
-	private chs: (() => void)[] = $state([]);
+	private chs = new Set<() => void>();
 
 	constructor(duration: number, raw_lines: LyricLine[]) {
 		let lines: Line[] = [];
@@ -84,6 +84,6 @@ export default class LrcManager {
 	}
 
 	set oncuechange(fn: () => void) {
-		this.chs.push(fn);
+		this.chs.add(fn);
 	}
 }
