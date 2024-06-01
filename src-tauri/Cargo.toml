@@ -11,7 +11,7 @@ license = "GPL-3.0"
 tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-beta", features = [
+tauri = { version = "2.0.0-beta", features = [ "macos-private-api",
   "protocol-asset",
   "linux-ipc-protocol",
 ] }
@@ -27,3 +27,4 @@ tauri-plugin-fs = "2.0.0-beta.7"
 color-thief = "0.2.2"
 image = "0.25.1"
 lofty = "0.19.2"
+sys-locale = "0.3.1"

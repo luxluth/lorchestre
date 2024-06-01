@@ -1,0 +1,39 @@
+{
+	"bib": "ライブラリ",
+	"search": "検索",
+	"recent-added": "最近追加されたもの",
+	"albums": "アルバム",
+	"settings": "設定",
+	"no_media": "再生中の曲はありません",
+	"indexing_msg": "ローカルファイルをインデックス中...",
+	"ctx": {
+		"play": "再生開始",
+		"inqueue": "キューに追加"
+	},
+	"cmds": {
+		"lrc": {
+			"empty": "表示する歌詞がありません"
+		},
+		"waitlist": {
+			"title": "待機リスト",
+			"empty": "待機リストに曲がありません"
+		}
+	},
+	"album": {
+		"page": {
+			"songs": "曲",
+			"ctx": {
+				"add_queue": "キューに追加"
+			}
+		}
+	},
+	"settings_page": {
+		"tip_top": "アプリケーションの設定を管理する",
+		"section_ui_ux": {
+			"title": "インターフェース",
+			"language": {
+				"title": "インターフェースの言語"
+			}
+		}
+	}
+}

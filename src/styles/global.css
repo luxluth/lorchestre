@@ -1,14 +1,17 @@
 html {
 	--dark-fg: #ffffff;
 	--dark-bg: #181818;
+	--dark-highlight: #27272a;
 
 	--light-fg: #000000;
 	--light-bg: #ffffff;
+	--light-highlight: #f4f4f5;
 }
 
 :root {
 	--fg: var(--light-fg);
 	--bg: var(--light-bg);
+	--highlight: var(--light-highlight);
 
 	color-scheme: ligth dark;
 	font-family:
@@ -44,6 +47,7 @@ html {
 	:root {
 		--fg: var(--dark-fg);
 		--bg: var(--dark-bg);
+		--highlight: var(--dark-highlight);
 
 		color: var(--dark-fg);
 		background-color: var(--dark-bg);

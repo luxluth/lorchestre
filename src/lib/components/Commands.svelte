@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { List, MicVocal } from 'lucide-svelte';
+	import List from 'lucide-svelte/icons/list';
+	import MicVocal from 'lucide-svelte/icons/mic-vocal';
+
 	import type Cmds from '$lib/commands.svelte';
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
@@ -87,6 +89,6 @@
 
 	.__commands.dead {
 		opacity: 0.5;
-		pointer-events: none;
+		/* pointer-events: none; */
 	}
 </style>

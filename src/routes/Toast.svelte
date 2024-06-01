@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { LoaderCircle, CircleX } from 'lucide-svelte';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+	import CircleX from 'lucide-svelte/icons/loader-circle';
 	import { ToastKind, type ToastEvent } from '$lib/type';
 	import { toast } from '$lib/events';
 

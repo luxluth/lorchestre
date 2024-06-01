@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { convertFileSrc } from '@tauri-apps/api/core';
-	import { ListStart, Play, ListEnd } from 'lucide-svelte';
+
+	import ListStart from 'lucide-svelte/icons/list-start';
+	import Play from 'lucide-svelte/icons/play';
+	import ListEnd from 'lucide-svelte/icons/list-end';
+
+	import { _ } from 'svelte-i18n';
+
 	import type { PageData } from './$types';
 	import {
 		type Track,
@@ -46,7 +52,7 @@
 				action: async (_data: any) => {
 					manager.addToQueue(track);
 				},
-				label: "Ajouter la file d'attente",
+				label: $_('album.page.ctx.add_queue'),
 				icon: ListEnd
 			}
 		];
@@ -95,7 +101,7 @@
 		</div>
 	</section>
 
-	<h2 class="section-title">Morceaux</h2>
+	<h2 class="section-title">{$_('album.page.songs')}</h2>
 	<section class="tracks ns">
 		{#each tracks as track}
 			<div

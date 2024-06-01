@@ -1,21 +1,21 @@
 <script lang="ts">
-	import {
-		Shuffle,
-		Repeat,
-		Play,
-		Pause,
-		FastForward,
-		Rewind,
-		Music3,
-		Maximize2,
-		Volume,
-		Volume1,
-		Volume2
-	} from 'lucide-svelte';
+	import Shuffle from 'lucide-svelte/icons/shuffle';
+	import Repeat from 'lucide-svelte/icons/repeat';
+	import Play from 'lucide-svelte/icons/play';
+	import Pause from 'lucide-svelte/icons/pause';
+	import FastForward from 'lucide-svelte/icons/fast-forward';
+	import Rewind from 'lucide-svelte/icons/rewind';
+	import Music3 from 'lucide-svelte/icons/music-3';
+	import Maximize2 from 'lucide-svelte/icons/maximize-2';
+	import Volume from 'lucide-svelte/icons/volume';
+	import Volume1 from 'lucide-svelte/icons/volume-1';
+	import Volume2 from 'lucide-svelte/icons/volume-2';
+
 	import { convertFileSrc } from '@tauri-apps/api/core';
 	import Slider from './Slider.svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { getContext } from 'svelte';
+	import { _ } from 'svelte-i18n';
 
 	let manager = getContext<Manager>('manager');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
@@ -164,7 +164,7 @@
 			<div class="fakecover">
 				<Music3 />
 			</div>
-			<div class="icon">Aucune chanson en cours de lecture</div>
+			<div class="icon">{$_('no_media')}</div>
 		</section>
 	{/if}
 </div>

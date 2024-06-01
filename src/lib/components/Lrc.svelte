@@ -5,6 +5,8 @@
 	import LrcManager from '$lib/lrc.svelte';
 	import { isElementVisible } from '$lib/utils';
 
+	import { _ } from 'svelte-i18n';
+
 	let lrcParent: HTMLDivElement;
 
 	let cmds = getContext<Cmds>('cmds');
@@ -44,10 +46,10 @@
 					</div>
 				{/each}
 			{:else}
-				Aucune parole à afficher
+				{$_('cmds.lrc.empty')}
 			{/if}
 		{:else}
-			Aucune parole à afficher
+			{$_('cmds.lrc.empty')}
 		{/if}
 	</div>
 </div>
@@ -62,7 +64,7 @@
 		padding: 1em;
 		right: 2em;
 		top: 2em;
-		border: 1px solid rgba(100, 100, 100, 0.18);
+		border: 2px solid rgba(100, 100, 100, 0.18);
 		transform: translateX(200%);
 		transition: transform 0.3s ease-in-out;
 		overflow: scroll;

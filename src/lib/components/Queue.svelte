@@ -5,6 +5,8 @@
 	import { convertFileSrc } from '@tauri-apps/api/core';
 	import { flip } from 'svelte/animate';
 
+	import { _ } from 'svelte-i18n';
+
 	let cmds = getContext<Cmds>('cmds');
 	let manager = getContext<Manager>('manager');
 
@@ -21,7 +23,7 @@
 </script>
 
 <div class="__queue glass" class:active={cmds.queue}>
-	<h3>File d'attente</h3>
+	<h3>{$_('cmds.waitlist.title')}</h3>
 	<section class="songs">
 		{#if manager.queue.length > 0}
 			{#each manager.queue as track (track.id)}
@@ -39,7 +41,7 @@
 				</div>
 			{/each}
 		{:else}
-			Aucune chanson dans la file d'attente
+			{$_('cmds.waitlist.empty')}
 		{/if}
 	</section>
 </div>
@@ -54,7 +56,7 @@
 		padding: 1em;
 		right: 2em;
 		top: 2em;
-		border: 1px solid rgba(100, 100, 100, 0.18);
+		border: 2px solid rgba(100, 100, 100, 0.18);
 		transform: translateX(200%);
 		transition: transform 0.3s ease-in-out;
 		overflow: scroll;

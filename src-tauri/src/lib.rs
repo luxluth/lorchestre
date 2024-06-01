@@ -11,6 +11,9 @@ use std::path::{Path, PathBuf};
 use lofty::prelude::*;
 use lofty::probe::Probe;
 
+mod backend;
+use backend::{Backend, QueryResult};
+
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
     pub start_time: i64,
@@ -405,6 +408,25 @@ pub mod utils {
         let _ = f.write_all(data.as_bytes());
     }
 
+    pub fn get_locale(cache_path: &std::path::Path) -> String {
+        let mut buf = String::new();
+        if cache_path.exists() {
+            let mut f = std::fs::File::open(cache_path).unwrap();
+            let _ = f.read_to_string(&mut buf);
+            return buf;
+        } else {
+            let sl = sys_locale::get_locale().unwrap_or("en-GB".to_string());
+            let mut f = std::fs::File::create(cache_path).unwrap();
+            let _ = f.write_all(sl.as_bytes());
+            return sl;
+        }
+    }
+
+    pub fn set_locale(cache_path: &std::path::Path, locale: String) {
+        let mut f = std::fs::File::create(cache_path).unwrap();
+        let _ = f.write_all(locale.as_bytes());
+    }
+
     pub fn read_cahe_audio_files(cache_path: &std::path::Path) -> Vec<PathBuf> {
         let mut buf = String::new();
         if cache_path.exists() {
@@ -449,5 +471,34 @@ impl Songs {
         }
 
         Self { audios }
+    }
+}
+
+pub enum Backends {
+    FileSystem,
+}
+
+pub enum FileSystemSearchResponse {
+    Album(Album),
+    Track(Audio),
+}
+
+pub type FileSystemQueryResult = QueryResult<FileSystemSearchResponse>;
+
+pub struct FileSystemBackend {
+    pub media: Media,
+}
+
+impl Backend<FileSystemQueryResult, Album, Audio> for FileSystemBackend {
+    fn get_album(&self, id: String) -> Option<Album> {
+        return self.media.get_album(id);
+    }
+
+    fn get_song(&self, _id: String) -> Audio {
+        todo!()
+    }
+
+    fn search(&self, _q: String) -> QueryResult<FileSystemQueryResult> {
+        todo!()
     }
 }

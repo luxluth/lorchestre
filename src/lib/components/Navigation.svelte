@@ -1,22 +1,26 @@
 <script lang="ts">
-	import { GalleryHorizontalEnd, Clock, Settings } from 'lucide-svelte';
+	import Clock from 'lucide-svelte/icons/clock';
+	import Settings from 'lucide-svelte/icons/settings';
+	import Library from 'lucide-svelte/icons/library';
+
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
+	import { _ } from 'svelte-i18n';
 </script>
 
 <div class="nav ns" style="--top-by: {platform === 'macos' ? '3em' : '1em'}">
 	<section class="search">
-		<input type="search" name="search" placeholder="Recherche" />
+		<input type="search" name="search" placeholder={$_('search')} />
 	</section>
 	<section>
-		<h4>Bibliothèque</h4>
+		<h4>{$_('bib')}</h4>
 		<div class="links">
 			<a href="/recently-added" class:active={pathId == '/recently-added'}>
 				<Clock size={'1em'} />
-				Ajouts récents</a
+				{$_('recent-added')}</a
 			>
 			<a href="/" class:active={pathId == '/'}>
-				<GalleryHorizontalEnd size={'1em'} />
-				Albums</a
+				<Library size={'1em'} />
+				{$_('albums')}</a
 			>
 		</div>
 	</section>
@@ -24,7 +28,7 @@
 		<div class="links">
 			<a href="/settings" class:active={pathId == '/settings'}>
 				<Settings size={'1em'} />
-				Réglages</a
+				{$_('settings')}</a
 			>
 		</div>
 	</section>
@@ -41,10 +45,11 @@
 	input[type='search'] {
 		-webkit-appearance: none;
 		appearance: none;
-		padding: 0.5em;
+		padding-inline: 0.5em;
+		padding-block: 0.7em;
 		border-radius: 4px;
 		border: 0px;
-		background: rgba(100, 100, 100, 0.18);
+		background: var(--highlight);
 		color: var(--fg);
 		width: 100%;
 	}
@@ -73,13 +78,12 @@
 	section div.links a {
 		color: var(--fg);
 		opacity: 0.7;
-		font-weight: bold;
 		text-decoration: none;
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
-		padding-inline: 0.5em;
-		padding-block: 0.5em;
+		padding-inline: 1em;
+		padding-block: 0.6em;
 		border-radius: 6px;
 		transition: all ease-in-out 0.1s;
 	}
@@ -88,12 +92,8 @@
 		opacity: 0.9;
 	}
 
-	section div.links a:active {
-		transform: scale(0.99);
-	}
-
 	section div.links a.active {
-		background: rgba(100, 100, 100, 0.18);
+		background: var(--highlight);
 		opacity: 1;
 	}
 </style>

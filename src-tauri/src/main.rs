@@ -142,6 +142,20 @@ fn platform() -> String {
     OS.to_string()
 }
 
+#[tauri::command]
+fn locale(app: tauri::AppHandle) -> String {
+    let app_cache_dir = app.path().app_cache_dir().unwrap();
+    let cache_dir = format!("{}/.locale", app_cache_dir.display());
+    mu::utils::get_locale(Path::new(&cache_dir))
+}
+
+#[tauri::command]
+fn set_locale(app: tauri::AppHandle, locale: String) {
+    let app_cache_dir = app.path().app_cache_dir().unwrap();
+    let cache_dir = format!("{}/.locale", app_cache_dir.display());
+    mu::utils::set_locale(Path::new(&cache_dir), locale)
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -150,7 +164,9 @@ fn main() {
             index,
             update_cache,
             get_album,
-            platform
+            platform,
+            locale,
+            set_locale,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

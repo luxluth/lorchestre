@@ -1,0 +1,40 @@
+{
+	"bib": "Library",
+	"search": "Search",
+	"recent-added": "Recently added",
+	"albums": "Albums",
+	"settings": "Settings",
+	"no_media": "No song currently playing",
+	"indexing_msg": "Indexing local files...",
+	"ctx": {
+		"play": "Play",
+		"inqueue": "Add to the queue"
+	},
+	"cmds": {
+		"lrc": {
+			"empty": "No lyrics to show"
+		},
+		"waitlist": {
+			"title": "Waitlist",
+			"empty": "No song on the waitlist"
+		}
+	},
+	"album": {
+		"page": {
+			"songs": "Tracks",
+			"ctx": {
+				"add_queue": "Add to the queue"
+			}
+		}
+	},
+
+	"settings_page": {
+		"tip_top": "Manage application settings",
+		"section_ui_ux": {
+			"title": "Interface",
+			"language": {
+				"title": "Language"
+			}
+		}
+	}
+}

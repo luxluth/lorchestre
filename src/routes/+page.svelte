@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+	import { convertFileSrc } from '@tauri-apps/api/core';
 	import {
 		ContextMenuItemType,
 		type ContextMenuEvent,
@@ -9,8 +9,13 @@
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
 	import type Ctx from '$lib/ctx.svelte';
-	import { ListEnd, Play, LoaderCircle } from 'lucide-svelte';
+
+	import ListEnd from 'lucide-svelte/icons/list-end';
+	import Play from 'lucide-svelte/icons/play';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+
 	import type MediaState from '$lib/media.svelte';
+	import { _ } from 'svelte-i18n';
 
 	let media = getContext<MediaState>('media');
 
@@ -34,7 +39,7 @@
 					});
 					await manager.play(firstTrack);
 				},
-				label: 'Lancer la lecture',
+				label: $_('ctx.play'),
 				icon: Play
 			},
 			{
@@ -44,7 +49,7 @@
 						manager.addToQueue(track);
 					});
 				},
-				label: "Ajouter la file d'attente",
+				label: $_('ctx.inqueue'),
 				icon: ListEnd
 			}
 		];
@@ -55,7 +60,7 @@
 	}
 </script>
 
-<h1 class="__page_title ns">Albums</h1>
+<h1 class="__page_title ns">{$_('albums')}</h1>
 
 {#if !media.loading}
 	<div class="__medias">
@@ -84,8 +89,10 @@
 	</div>
 {:else}
 	<div class="msg">
-		<div class="icon"><LoaderCircle /></div>
-		Indexation des fichiers locaux...
+		<div class="icon">
+			<LoaderCircle />
+			{$_('indexing_msg')}
+		</div>
 	</div>
 {/if}
 
@@ -138,10 +145,6 @@
 	.__audio .cover {
 		width: 100%;
 		position: relative;
-	}
-
-	.__audio:active {
-		transform: scale(0.95);
 	}
 
 	/* .__audio .cover:hover button { */

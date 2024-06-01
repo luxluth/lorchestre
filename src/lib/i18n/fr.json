@@ -1,0 +1,39 @@
+{
+	"bib": "Bibliothèque",
+	"search": "Recherche",
+	"recent-added": "Ajouts récents",
+	"albums": "Albums",
+	"settings": "Réglages",
+	"no_media": "Aucune chanson en cours de lecture",
+	"indexing_msg": "Indexation des fichiers locaux...",
+	"ctx": {
+		"play": "Lancer la lecture",
+		"inqueue": "Ajouter la file d'attente"
+	},
+	"cmds": {
+		"lrc": {
+			"empty": "Aucune parole à afficher"
+		},
+		"waitlist": {
+			"title": "File d'attente",
+			"empty": "Aucune chanson dans la file d'attente"
+		}
+	},
+	"album": {
+		"page": {
+			"songs": "Morceaux",
+			"ctx": {
+				"add_queue": "Ajouter à la file d'attente"
+			}
+		}
+	},
+	"settings_page": {
+		"tip_top": "Gérer les paramètres de l'application",
+		"section_ui_ux": {
+			"title": "Interface",
+			"language": {
+				"title": "Langage de l'interface"
+			}
+		}
+	}
+}

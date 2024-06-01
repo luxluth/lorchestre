@@ -4,7 +4,15 @@
 	import type Manager from '$lib/manager.svelte';
 	import { type Track, type Line } from '$lib/type';
 	import { convertFileSrc } from '@tauri-apps/api/core';
-	import { X, Play, Pause, FastForward, Rewind, Volume, Volume1, Volume2 } from 'lucide-svelte';
+
+	import X from 'lucide-svelte/icons/x';
+	import Play from 'lucide-svelte/icons/play';
+	import Pause from 'lucide-svelte/icons/pause';
+	import FastForward from 'lucide-svelte/icons/fast-forward';
+	import Rewind from 'lucide-svelte/icons/rewind';
+	import Volume from 'lucide-svelte/icons/volume';
+	import Volume1 from 'lucide-svelte/icons/volume-1';
+	import Volume2 from 'lucide-svelte/icons/volume-2';
 
 	import { getContext } from 'svelte';
 
