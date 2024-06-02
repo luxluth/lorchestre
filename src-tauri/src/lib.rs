@@ -159,6 +159,7 @@ impl Track {
             let cover_path = std::path::Path::new(&pathstr);
 
             if !cover_path.exists() {
+                check_dir(covers_dir);
                 let mut f = fs::File::create(cover_path).unwrap();
                 f.write_all(&cover.data).unwrap();
             }
@@ -339,7 +340,7 @@ impl Songs {
     }
 }
 
-fn check_cache_covers(dir: String) {
+pub fn check_dir(dir: String) {
     let dir = Path::new(&dir);
     if !dir.exists() {
         fs::DirBuilder::new().recursive(true).create(dir).unwrap();
@@ -466,7 +467,7 @@ pub mod utils {
 
 impl Songs {
     pub fn new(cache_dir: PathBuf, audio_files: Vec<PathBuf>) -> Self {
-        check_cache_covers(format!("{}/covers", cache_dir.display()));
+        check_dir(format!("{}/covers", cache_dir.display()));
         let covers_dir = format!("{}/covers", cache_dir.display());
         let mut audios: Vec<Track> = vec![];
 

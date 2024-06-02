@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use mu::{Album, Media, Track};
+use mu::{check_dir, Album, Media, Track};
 use tauri::Manager;
 
 enum CacheCompareDiff {
@@ -126,6 +126,7 @@ fn update_cache(app: tauri::AppHandle) -> Media {
 #[tauri::command]
 fn index(app: tauri::AppHandle) -> Media {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
+    check_dir(format!("{}", app_cache_dir.display()));
     let cache = get_chache(app_cache_dir);
     return cache;
 }
@@ -145,6 +146,7 @@ fn platform() -> String {
 #[tauri::command]
 fn locale(app: tauri::AppHandle) -> String {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
+    check_dir(format!("{}", app_cache_dir.display()));
     let cache_dir = format!("{}/.locale", app_cache_dir.display());
     mu::utils::get_locale(Path::new(&cache_dir))
 }

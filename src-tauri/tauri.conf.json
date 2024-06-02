@@ -18,8 +18,6 @@
 				"height": 1020,
 				"decorations": true,
         "center": true,
-        "transparent": true, 
-        "titleBarStyle": "Transparent",
         "shadow": true,
 				"minWidth": 800,
 				"minHeight": 600
