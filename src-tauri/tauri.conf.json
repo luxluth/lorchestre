@@ -16,12 +16,12 @@
 				"title": "mu",
 				"width": 1500,
 				"height": 1020,
-        "titleBarStyle": "Overlay",
+        "titleBarStyle": "Visible",
         "hiddenTitle": true,
         "center": true,
         "shadow": true,
-				"minWidth": 1475,
-				"minHeight": 900
+				"minWidth": 1200,
+        "minHeight": 800
 			}
 		],
 		"security": {

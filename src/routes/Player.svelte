@@ -209,7 +209,7 @@
 							</div>
 							<Slider
 								value={manager.volume}
-								style="thick"
+								style="classic"
 								color={'var(--text)'}
 								thumbColor={'var(--text)'}
 								backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"

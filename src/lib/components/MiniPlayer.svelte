@@ -38,6 +38,46 @@
 
 <div class="mp" class:dead={typeof manager.currentTrack === 'undefined'}>
 	{#if manager.currentTrack}
+		<section class="controls">
+			<button>
+				<Shuffle size={'1.5em'} />
+			</button>
+			<div class="actions">
+				<button>
+					<Rewind
+						fill={'var(--fg)'}
+						size={'20px'}
+						onclick={async () => {
+							await manager.prev();
+						}}
+					/>
+				</button>
+				<button
+					class="playpause"
+					onclick={async () => {
+						await manager.tooglepp();
+					}}
+				>
+					{#if manager.paused}
+						<Play fill={'var(--fg)'} size={'20px'} />
+					{:else}
+						<Pause fill={'var(--fg)'} size={'20px'} />
+					{/if}
+				</button>
+				<button>
+					<FastForward
+						fill={'var(--fg)'}
+						size={'20px'}
+						onclick={async () => {
+							await manager.next();
+						}}
+					/>
+				</button>
+			</div>
+			<button>
+				<Repeat size={'20px'} />
+			</button>
+		</section>
 		<section
 			class="player"
 			style="--clr: {manager.currentTrack?.color
@@ -101,70 +141,65 @@
 				<time class="remaintime ns">-{formatTime(manager.duration - manager.currentTime)}</time>
 			</div>
 		</section>
-		<section class="controls">
-			<button>
-				<Shuffle size={'1.5em'} />
-			</button>
-			<div class="actions">
-				<button>
-					<Rewind
-						fill={'var(--fg)'}
-						size={'2.5em'}
-						onclick={async () => {
-							await manager.prev();
-						}}
-					/>
-				</button>
-				<button
-					class="playpause"
-					onclick={async () => {
-						await manager.tooglepp();
-					}}
-				>
-					{#if manager.paused}
-						<Play fill={'var(--fg)'} size={'2.5em'} />
-					{:else}
-						<Pause fill={'var(--fg)'} size={'2.5em'} />
-					{/if}
-				</button>
-				<button>
-					<FastForward
-						fill={'var(--fg)'}
-						size={'2.5em'}
-						onclick={async () => {
-							await manager.next();
-						}}
-					/>
-				</button>
-			</div>
-			<button>
-				<Repeat size={'1.5em'} />
-			</button>
-		</section>
 		<section class="volume">
 			<div class="vol-icon">
 				{#if manager.volume === 0}
-					<Volume size={'1.5em'} />
+					<Volume size={'20px'} />
 				{:else if manager.volume >= 0.7}
-					<Volume2 size={'1.5em'} />
+					<Volume2 size={'20px'} />
 				{:else if manager.volume > 0}
-					<Volume1 size={'1.5em'} />
+					<Volume1 size={'20px'} />
 				{/if}
 			</div>
 			<Slider
 				value={manager.volume}
-				style="thick"
+				style="classic"
 				oninput={(data) => {
 					manager.volumeTo(data);
 				}}
 			/>
 		</section>
 	{:else}
+		<section class="controls">
+			<button>
+				<Shuffle size={'1.5em'} />
+			</button>
+			<div class="actions">
+				<button>
+					<Rewind fill={'var(--fg)'} size={'20px'} />
+				</button>
+				<button class="playpause">
+					{#if manager.paused}
+						<Play fill={'var(--fg)'} size={'20px'} />
+					{:else}
+						<Pause fill={'var(--fg)'} size={'20px'} />
+					{/if}
+				</button>
+				<button>
+					<FastForward fill={'var(--fg)'} size={'20px'} />
+				</button>
+			</div>
+			<button>
+				<Repeat size={'20px'} />
+			</button>
+		</section>
 		<section class="player_shell">
 			<div class="fakecover">
 				<Music3 />
 			</div>
 			<div class="icon">{$_('no_media')}</div>
+		</section>
+		<section class="volume" style="opacity: .5;">
+			<div class="vol-icon">
+				{#if manager.volume === 0}
+					<Volume size={'20px'} />
+				{:else if manager.volume >= 0.7}
+					<Volume2 size={'20px'} />
+				{:else if manager.volume > 0}
+					<Volume1 size={'20px'} />
+				{/if}
+			</div>
+			<Slider value={manager.volume} style="classic" />
 		</section>
 	{/if}
 </div>
@@ -175,9 +210,8 @@
 		height: 5em;
 		padding: 0.3em;
 		display: flex;
-		justify-content: flex-start;
 		gap: 1em;
-		flex-grow: 1;
+		justify-content: space-evenly;
 	}
 
 	.mp.dead {
@@ -200,7 +234,7 @@
 		gap: 1em;
 		justify-content: center;
 		align-items: center;
-		gap: 2em;
+		gap: 1em;
 	}
 
 	.controls .actions {
@@ -229,7 +263,7 @@
 
 	.player,
 	.player_shell {
-		width: 40em;
+		width: 26em;
 		border-radius: 3px;
 		overflow: hidden;
 		border: 1px solid rgba(100, 100, 100, 0.18);

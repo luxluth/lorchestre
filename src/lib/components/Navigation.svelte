@@ -7,10 +7,10 @@
 	import { _ } from 'svelte-i18n';
 </script>
 
-<div class="nav ns" style="--top-by: {platform === 'macos' ? '2.5em' : '1em'}">
-	{#if platform === 'macos'}
-		<div class="dragzone" data-tauri-drag-region></div>
-	{/if}
+<div class="nav ns" style="--top-by: {platform === 'macos' ? '1em' : '1em'}">
+	<!-- {#if platform === 'macos'} -->
+	<!-- 	<div class="dragzone" data-tauri-drag-region></div> -->
+	<!-- {/if} -->
 	<section class="search">
 		<input type="search" name="search" placeholder={$_('search')} />
 	</section>
