@@ -101,7 +101,7 @@
 	onmousedown={handleMouseDown}
 	ontouchstart={handleTouchStart}
 	role="slider"
-	aria-valuenow={isDragging ? innerValue : value}
+	aria-valuenow={value}
 	tabindex="0"
 >
 	<div class="hitbox"></div>

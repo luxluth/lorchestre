@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use mu::{Album, Audio, Media};
+use mu::{Album, Media, Track};
 use tauri::Manager;
 
 enum CacheCompareDiff {
@@ -80,7 +80,7 @@ fn get_chache(app_cache_dir: PathBuf) -> Media {
                     CacheCompareDiff::ToAdd { files } => {
                         for file in files {
                             eprintln!("+ {}", file.display());
-                            cache_data.add_song(Audio::from_file(covers_dir.clone(), file));
+                            cache_data.add_song(Track::from_file(covers_dir.clone(), file));
                         }
                     }
                     CacheCompareDiff::ToRemove { files } => {
@@ -102,7 +102,7 @@ fn get_chache(app_cache_dir: PathBuf) -> Media {
     } else {
         for file in curr_audio_files {
             eprintln!("+ {}", file.display());
-            cache.add_song(Audio::from_file(covers_dir.clone(), file));
+            cache.add_song(Track::from_file(covers_dir.clone(), file));
         }
         needs_update = true;
     }

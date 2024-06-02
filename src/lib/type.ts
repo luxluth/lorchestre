@@ -59,6 +59,7 @@ export type Track = {
 	is_light?: boolean;
 	file_path: string;
 	duration: u64;
+	bitrate: u32;
 	id: string;
 };
 

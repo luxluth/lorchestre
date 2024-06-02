@@ -50,7 +50,52 @@
 	</div>
 </section>
 
+<!-- <section class="backend"> -->
+<!-- 	<h2>Fournisseur de musique</h2> -->
+<!-- 	<div class="selections"> -->
+<!-- 		<button class="local active"> -->
+<!-- 			<div class="title">Fichiers Locaux</div> -->
+<!-- 		</button> -->
+<!-- 		<button class="spotify"> -->
+<!-- 			<div class="title">Spotify</div> -->
+<!-- 		</button> -->
+<!-- 		<button class="mpd"> -->
+<!-- 			<div class="title">MPD (Music Player Daemon)</div> -->
+<!-- 		</button> -->
+<!-- 	</div> -->
+<!-- </section> -->
+
 <style>
+	/* .backend .selections { */
+	/* 	display: grid; */
+	/* 	height: 20rem; */
+	/* 	grid-template-columns: 1fr 1fr 1fr; */
+	/* 	gap: 2em; */
+	/* } */
+	/**/
+	/* .selections button { */
+	/* 	border: 2px solid var(--highlight); */
+	/* 	border-radius: 20px; */
+	/* 	background: none; */
+	/* 	color: var(--fg); */
+	/* 	display: flex; */
+	/* 	padding: 2em; */
+	/* } */
+	/**/
+	/* .selections button .title { */
+	/* 	font-weight: bold; */
+	/* 	font-size: 2em; */
+	/* } */
+	/**/
+	/* .selections button.active { */
+	/* 	border-color: var(--fg); */
+	/* 	background: var(--highlight); */
+	/* } */
+
+	section {
+		padding-block: 1.5em;
+	}
+
 	section h2 {
 		padding-bottom: 1em;
 	}
@@ -113,7 +158,7 @@
 	}
 
 	hr {
-		margin-block: 1.5em;
+		margin-top: 1.5em;
 		opacity: 0.2;
 	}
 

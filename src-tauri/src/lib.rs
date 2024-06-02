@@ -47,7 +47,7 @@ impl Color {
 pub struct Album {
     pub name: String,
     pub artist: String,
-    pub tracks: Vec<Audio>,
+    pub tracks: Vec<Track>,
     pub year: Option<u32>,
     pub id: String,
 }
@@ -59,7 +59,7 @@ impl Album {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-pub struct Audio {
+pub struct Track {
     pub title: String,
     pub artists: Vec<String>,
     pub track: u32,
@@ -73,13 +73,15 @@ pub struct Audio {
     pub is_light: Option<bool>,
     pub file_path: String,
     pub duration: u64,
+    pub bitrate: u32,
     pub id: String,
 }
 
-impl Audio {
+impl Track {
     pub fn from_file(covers_dir: String, inode: PathBuf) -> Self {
         let tagged_file = Probe::open(&inode).unwrap().read().unwrap();
         let properties = tagged_file.properties();
+        let bitrate = properties.audio_bitrate().unwrap_or(0);
         let duration = properties.duration();
 
         let default_tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
@@ -92,7 +94,7 @@ impl Audio {
             None => tagged_file.first_tag().unwrap_or(&default_tag),
         };
 
-        let mut audio: Audio = Audio {
+        let mut audio: Track = Track {
             file_path: inode.to_str().unwrap().to_string(),
             ..Default::default()
         };
@@ -181,6 +183,7 @@ impl Audio {
         }
 
         audio.duration = duration.as_secs();
+        audio.bitrate = bitrate;
 
         let lrc_path = inode.with_extension("lrc");
         if lrc_path.exists() {
@@ -226,7 +229,7 @@ impl Audio {
     }
 }
 
-impl Default for Audio {
+impl Default for Track {
     fn default() -> Self {
         Self {
             title: "@UNKNOWN@".to_string(),
@@ -241,6 +244,7 @@ impl Default for Audio {
             color: None,
             is_light: None,
             file_path: String::new(),
+            bitrate: 0,
             duration: 0,
             id: String::new(),
         }
@@ -249,7 +253,7 @@ impl Default for Audio {
 
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Songs {
-    pub audios: Vec<Audio>,
+    pub audios: Vec<Track>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
@@ -264,7 +268,7 @@ impl Media {
         }
     }
 
-    pub fn add_song(&mut self, song: Audio) {
+    pub fn add_song(&mut self, song: Track) {
         let mut inserted = false;
         for album in &mut self.albums {
             if song.album_id == album.id {
@@ -308,7 +312,7 @@ impl Media {
 impl Songs {
     pub fn get_albums(self) -> Vec<Album> {
         let mut albums = vec![];
-        let mut album_map: HashMap<String, Vec<Audio>> = HashMap::new();
+        let mut album_map: HashMap<String, Vec<Track>> = HashMap::new();
         for audio in self.audios {
             album_map
                 .entry(audio.album_id.clone())
@@ -464,10 +468,10 @@ impl Songs {
     pub fn new(cache_dir: PathBuf, audio_files: Vec<PathBuf>) -> Self {
         check_cache_covers(format!("{}/covers", cache_dir.display()));
         let covers_dir = format!("{}/covers", cache_dir.display());
-        let mut audios: Vec<Audio> = vec![];
+        let mut audios: Vec<Track> = vec![];
 
         for audio_file in audio_files {
-            audios.push(Audio::from_file(covers_dir.clone(), audio_file))
+            audios.push(Track::from_file(covers_dir.clone(), audio_file))
         }
 
         Self { audios }
@@ -480,7 +484,7 @@ pub enum Backends {
 
 pub enum FileSystemSearchResponse {
     Album(Album),
-    Track(Audio),
+    Track(Track),
 }
 
 pub type FileSystemQueryResult = QueryResult<FileSystemSearchResponse>;
@@ -489,12 +493,12 @@ pub struct FileSystemBackend {
     pub media: Media,
 }
 
-impl Backend<FileSystemQueryResult, Album, Audio> for FileSystemBackend {
+impl Backend<FileSystemQueryResult, Album, Track> for FileSystemBackend {
     fn get_album(&self, id: String) -> Option<Album> {
         return self.media.get_album(id);
     }
 
-    fn get_song(&self, _id: String) -> Audio {
+    fn get_song(&self, _id: String) -> Track {
         todo!()
     }
 

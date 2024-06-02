@@ -23,6 +23,7 @@
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 	//@ts-ignore
 	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
+	let dotScale = $state('scale(1)');
 
 	let active = $state<boolean>(false);
 	let playing = $state<boolean>(false);
@@ -161,7 +162,7 @@
 				let child = lyricsParent.children[activeLines[0].id];
 				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
-		}, 30);
+		}, 70);
 	}
 </script>
 
@@ -217,6 +218,7 @@
 								}}
 							/>
 						</div>
+						<div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div>
 					</div>
 				</div>
 			{/if}
@@ -292,8 +294,13 @@
 						onkeydown={() => {}}
 						role="button"
 						tabindex="0"
+						class:instrumental={text == '♪'}
 					>
-						{text}
+						{#if text == '♪'}
+							<div class="dot" style="transform: {dotScale};"></div>
+						{:else}
+							{text}
+						{/if}
 					</div>
 				{/each}
 			</section>
@@ -482,6 +489,30 @@
 		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
 	}
 
+	.line.instrumental {
+		padding: 0;
+		scale: 0;
+		line-height: 0;
+		display: flex;
+		gap: 0.2em;
+		height: 0;
+		transform-origin: top left;
+		transition: all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+	}
+
+	.instrumental .dot {
+		background-color: var(--text);
+		opacity: 1;
+		height: 0.5em;
+		width: 0.5em;
+		border-radius: 50%;
+	}
+
+	.line.active.instrumental {
+		scale: 1;
+		height: auto;
+	}
+
 	.__player .cover {
 		width: 40em;
 		aspect-ratio: 1/1;
@@ -512,8 +543,22 @@
 		padding-top: 1em;
 		text-align: center;
 		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex-direction: column;
 		gap: 1em;
+	}
+
+	.bitrate {
+		position: absolute;
+		bottom: 1em;
+		right: 1em;
+		color: rgb(var(--r), var(--g), var(--b));
+		background: var(--text);
+		width: fit-content;
+		padding: 0.2em;
+		font-weight: bold;
+		border-radius: 4px;
 	}
 
 	.__player .infos h2 {
