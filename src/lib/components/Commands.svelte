@@ -32,7 +32,7 @@
 			activate('lrc');
 		}}
 	>
-		<MicVocal size={'2em'} />
+		<MicVocal size={'1.5em'} />
 	</button>
 	<button
 		class="queue"
@@ -41,16 +41,18 @@
 			activate('queue');
 		}}
 	>
-		<List size={'2em'} />
+		<List size={'1.5em'} />
 	</button>
 </div>
 
 <style>
 	.__commands {
-		width: 100%;
 		display: flex;
 		align-items: center;
+		justify-content: flex-end;
+		width: fit-content;
 		gap: 0.5em;
+		padding-inline: 1em;
 	}
 
 	.__commands button {

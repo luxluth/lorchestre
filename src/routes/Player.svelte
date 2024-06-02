@@ -218,7 +218,7 @@
 								}}
 							/>
 						</div>
-						<div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div>
+						<!-- <div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div> -->
 					</div>
 				</div>
 			{/if}
@@ -257,11 +257,11 @@
 					</button>
 				</div>
 				<div class="progress-area">
-					<div class="time current ns">
-						<span>
-							{formatTime(manager.currentTime)}
-						</span>
-					</div>
+					<!-- <div class="time current ns"> -->
+					<!-- 	<span> -->
+					<!-- 		{formatTime(manager.currentTime)} -->
+					<!-- 	</span> -->
+					<!-- </div> -->
 					<div class="progressbar">
 						<Slider
 							value={percentage / 100}
@@ -274,11 +274,11 @@
 							}}
 						/>
 					</div>
-					<div class="time ns">
-						<span>
-							{formatTime(manager.duration)}
-						</span>
-					</div>
+					<!-- <div class="time ns"> -->
+					<!-- 	<span> -->
+					<!-- 		{formatTime(manager.duration)} -->
+					<!-- 	</span> -->
+					<!-- </div> -->
 				</div>
 			</div>
 			<audio crossorigin="anonymous" bind:this={sound}></audio>
@@ -341,7 +341,7 @@
 	.__player .controls .progressbar {
 		flex-grow: 1;
 		width: 100%;
-		padding-inline: 2em;
+		padding-inline: 1em;
 	}
 
 	.__player .controls .actions {
@@ -514,7 +514,7 @@
 	}
 
 	.__player .cover {
-		width: 40em;
+		width: 60vh;
 		aspect-ratio: 1/1;
 		box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
 		border-radius: 10px;

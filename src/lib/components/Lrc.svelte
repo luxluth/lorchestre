@@ -59,7 +59,7 @@
 		position: fixed;
 		z-index: 50;
 		margin-top: 5em;
-		height: 50em;
+		height: 85%;
 		width: 25.3em;
 		padding: 1em;
 		right: 2em;

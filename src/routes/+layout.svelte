@@ -65,7 +65,7 @@
 	}
 
 	.__navigation {
-		width: 300px;
+		width: 270px;
 		flex-shrink: 0; /* Prevents shrinking of the navigation section */
 		border-right: 1px solid rgba(100, 100, 100, 0.18);
 		background: var(--bg);
@@ -87,10 +87,11 @@
 	header {
 		position: fixed;
 		z-index: 10;
-		width: 100%;
-		display: grid;
-		grid-template-columns: 3fr 1fr;
-		gap: 2em;
+		width: calc(100% - 270px);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 1em;
 		border-bottom: 1px solid rgba(100, 100, 100, 0.18);
 	}
 

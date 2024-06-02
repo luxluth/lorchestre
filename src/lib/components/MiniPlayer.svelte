@@ -38,46 +38,6 @@
 
 <div class="mp" class:dead={typeof manager.currentTrack === 'undefined'}>
 	{#if manager.currentTrack}
-		<section class="controls">
-			<button>
-				<Shuffle size={'1.5em'} />
-			</button>
-			<div class="actions">
-				<button>
-					<Rewind
-						fill={'var(--fg)'}
-						size={'2.5em'}
-						onclick={async () => {
-							await manager.prev();
-						}}
-					/>
-				</button>
-				<button
-					class="playpause"
-					onclick={async () => {
-						await manager.tooglepp();
-					}}
-				>
-					{#if manager.paused}
-						<Play fill={'var(--fg)'} size={'2.5em'} />
-					{:else}
-						<Pause fill={'var(--fg)'} size={'2.5em'} />
-					{/if}
-				</button>
-				<button>
-					<FastForward
-						fill={'var(--fg)'}
-						size={'2.5em'}
-						onclick={async () => {
-							await manager.next();
-						}}
-					/>
-				</button>
-			</div>
-			<button>
-				<Repeat size={'1.5em'} />
-			</button>
-		</section>
 		<section
 			class="player"
 			style="--clr: {manager.currentTrack?.color
@@ -141,6 +101,46 @@
 				<time class="remaintime ns">-{formatTime(manager.duration - manager.currentTime)}</time>
 			</div>
 		</section>
+		<section class="controls">
+			<button>
+				<Shuffle size={'1.5em'} />
+			</button>
+			<div class="actions">
+				<button>
+					<Rewind
+						fill={'var(--fg)'}
+						size={'2.5em'}
+						onclick={async () => {
+							await manager.prev();
+						}}
+					/>
+				</button>
+				<button
+					class="playpause"
+					onclick={async () => {
+						await manager.tooglepp();
+					}}
+				>
+					{#if manager.paused}
+						<Play fill={'var(--fg)'} size={'2.5em'} />
+					{:else}
+						<Pause fill={'var(--fg)'} size={'2.5em'} />
+					{/if}
+				</button>
+				<button>
+					<FastForward
+						fill={'var(--fg)'}
+						size={'2.5em'}
+						onclick={async () => {
+							await manager.next();
+						}}
+					/>
+				</button>
+			</div>
+			<button>
+				<Repeat size={'1.5em'} />
+			</button>
+		</section>
 		<section class="volume">
 			<div class="vol-icon">
 				{#if manager.volume === 0}
@@ -175,13 +175,13 @@
 		height: 5em;
 		padding: 0.3em;
 		display: flex;
-		justify-content: space-evenly;
-		gap: 0.5em;
+		justify-content: flex-start;
+		gap: 1em;
+		flex-grow: 1;
 	}
 
 	.mp.dead {
 		pointer-events: none;
-		justify-content: center;
 	}
 
 	.volume {

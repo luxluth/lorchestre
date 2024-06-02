@@ -7,7 +7,10 @@
 	import { _ } from 'svelte-i18n';
 </script>
 
-<div class="nav ns" style="--top-by: {platform === 'macos' ? '3em' : '1em'}">
+<div class="nav ns" style="--top-by: {platform === 'macos' ? '2.5em' : '1em'}">
+	{#if platform === 'macos'}
+		<div class="dragzone" data-tauri-drag-region></div>
+	{/if}
 	<section class="search">
 		<input type="search" name="search" placeholder={$_('search')} />
 	</section>
@@ -35,6 +38,15 @@
 </div>
 
 <style>
+	.dragzone {
+		z-index: 1000;
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 2em;
+		background-color: none;
+		width: 100%;
+	}
 	section.settings {
 		flex-grow: 1;
 		display: flex;
@@ -63,6 +75,7 @@
 		gap: 1.5em;
 		height: 100%;
 		overflow: auto;
+		position: relative;
 	}
 	h4 {
 		opacity: 0.5;

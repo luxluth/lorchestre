@@ -14,13 +14,14 @@
 		"windows": [
 			{
 				"title": "mu",
-				"width": 1700,
+				"width": 1500,
 				"height": 1020,
-				"decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
         "center": true,
         "shadow": true,
-				"minWidth": 800,
-				"minHeight": 600
+				"minWidth": 1475,
+				"minHeight": 900
 			}
 		],
 		"security": {
