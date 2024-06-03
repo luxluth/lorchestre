@@ -2,6 +2,7 @@
 	import Clock from 'lucide-svelte/icons/clock';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Library from 'lucide-svelte/icons/library';
+	import ListMusic from 'lucide-svelte/icons/list-music';
 
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 	import { _ } from 'svelte-i18n';
@@ -25,6 +26,10 @@
 				<Library size={'1em'} />
 				{$_('albums')}</a
 			>
+			<a href="/songs" class:active={pathId == '/songs'}>
+				<ListMusic size={'1em'} />
+				{$_('songs')}
+			</a>
 		</div>
 	</section>
 	<section class="settings">

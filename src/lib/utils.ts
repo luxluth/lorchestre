@@ -36,3 +36,14 @@ export function isElementVisible(element: HTMLElement) {
 
 	return isInDOM && hasSize && isDisplayed && isVisible && isInViewport;
 }
+
+export function formatTime(seconds: number) {
+	if (isNaN(seconds)) {
+		return '--:--';
+	}
+	if (seconds >= 60 * 60) {
+		return new Date(seconds * 1000).toISOString().substring(11, 16);
+	} else {
+		return new Date(seconds * 1000).toISOString().substring(14, 19);
+	}
+}

@@ -85,18 +85,25 @@ export default class Manager {
 		}
 	}
 
+	clearQueue() {
+		this.queue = [];
+	}
+
 	addToQueue(track: Track) {
 		this.queue.push(track);
+	}
+
+	addManyToQueue(tracks: Track[]) {
+		tracks.forEach((track) => {
+			this.queue.push(track);
+		});
 	}
 
 	async next() {
 		const track = this.queue.shift();
 		if (track) {
+			if (this.currentTrack) this.history.push(this.currentTrack);
 			if (this.onplay) await this.onplay(track);
-			this.history = [track, ...this.history];
-		} else {
-			this.deactivate();
-			this.currentTrack = undefined;
 		}
 	}
 

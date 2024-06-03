@@ -4,6 +4,7 @@
 	"recent-added": "Recently added",
 	"albums": "Albums",
 	"settings": "Settings",
+	"songs": "Songs",
 	"no_media": "No song currently playing",
 	"indexing_msg": "Indexing local files...",
 	"ctx": {
@@ -27,7 +28,6 @@
 			}
 		}
 	},
-
 	"settings_page": {
 		"tip_top": "Manage application settings",
 		"section_ui_ux": {

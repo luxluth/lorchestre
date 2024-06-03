@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { type UnlistenFn, listen } from '@tauri-apps/api/event';
-import type { Album, Media, Payload } from './type';
+import type { Album, Media, Payload, Track } from './type';
 
 type FP = {
 	FileProcessed: string;
@@ -60,6 +60,17 @@ export default class MediaState {
 		);
 
 		await invoke('index');
+	}
+
+	getSongs() {
+		let songs: Track[] = [];
+		this.albums.forEach((album) => {
+			album.tracks.forEach((song) => {
+				songs.push(song);
+			});
+		});
+
+		return songs;
 	}
 
 	getAlbum(id: string) {
