@@ -17,7 +17,7 @@ enum CacheCompareDiff {
     NoDiff,
 }
 
-fn compare_caches(prev: Vec<PathBuf>, curr: Vec<PathBuf>) -> Vec<CacheCompareDiff> {
+fn compare_caches(prev: Vec<PathBuf>, curr: Vec<PathBuf>) -> (Vec<CacheCompareDiff>, usize, usize) {
     let mut files_to_add = vec![];
     let mut files_to_remove = vec![];
 
@@ -34,20 +34,38 @@ fn compare_caches(prev: Vec<PathBuf>, curr: Vec<PathBuf>) -> Vec<CacheCompareDif
     }
 
     if files_to_add.is_empty() && files_to_remove.is_empty() {
-        return vec![CacheCompareDiff::NoDiff];
+        return (vec![CacheCompareDiff::NoDiff], 0, 0);
     }
 
-    vec![
-        CacheCompareDiff::ToAdd {
-            files: files_to_add,
-        },
-        CacheCompareDiff::ToRemove {
-            files: files_to_remove,
-        },
-    ]
+    let to_add_len = files_to_add.len();
+    let to_remove_len = files_to_remove.len();
+
+    (
+        vec![
+            CacheCompareDiff::ToAdd {
+                files: files_to_add,
+            },
+            CacheCompareDiff::ToRemove {
+                files: files_to_remove,
+            },
+        ],
+        to_add_len,
+        to_remove_len,
+    )
 }
 
-fn get_chache(app_cache_dir: PathBuf) -> Media {
+#[derive(Debug, Clone, serde::Serialize)]
+enum CachePayLoad {
+    FileProcessed(String),
+    TotalFiles { count: usize },
+    Ended { media: Media },
+}
+
+fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
+    // if let Some(win) = window.clone() {
+    //     let _ = win.emit("cache-update-start", ());
+    // }
+
     if !app_cache_dir.exists() {
         fs::DirBuilder::new()
             .recursive(true)
@@ -64,7 +82,17 @@ fn get_chache(app_cache_dir: PathBuf) -> Media {
     let curr_audio_files = mu::utils::get_audio_files();
     mu::utils::cache_audio_files(ac_path);
 
-    let diff = compare_caches(prev_audio_files, curr_audio_files.clone());
+    let (diff, to_add_len, to_remove_len) =
+        compare_caches(prev_audio_files, curr_audio_files.clone());
+
+    if let Some(win) = window.clone() {
+        let _ = win.emit(
+            "cache-update-files",
+            CachePayLoad::TotalFiles {
+                count: to_add_len + to_remove_len,
+            },
+        );
+    }
 
     let mut cache = Media::default();
     let cache_file = Path::new(&p_string);
@@ -79,13 +107,23 @@ fn get_chache(app_cache_dir: PathBuf) -> Media {
                 match d {
                     CacheCompareDiff::ToAdd { files } => {
                         for file in files {
-                            eprintln!("+ {}", file.display());
+                            if let Some(win) = window.clone() {
+                                let _ = win.emit(
+                                    "cache-update-data",
+                                    CachePayLoad::FileProcessed(format!("+ {}", file.display())),
+                                );
+                            }
                             cache_data.add_song(Track::from_file(covers_dir.clone(), file));
                         }
                     }
                     CacheCompareDiff::ToRemove { files } => {
                         for file in files {
-                            eprintln!("- {}", file.display());
+                            if let Some(win) = window.clone() {
+                                let _ = win.emit(
+                                    "cache-update-data",
+                                    CachePayLoad::FileProcessed(format!("- {}", file.display())),
+                                );
+                            }
                             cache_data.remove_song(file);
                         }
                     }
@@ -100,8 +138,22 @@ fn get_chache(app_cache_dir: PathBuf) -> Media {
             cache = cache_data;
         }
     } else {
+        if let Some(win) = window.clone() {
+            let _ = win.emit(
+                "cache-update-files",
+                CachePayLoad::TotalFiles {
+                    count: curr_audio_files.len(),
+                },
+            );
+        }
         for file in curr_audio_files {
-            eprintln!("+ {}", file.display());
+            if let Some(win) = window.clone() {
+                let _ = win.emit(
+                    "cache-update-data",
+                    CachePayLoad::FileProcessed(format!("+ {}", file.display())),
+                );
+            }
+
             cache.add_song(Track::from_file(covers_dir.clone(), file));
         }
         needs_update = true;
@@ -114,27 +166,35 @@ fn get_chache(app_cache_dir: PathBuf) -> Media {
         let _ = f.write_all(jason.as_bytes());
     }
 
+    if let Some(win) = window.clone() {
+        let _ = win.emit(
+            "cache-update-end",
+            CachePayLoad::Ended {
+                media: cache.clone(),
+            },
+        );
+    }
+
     cache
 }
 
 #[tauri::command]
-fn update_cache(app: tauri::AppHandle) -> Media {
+fn update_cache(app: tauri::AppHandle, window: tauri::Window) -> Media {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
-    return get_chache(app_cache_dir);
+    return get_chache(app_cache_dir, Some(window));
 }
 
 #[tauri::command]
-fn index(app: tauri::AppHandle) -> Media {
+async fn index(app: tauri::AppHandle, window: tauri::Window) {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
     check_dir(format!("{}", app_cache_dir.display()));
-    let cache = get_chache(app_cache_dir);
-    return cache;
+    get_chache(app_cache_dir, Some(window));
 }
 
 #[tauri::command]
 fn get_album(app: tauri::AppHandle, id: String) -> Option<Album> {
     let app_cache_dir = app.path().app_cache_dir().unwrap();
-    let media = get_chache(app_cache_dir);
+    let media = get_chache(app_cache_dir, None);
     media.get_album(id)
 }
 

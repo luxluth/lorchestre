@@ -31,7 +31,7 @@
 	$effect(() => {
 		let media = getContext<MediaState>('media');
 		(async () => {
-			if (!media.loaded) {
+			if (!media.loaded && !media.loading) {
 				await media.load();
 			}
 		})();

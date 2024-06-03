@@ -14,8 +14,8 @@
 		"windows": [
 			{
 				"title": "mu",
-				"width": 1500,
-				"height": 1020,
+				"width": 1470,
+				"height": 880,
         "titleBarStyle": "Visible",
         "hiddenTitle": true,
         "center": true,

@@ -43,7 +43,7 @@ impl Color {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Album {
     pub name: String,
     pub artist: String,
@@ -257,7 +257,7 @@ pub struct Songs {
     pub audios: Vec<Track>,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Media {
     pub albums: Vec<Album>,
 }

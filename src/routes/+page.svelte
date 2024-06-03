@@ -93,6 +93,8 @@
 			<LoaderCircle />
 			{$_('indexing_msg')}
 		</div>
+		<div class="data">{media.loading_data}</div>
+		<div class="data">{media.treatedFilesCount}/{media.files_count}</div>
 	</div>
 {/if}
 
@@ -101,11 +103,20 @@
 		height: 100%;
 		width: 100%;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 0.5em;
+	}
+
+	.msg .data {
+		font-size: 0.5em;
+		font-family: monospace;
+	}
+
+	.msg .icon {
 		font-size: 2rem;
 		font-weight: bold;
-		gap: 0.5em;
 	}
 
 	.msg .icon :global(svg) {
