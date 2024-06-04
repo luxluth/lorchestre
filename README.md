@@ -1,6 +1,6 @@
 <div align="center">
 
-![logo](./assets/logo.svg)
+![logo](./assets/x256.svg)
 
 # ム (mu)
 
