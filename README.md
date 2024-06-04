@@ -1,6 +1,12 @@
+<div align="center">
+
+![logo](./assets/logo.svg)
+
 # ム (mu)
 
 A music player
+
+</div>
 
 ![preview](./assets/preview.png)
 
