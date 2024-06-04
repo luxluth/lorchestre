@@ -15,6 +15,7 @@
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
 	import { getContext } from 'svelte';
+	import { browser } from '$app/environment';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
@@ -164,6 +165,13 @@
 			}
 		}, 70);
 	}
+
+	let layers = [0, 0, 0];
+	function getRandomAngle() {
+		return Math.floor(Math.random() * 360);
+	}
+
+	let randdeg = $state(getRandomAngle());
 </script>
 
 <div
@@ -172,15 +180,26 @@
 	class="__player"
 	style="--clr: {manager.currentTrack?.color
 		? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
-		: 'var(--bg)'}; --text: {manager.currentTrack?.is_light ? '#181818' : '#ffffff'}; --r: {manager
-		.currentTrack?.color?.r}; --g: {manager.currentTrack?.color?.g}; --b: {manager.currentTrack
-		?.color?.b}; --percent: {percentage}%; --rd: {manager.currentTrack?.is_light
-		? '24'
-		: '255'}; --gd: {manager.currentTrack?.is_light ? '24' : '255'}; --bd: {manager.currentTrack
-		?.is_light
-		? '24'
-		: '255'};"
+		: 'var(--bg)'}; --text: {'#ffffff'}; --r: {manager.currentTrack?.color?.r}; --g: {manager
+		.currentTrack?.color?.g}; --b: {manager.currentTrack?.color
+		?.b}; --percent: {percentage}%; --rd: {'255'}; --gd: {'255'}; --bd: {'255'}; --random-degree: {randdeg}deg; --brightness: {manager
+		.currentTrack?.is_light
+		? '70%'
+		: '1'}"
 >
+	<div class="background-images">
+		{#if manager.currentTrack?.cover}
+			{#each layers as _, index}
+				<div
+					class:front={index === 0}
+					class:back={index === 1}
+					class:back_center={index === 2}
+					style="
+          background-image: url({convertFileSrc(manager.currentTrack?.cover as string)});"
+				></div>
+			{/each}
+		{/if}
+	</div>
 	{#if manager.currentTrack}
 		<section class="player">
 			{#if manager.currentTrack.cover}
@@ -401,10 +420,11 @@
 	}
 
 	.__player {
-		background: var(--clr);
+		background-size: cover;
+		/* background: var(--clr); */
 		color: var(--text);
-		width: 100%;
-		height: 100%;
+		width: 100vw;
+		height: 100vh;
 		position: fixed;
 		z-index: 100;
 		top: 0;
@@ -417,6 +437,71 @@
 		gap: 2em;
 		transform: translateY(200%);
 		transition: all 0.3s ease-in-out;
+	}
+
+	.__player .background-images {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: -2;
+		overflow: hidden;
+	}
+
+	div.front {
+		right: 0;
+		top: 0;
+		z-index: 2;
+	}
+
+	div.back_center {
+		animation-direction: reverse;
+		right: -50%;
+		top: -20%;
+		width: 300%;
+		height: 300%;
+		z-index: 0;
+	}
+
+	div.back {
+		animation-direction: reverse;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+	}
+
+	.__player .background-images > div {
+		animation: rot 35s linear infinite;
+		border-radius: 100em;
+		filter: blur(40px) brightness(var(--brightness));
+		position: absolute;
+		width: 200%;
+		height: 200%;
+		object-fit: cover;
+		background-size: cover;
+	}
+
+	@keyframes rot {
+		0% {
+			transform: rotate(var(--random-degree));
+		}
+		100% {
+			transform: rotate(calc(var(--random-degree) + 1turn));
+		}
+	}
+
+	.__player::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-size: cover;
+		backdrop-filter: blur(64px);
+		-webkit-backdrop-filter: blur(64px);
+		z-index: -1;
 	}
 
 	.__player .player {
