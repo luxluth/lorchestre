@@ -483,7 +483,7 @@
 	.__player .background-images > div {
 		animation: rot 35s linear infinite;
 		border-radius: 100em;
-		filter: blur(40px) brightness(var(--brightness));
+		filter: blur(64px) brightness(var(--brightness));
 		position: absolute;
 		width: 200%;
 		height: 200%;
@@ -508,6 +508,7 @@
 		bottom: 0;
 		left: 0;
 		background-size: cover;
+		background-color: rgba(var(--r), var(--g), var(--b), 0.5);
 		backdrop-filter: blur(64px);
 		-webkit-backdrop-filter: blur(64px);
 		z-index: -1;
