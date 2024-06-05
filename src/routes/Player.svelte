@@ -15,7 +15,6 @@
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
 	import { getContext } from 'svelte';
-	import { browser } from '$app/environment';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
@@ -172,21 +171,31 @@
 	}
 
 	let randdeg = $state(getRandomAngle());
+
+	let styles = $derived({
+		clr: manager.currentTrack?.color
+			? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
+			: 'var(--bg)',
+		text: '#ffffff',
+		r: manager.currentTrack?.color?.r,
+		g: manager.currentTrack?.color?.g,
+		b: manager.currentTrack?.color?.b,
+		percent: `${percentage}%`,
+		rd: '255',
+		gd: '255',
+		bd: '255',
+		'random-degree': `${randdeg}deg`,
+		brightness: manager.currentTrack?.is_light ? '70%' : '1'
+	});
+
+	let styleString = $derived(
+		Object.entries(styles)
+			.map(([key, value]) => `--${key}: ${value}`)
+			.join(';')
+	);
 </script>
 
-<div
-	class:active
-	class:playing
-	class="__player"
-	style="--clr: {manager.currentTrack?.color
-		? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
-		: 'var(--bg)'}; --text: {'#ffffff'}; --r: {manager.currentTrack?.color?.r}; --g: {manager
-		.currentTrack?.color?.g}; --b: {manager.currentTrack?.color
-		?.b}; --percent: {percentage}%; --rd: {'255'}; --gd: {'255'}; --bd: {'255'}; --random-degree: {randdeg}deg; --brightness: {manager
-		.currentTrack?.is_light
-		? '70%'
-		: '1'}"
->
+<div class:active class:playing class="__player" style={styleString}>
 	<div class="background-images">
 		{#if manager.currentTrack?.cover}
 			{#each layers as _, index}
@@ -245,7 +254,7 @@
 				<h2 class="ns">{manager.currentTrack.title ?? 'Titre inconnu'}</h2>
 				<p class="artist ns">{manager.currentTrack.artists.join(', ') ?? 'Artiste inconnu'}</p>
 			</div>
-			<div class="controls" style="--percent: {percentage}%;">
+			<div class="controls">
 				<div class="actions">
 					<button>
 						<Rewind
@@ -436,7 +445,7 @@
 		padding-inline: 2em;
 		gap: 2em;
 		transform: translateY(200%);
-		transition: all 0.3s ease-in-out;
+		transition: transform 0.3s ease-in-out;
 	}
 
 	.__player .background-images {

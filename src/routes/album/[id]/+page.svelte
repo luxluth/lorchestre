@@ -145,6 +145,11 @@
 		align-items: center;
 		height: 2.5em;
 		gap: 1em;
+		padding-inline: 1em;
+	}
+
+	.track:nth-child(odd) {
+		background-color: var(--highlight);
 	}
 
 	.track .title {
@@ -185,24 +190,6 @@
 
 	.trackn .no {
 		opacity: 0.5;
-	}
-
-	.track {
-		border-top: 1px solid rgba(100, 100, 100, 0.18);
-		border-bottom: 1px solid rgba(100, 100, 100, 0.18);
-	}
-
-	.tracks .track:only-child {
-		border-top: none;
-		border-bottom: none;
-	}
-
-	.tracks .track:first-child {
-		border-top: none;
-	}
-
-	.tracks .track:last-child {
-		border-bottom: none;
 	}
 
 	.head {

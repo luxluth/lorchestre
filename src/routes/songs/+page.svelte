@@ -38,38 +38,35 @@
 </div>
 
 <div class="songlist">
-	{#each media.getSongs() as song, i}
+	{#each media.getSongs() as song}
 		<div class="track ns" data-id={song.id} role="presentation" draggable>
-			<div class="count" aria-colindex="1" role="gridcell">
-				<div class="x">
-					{i + 1}
-				</div>
-				<button
-					class="play"
-					onclick={async () => {
-						await play(song);
-					}}
-				>
-					<Play fill={'var(--fg)'} size={'16px'} />
-				</button>
-			</div>
-			<div class="details-group" aria-colindex="2" role="gridcell">
+			<div class="details-group" aria-colindex="1" role="gridcell">
 				{#if song.cover}
 					<div
 						class="cover"
 						style="--clr: {song.color
 							? `rgb(${song.color.r}, ${song.color.g}, ${song.color.b})`
 							: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(song.cover)}');"
-					></div>
+					>
+						<button
+							class="play"
+							onclick={async () => {
+								await play(song);
+							}}
+						>
+							<Play fill={'#ffffff'} size={'16px'} />
+						</button>
+					</div>
 				{/if}
 				<div class="details">
 					<h4 class="title">{song.title}</h4>
-					<p class="artist">{song.artists.join(', ')}</p>
 				</div>
 			</div>
-			<div class="album" aria-colindex="3" role="gridcell">{song.album}</div>
-			<div class="date" aria-colindex="4" role="gridcell">xxx:xxx:xxx</div>
-			<div class="duration" aria-colindex="5" role="gridcell">{formatTime(song.duration)}</div>
+			<div class="artist" aria-colindex="2" role="gridcell">{song.artists.join(', ')}</div>
+			<div class="album" aria-colindex="3" role="gridcell">
+				<a href="/album/{song.album_id}">{song.album}</a>
+			</div>
+			<div class="duration" aria-colindex="4" role="gridcell">{formatTime(song.duration)}</div>
 		</div>
 	{/each}
 </div>
@@ -87,6 +84,7 @@
 		cursor: pointer;
 		padding: 0.6em;
 		border-radius: 8px;
+		color: var(--fg);
 	}
 
 	.quick-actions button:active {
@@ -108,56 +106,43 @@
 	.track {
 		display: grid;
 		grid-template-columns:
-			[index] var(--tracklist-index-column-width, 16px) [first] minmax(120px, var(--col1, 6fr))
+			[first] minmax(120px, var(--col1, 6fr))
 			[var1] minmax(120px, var(--col2, 4fr)) [var2] minmax(120px, var(--col3, 3fr)) [last] minmax(120px, var(--col4, 1fr));
 		align-items: center;
-		padding-inline: 16px;
-		padding-block: 8px;
-		margin-block: 0.5em;
 		grid-gap: 16px;
-		border-radius: 8px;
+		padding-block: 4px;
+		padding-inline: 5px;
 	}
 
-	.track:hover {
+	.track:nth-child(odd) {
 		background-color: var(--highlight);
 	}
 
-	.track:hover .count {
-		opacity: 1;
-	}
-
-	.track:hover .count .x {
-		display: none;
-	}
-
-	.track:hover .count .play {
-		display: block;
-	}
-
-	.track .count .play {
-		background: none;
-		border: none;
-	}
-
-	.count .play {
-		display: none;
-	}
-
-	.count {
-		display: flex;
-		justify-content: center;
-		text-align: center;
-		justify-self: end;
-		opacity: 0.5;
-	}
-
 	.cover {
-		height: 50px;
-		width: 50px;
+		height: 40px;
+		width: 40px;
 		background-color: var(--clr);
-		border-radius: 4px;
+		border-radius: 3px;
 		background-size: cover;
 		background-position: center;
+		color: #ffffff;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.cover button {
+		background: rgba(0, 0, 0, 0.2);
+		border: none;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		display: none;
+	}
+
+	.track:hover .cover button {
+		display: block;
 	}
 
 	.details-group {
@@ -173,30 +158,38 @@
 
 	.title {
 		font-size: 1em;
-		font-weight: 600;
+		font-weight: 400;
 		margin: 0;
 	}
 
 	.artist {
 		font-size: 0.875em;
-		opacity: 0.6;
+		opacity: 0.3;
 		margin: 0;
 	}
 
 	.album,
-	.date,
 	.duration {
 		text-align: left;
 		font-size: 0.875em;
 		opacity: 0.6;
 	}
 
+	a {
+		text-decoration: none;
+		color: var(--fg);
+		text-overflow: ellipsis;
+	}
+
+	a:hover {
+		text-decoration: underline;
+	}
+
 	.album {
 		padding: 0 10px;
 	}
 
-	.date,
 	.duration {
-		text-align: center;
+		text-align: right;
 	}
 </style>

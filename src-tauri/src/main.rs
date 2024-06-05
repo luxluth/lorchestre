@@ -136,6 +136,27 @@ fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
             }
 
             cache = cache_data;
+        } else {
+            eprintln!("[WARN] Unmatched Media cache verison");
+            if let Some(win) = window.clone() {
+                let _ = win.emit(
+                    "cache-update-files",
+                    CachePayLoad::TotalFiles {
+                        count: curr_audio_files.len(),
+                    },
+                );
+            }
+            for file in curr_audio_files {
+                if let Some(win) = window.clone() {
+                    let _ = win.emit(
+                        "cache-update-data",
+                        CachePayLoad::FileProcessed(format!("+ {}", file.display())),
+                    );
+                }
+
+                cache.add_song(Track::from_file(covers_dir.clone(), file));
+            }
+            needs_update = true;
         }
     } else {
         if let Some(win) = window.clone() {
