@@ -345,17 +345,17 @@
 		align-items: center;
 	}
 
-	.__player .controls .progress-area div.time {
-		position: relative;
-		opacity: 0.5;
-	}
-
-	.__player .controls .progress-area div.time span {
-		position: absolute;
-		bottom: 50%;
-		left: 50%;
-		transform: translate(-50%, 50%);
-	}
+	/* .__player .controls .progress-area div.time { */
+	/* 	position: relative; */
+	/* 	opacity: 0.5; */
+	/* } */
+	/**/
+	/* .__player .controls .progress-area div.time span { */
+	/* 	position: absolute; */
+	/* 	bottom: 50%; */
+	/* 	left: 50%; */
+	/* 	transform: translate(-50%, 50%); */
+	/* } */
 
 	.__player .controls .progressbar {
 		flex-grow: 1;
@@ -566,12 +566,12 @@
 
 	.__player .lrc .line:hover {
 		opacity: 0.5;
-		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
+		background: rgba(255, 255, 255, 0.2);
 	}
 
 	.__player .lrc .line.active:hover {
 		opacity: 1;
-		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
+		background: rgba(255, 255, 255, 0.2);
 	}
 
 	.line.instrumental {
@@ -615,7 +615,7 @@
 		width: 100%;
 		height: 100%;
 		position: absolute;
-		background: rgba(var(--r), var(--g), var(--b), 0.7);
+		background: rgba(0, 0, 0, 0.3);
 		opacity: 0;
 		transition: opacity 0.3s ease-in-out;
 	}
@@ -634,17 +634,17 @@
 		gap: 1em;
 	}
 
-	.bitrate {
-		position: absolute;
-		bottom: 1em;
-		right: 1em;
-		color: rgb(var(--r), var(--g), var(--b));
-		background: var(--text);
-		width: fit-content;
-		padding: 0.2em;
-		font-weight: bold;
-		border-radius: 4px;
-	}
+	/* .bitrate { */
+	/* 	position: absolute; */
+	/* 	bottom: 1em; */
+	/* 	right: 1em; */
+	/* 	color: rgb(var(--r), var(--g), var(--b)); */
+	/* 	background: var(--text); */
+	/* 	width: fit-content; */
+	/* 	padding: 0.2em; */
+	/* 	font-weight: bold; */
+	/* 	border-radius: 4px; */
+	/* } */
 
 	.__player .infos h2 {
 		font-size: 2em;

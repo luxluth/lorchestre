@@ -1,14 +1,14 @@
 {
-	"bib": "ライブラリ",
+	"bib": "図書館",
 	"search": "検索",
 	"recent-added": "最近追加されたもの",
 	"albums": "アルバム",
 	"settings": "設定",
 	"songs": "曲",
 	"no_media": "再生中の曲はありません",
-	"indexing_msg": "ローカルファイルをインデックス中...",
+	"indexing_msg": "ローカルファイルをインデックスしています...",
 	"ctx": {
-		"play": "再生開始",
+		"play": "再生を開始",
 		"inqueue": "キューに追加"
 	},
 	"cmds": {
@@ -29,12 +29,15 @@
 		}
 	},
 	"settings_page": {
-		"tip_top": "アプリケーションの設定を管理する",
+		"tip_top": "アプリ設定を管理",
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
 				"title": "インターフェースの言語"
 			}
 		}
+	},
+	"songs_page": {
+		"listen": "聴く"
 	}
 }

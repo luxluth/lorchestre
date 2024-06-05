@@ -33,7 +33,7 @@
 		}}
 	>
 		<Play fill={'var(--fg)'} size={'1.5em'} />
-		Listen
+		{$_('songs_page.listen')}
 	</button>
 </div>
 

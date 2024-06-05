@@ -36,5 +36,8 @@
 				"title": "Language"
 			}
 		}
+	},
+	"songs_page": {
+		"listen": "Listen"
 	}
 }
