@@ -33,7 +33,7 @@
 	let filterquery = getContext<FilterQuery>('filterq');
 
 	async function playAll() {
-		let songs = media.getSongs();
+		let songs = applyFilters(media.getSongs());
 		let song = songs.shift() as Track;
 		await manager.play(song);
 		manager.clearQueue();
