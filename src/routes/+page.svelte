@@ -23,6 +23,10 @@
 		return t.sort((a, b) => a.track - b.track);
 	}
 
+	function trim(text: string, len = 40) {
+		return text.slice(0, len) + (text.length > len ? '...' : '');
+	}
+
 	let manager = getContext<Manager>('manager');
 	let ctx = getContext<Ctx>('ctx');
 
@@ -82,7 +86,7 @@
 							: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(tracks[0].cover)}');"
 					></div>
 				{/if}
-				<p class="title ns">{name}</p>
+				<p class="title ns">{trim(name)}</p>
 				<p class="artist ns">{artist}</p>
 			</a>
 		{/each}
@@ -111,7 +115,7 @@
 
 	.msg .data {
 		font-size: 0.5em;
-		font-family: monospace;
+		font-family: var(--font-mono);
 	}
 
 	.msg .icon {
@@ -157,32 +161,6 @@
 		width: 100%;
 		position: relative;
 	}
-
-	/* .__audio .cover:hover button { */
-	/* 	opacity: 1; */
-	/* } */
-	/**/
-	/* .__audio .cover button { */
-	/* 	position: absolute; */
-	/* 	bottom: 50%; */
-	/* 	left: 50%; */
-	/* 	transform: translate(-50%, 50%); */
-	/* 	background-color: var(--fg); */
-	/* 	border: none; */
-	/* 	display: flex; */
-	/* 	align-items: center; */
-	/* 	justify-content: center; */
-	/* 	padding: 2em; */
-	/* 	border-radius: 50%; */
-	/* 	opacity: 0; */
-	/* 	transition: all 0.15s ease-in-out; */
-	/* 	cursor: pointer; */
-	/* } */
-	/**/
-	/* .__audio .cover button:active { */
-	/* 	transform: translate(-50%, 50%) scale(0.9); */
-	/* 	opacity: 0.5; */
-	/* } */
 
 	.__audio .cover {
 		aspect-ratio: 1/1;

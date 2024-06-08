@@ -558,7 +558,7 @@
 	.__player .lrc .line {
 		font-size: 3em;
 		padding: 0.25em;
-		font-weight: 800;
+		font-weight: 600;
 		opacity: 0.3;
 		transition: all 0.2s ease-in-out;
 		cursor: pointer;

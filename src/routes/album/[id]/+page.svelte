@@ -41,6 +41,10 @@
 		}
 	}
 
+	function trim(text: string, len = 40) {
+		return text.slice(0, len) + (text.length > len ? '...' : '');
+	}
+
 	function play(t: Track) {
 		manager.play(t);
 	}
@@ -95,7 +99,7 @@
 			</div>
 		{/if}
 		<div class="data">
-			<h1>{album.name}</h1>
+			<h1>{trim(album.name, 60)}</h1>
 			<h3>{album.artist}</h3>
 			<p>{album.year}</p>
 		</div>
@@ -163,7 +167,6 @@
 	}
 
 	.track .duration {
-		font-weight: bold;
 		opacity: 0.5;
 	}
 
@@ -180,6 +183,10 @@
 		border: none;
 	}
 
+	.track:hover .trackn {
+		opacity: 1;
+	}
+
 	.track:hover .trackn button {
 		display: block;
 	}
@@ -190,6 +197,13 @@
 
 	.trackn .no {
 		opacity: 0.5;
+	}
+
+	.trackn,
+	.duration {
+		font-family: var(--font-mono);
+		font-size: 0.875em;
+		opacity: 0.6;
 	}
 
 	.head {
@@ -204,6 +218,7 @@
 
 	.head .data h1 {
 		font-size: 4rem;
+		font-family: var(--font-fantasy);
 		line-height: 1;
 		height: 100%;
 		padding-bottom: 0.1em;
