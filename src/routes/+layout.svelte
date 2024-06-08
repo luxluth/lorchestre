@@ -1,8 +1,23 @@
 <script lang="ts">
 	import '@fontsource-variable/noto-sans-kr';
 	import '@fontsource-variable/noto-sans-jp';
+	import '@fontsource-variable/noto-serif-jp';
 	import '@fontsource-variable/noto-sans-sc';
-	import '@fontsource-variable/readex-pro';
+
+	import '@fontsource/poppins/100.css';
+	import '@fontsource/poppins/200.css';
+	import '@fontsource/poppins/300.css';
+	import '@fontsource/poppins/400.css';
+	import '@fontsource/poppins/500.css';
+	import '@fontsource/poppins/600.css';
+	import '@fontsource/poppins/700.css';
+	import '@fontsource/poppins/800.css';
+	import '@fontsource/poppins/900.css';
+
+	import '@fontsource-variable/inter';
+
+	import '@fontsource/calistoga';
+	import '@fontsource/ibm-plex-mono';
 	import '../styles/global.css';
 
 	import Toast from './Toast.svelte';

@@ -6,6 +6,9 @@ html {
 	--light-fg: #000000;
 	--light-bg: #ffffff;
 	--light-highlight: #f4f4f5;
+
+	--font-fantasy: 'Calistoga', 'Noto Serif JP Variable', serif;
+	--font-mono: 'IBM Plex Mono', monospace;
 }
 
 :root {
@@ -15,10 +18,9 @@ html {
 
 	color-scheme: ligth dark;
 	font-family:
-		'Product Sans',
+		'Inter Variable',
 		system-ui,
 		-apple-system,
-		'Readex Pro Variable',
 		'Noto Sans KR Variable',
 		'Noto Sans JP Variable',
 		'Noto Sans SC Variable',
