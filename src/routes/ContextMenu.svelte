@@ -61,6 +61,10 @@
 		padding: 2px;
 	}
 
+	hr {
+		color: rgba(100, 100, 100, 0.18);
+	}
+
 	@keyframes reveal-in {
 		0% {
 			opacity: 0;
