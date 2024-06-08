@@ -16,10 +16,14 @@
 	},
 	"license": "GPL-3.0",
 	"devDependencies": {
+		"@fontsource-variable/inter": "^5.0.18",
 		"@fontsource-variable/noto-sans-jp": "^5.0.19",
 		"@fontsource-variable/noto-sans-kr": "^5.0.6",
 		"@fontsource-variable/noto-sans-sc": "^5.0.6",
-		"@fontsource-variable/readex-pro": "^5.0.13",
+		"@fontsource-variable/noto-serif-jp": "^5.0.1",
+		"@fontsource/calistoga": "^5.0.20",
+		"@fontsource/ibm-plex-mono": "^5.0.13",
+		"@fontsource/poppins": "^5.0.14",
 		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": "^2.5.10",
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
@@ -30,13 +34,13 @@
 		"@types/howler": "^2.2.11",
 		"bits-ui": "^0.21.10",
 		"lucide-svelte": "^0.379.0",
-		"prettier": "^3.2.5",
-		"prettier-plugin-svelte": "^3.2.3",
-		"svelte": "5.0.0-next.148",
+		"prettier": "^3.3.1",
+		"prettier-plugin-svelte": "^3.2.4",
+		"svelte": "5.0.0-next.151",
 		"svelte-check": "^3.8.0",
 		"svelte-i18n": "^4.0.0",
-		"tslib": "^2.6.2",
+		"tslib": "^2.6.3",
 		"typescript": "^5.4.5",
-		"vite": "^5.2.12"
+		"vite": "^5.2.13"
 	}
 }
