@@ -509,8 +509,8 @@
 		left: 0;
 		background-size: cover;
 		background-color: rgba(var(--r), var(--g), var(--b), 0.5);
-		backdrop-filter: blur(64px);
-		-webkit-backdrop-filter: blur(64px);
+		backdrop-filter: blur(14px);
+		-webkit-backdrop-filter: blur(14px);
 		z-index: -1;
 	}
 
