@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 use lofty::prelude::*;
 use lofty::probe::Probe;
@@ -75,6 +76,7 @@ pub struct Track {
     pub duration: u64,
     pub bitrate: u32,
     pub id: String,
+    pub created_at: SystemTime,
 }
 
 impl Track {
@@ -97,6 +99,12 @@ impl Track {
         let mut audio: Track = Track {
             file_path: inode.to_str().unwrap().to_string(),
             ..Default::default()
+        };
+
+        if let Ok(meta) = inode.metadata() {
+            if let Ok(created_at) = meta.created() {
+                audio.created_at = created_at;
+            }
         };
 
         if let Some(year) = tag.year() {
@@ -248,6 +256,7 @@ impl Default for Track {
             bitrate: 0,
             duration: 0,
             id: String::new(),
+            created_at: SystemTime::UNIX_EPOCH,
         }
     }
 }

@@ -35,6 +35,7 @@
 	import Lrc from '$lib/components/Lrc.svelte';
 	import LrcManager from '$lib/lrc.svelte';
 	import MediaState from '$lib/media.svelte';
+	import FilterQuery from '$lib/filterq.svelte';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 	setContext<Manager>('manager', new Manager());
@@ -42,6 +43,7 @@
 	setContext<Cmds>('cmds', new Cmds());
 	setContext<LrcManager>('lm', new LrcManager(0, []));
 	setContext<MediaState>('media', new MediaState());
+	setContext<FilterQuery>('filterq', new FilterQuery());
 
 	$effect(() => {
 		let media = getContext<MediaState>('media');

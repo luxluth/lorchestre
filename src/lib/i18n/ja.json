@@ -39,7 +39,20 @@
 	},
 	"songs_page": {
 		"listen": "聴く",
-		"shuffle": "シャッフル"
+		"shuffle": "シャッフル",
+
+		"filter": {
+			"filter_to_apply": "適用するフィルター",
+			"sort_order": "並び順",
+			"type": {
+				"alpha": "アルファベット順",
+				"date": "追加日"
+			},
+			"order": {
+				"asc": "昇順",
+				"desc": "降順"
+			}
+		}
 	},
 
 	"misc": {

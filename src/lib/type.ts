@@ -45,6 +45,11 @@ export type Album = {
 	id: string;
 };
 
+export type SystemTime = {
+	nanos_since_epoch: number;
+	secs_since_epoch: number;
+};
+
 export type Track = {
 	title: string;
 	artists: string[];
@@ -56,6 +61,7 @@ export type Track = {
 	lyrics: LyricLine[];
 	cover?: string;
 	color?: Color;
+	created_at: SystemTime;
 	is_light?: boolean;
 	file_path: string;
 	duration: u64;
@@ -105,3 +111,13 @@ export type ContextMenuEvent =
 	| (MouseEvent & {
 			currentTarget: EventTarget & HTMLAnchorElement;
 	  });
+
+export enum FilterType {
+	Alphabetic,
+	TimeBased
+}
+
+export enum FilterOrder {
+	Ascendant,
+	Descendant
+}

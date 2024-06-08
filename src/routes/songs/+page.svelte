@@ -4,6 +4,8 @@
 	import type MediaState from '$lib/media.svelte';
 	import {
 		ContextMenuItemType,
+		FilterOrder,
+		FilterType,
 		type ContextMenuEvent,
 		type ContextMenuItem,
 		type Track
@@ -17,9 +19,18 @@
 	import { goto } from '$app/navigation';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
 
+	import { Select } from 'bits-ui';
+	import { flyAndScale } from '$lib/utils/transitions';
+
+	import Check from 'lucide-svelte/icons/check';
+	import Filter from 'lucide-svelte/icons/filter';
+	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
+	import type FilterQuery from '$lib/filterq.svelte';
+
 	let manager = getContext<Manager>('manager');
 	let media = getContext<MediaState>('media');
 	let ctx = getContext<Ctx>('ctx');
+	let filterquery = getContext<FilterQuery>('filterq');
 
 	async function playAll() {
 		let songs = media.getSongs();
@@ -86,7 +97,7 @@
 		});
 	}
 
-	function sortTracksByTitleAZ(tracks: Track[]): Track[] {
+	function sortTracksByTitle(tracks: Track[]): Track[] {
 		return tracks.slice().sort((a, b) => {
 			const titleA = a.title.toLowerCase();
 			const titleB = b.title.toLowerCase();
@@ -96,13 +107,50 @@
 		});
 	}
 
+	function sortTracksByDate(tracks: Track[]): Track[] {
+		return tracks.slice().sort((a, b) => {
+			const dateA = a.created_at.secs_since_epoch * 1e9 + a.created_at.nanos_since_epoch;
+			const dateB = b.created_at.secs_since_epoch * 1e9 + b.created_at.nanos_since_epoch;
+			return dateB - dateA;
+		});
+	}
+
+	function applyFilterQuery(tracks: Track[]): Track[] {
+		let r = [];
+		switch (filterquery.type) {
+			case FilterType.Alphabetic:
+				r = sortTracksByTitle(tracks);
+				break;
+			case FilterType.TimeBased:
+				r = sortTracksByDate(tracks);
+				break;
+		}
+
+		if (filterquery.order == FilterOrder.Descendant) {
+			r = r.reverse();
+		}
+
+		return r;
+	}
+
 	function applyFilters(tracks: Track[]): Track[] {
+		let t = applyFilterQuery(tracks);
 		if (searchInput.trim().length > 0) {
-			return applySearchFilter(tracks, searchInput);
+			return applySearchFilter(t, searchInput);
 		} else {
-			return tracks;
+			return t;
 		}
 	}
+
+	const filterTypes = [
+		{ value: FilterType.Alphabetic, label: 'songs_page.filter.type.alpha' },
+		{ value: FilterType.TimeBased, label: 'songs_page.filter.type.date' }
+	];
+
+	const filterOrders = [
+		{ value: FilterOrder.Ascendant, label: 'songs_page.filter.order.asc' },
+		{ value: FilterOrder.Descendant, label: 'songs_page.filter.order.desc' }
+	];
 
 	let searchInput = $state('');
 </script>
@@ -129,6 +177,60 @@
 </div>
 
 <div class="filters">
+	<div class="filter">
+		<Select.Root
+			items={filterTypes}
+			selected={filterTypes.find((l) => l.value === filterquery.type)}
+			onSelectedChange={(e) => {
+				if (e) {
+					filterquery.type = e.value;
+				}
+			}}
+		>
+			<Select.Trigger class="select-trigger" aria-label="Choisissez un type de filtre">
+				<Filter class="icon" />
+				<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
+			</Select.Trigger>
+			<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
+				{#each filterTypes as filter}
+					<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+						{$_(filter.label)}
+						<Select.ItemIndicator class="ml-auto" asChild={false}>
+							<Check />
+						</Select.ItemIndicator>
+					</Select.Item>
+				{/each}
+			</Select.Content>
+			<Select.Input name="favoriteFruit" />
+		</Select.Root>
+	</div>
+	<div class="filter">
+		<Select.Root
+			items={filterOrders}
+			selected={filterOrders.find((l) => l.value === filterquery.order)}
+			onSelectedChange={(e) => {
+				if (e) {
+					filterquery.order = e.value;
+				}
+			}}
+		>
+			<Select.Trigger class="select-trigger" aria-label="Choisissez l'ordre du tri">
+				<ArrowDown10 class="icon" />
+				<div class="text">{$_('songs_page.filter.sort_order')}</div>
+			</Select.Trigger>
+			<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
+				{#each filterOrders as filter}
+					<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+						{$_(filter.label)}
+						<Select.ItemIndicator class="ml-auto" asChild={false}>
+							<Check />
+						</Select.ItemIndicator>
+					</Select.Item>
+				{/each}
+			</Select.Content>
+			<Select.Input name="favoriteFruit" />
+		</Select.Root>
+	</div>
 	<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
 </div>
 
@@ -188,6 +290,64 @@
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
+		gap: 1em;
+	}
+
+	.filter :global(.select-trigger) {
+		-webkit-appearance: none;
+		appearance: none;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+		gap: 0.5em;
+		padding-inline: 2em;
+		padding-block: 0.3em;
+		font-size: 0.875em;
+		border: none;
+		background-color: var(--highlight);
+		cursor: pointer;
+		border-radius: 8px;
+		color: var(--fg);
+		width: fit-content;
+		height: 2.5em;
+	}
+
+	:global(.select-trigger .text) {
+		height: 100%;
+		width: 100%;
+		display: flex;
+		align-items: center;
+	}
+
+	:global(.select-trigger svg.icon) {
+		opacity: 0.4;
+	}
+
+	.filter :global(.select-trigger:active) {
+		transform: scale(0.99);
+	}
+
+	:global(.select-item) {
+		display: flex;
+		width: 100%;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.2em;
+		padding-inline: 0.5em;
+		height: 2em;
+		border-radius: 4px;
+	}
+
+	:global(.select-item:hover) {
+		background: var(--highlight);
+	}
+
+	:global(.select-content) {
+		width: fit-content;
+		border-radius: 9px;
+		border: 2px solid rgba(100, 100, 100, 0.18);
+		background: var(--bg);
+		padding: 0.3em;
 	}
 
 	input[type='search'] {
