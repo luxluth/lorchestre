@@ -38,6 +38,11 @@
 		}
 	},
 	"songs_page": {
-		"listen": "Écouter"
+		"listen": "Écouter",
+		"shuffle": "Aléatoire"
+	},
+
+	"misc": {
+		"goto_album_page": "Accéder à l'album"
 	}
 }

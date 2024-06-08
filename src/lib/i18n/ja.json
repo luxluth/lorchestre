@@ -6,9 +6,9 @@
 	"settings": "設定",
 	"songs": "曲",
 	"no_media": "再生中の曲はありません",
-	"indexing_msg": "ローカルファイルをインデックスしています...",
+	"indexing_msg": "ローカルファイルのインデックスを作成中...",
 	"ctx": {
-		"play": "再生を開始",
+		"play": "再生開始",
 		"inqueue": "キューに追加"
 	},
 	"cmds": {
@@ -29,7 +29,7 @@
 		}
 	},
 	"settings_page": {
-		"tip_top": "アプリ設定を管理",
+		"tip_top": "アプリケーションの設定を管理",
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
@@ -38,6 +38,11 @@
 		}
 	},
 	"songs_page": {
-		"listen": "聴く"
+		"listen": "聴く",
+		"shuffle": "シャッフル"
+	},
+
+	"misc": {
+		"goto_album_page": "アルバムに移動"
 	}
 }
