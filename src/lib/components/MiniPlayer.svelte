@@ -16,6 +16,7 @@
 	import type Manager from '$lib/manager.svelte';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { getCoverUri } from '$lib/utils';
 
 	let manager = getContext<Manager>('manager');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
@@ -84,39 +85,25 @@
 				? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
 				: 'var(--bg)'};"
 		>
-			{#if manager.currentTrack.cover}
+			<div
+				class="cover"
+				style="background-image: url({getCoverUri(
+					manager.currentTrack.album_id,
+					manager.currentTrack.cover_ext
+				)});"
+			>
 				<div
-					class="cover"
-					style="background-image: url({convertFileSrc(manager.currentTrack.cover)});"
+					class="expand"
+					onclick={() => {
+						manager.activatePlayer();
+					}}
+					role="button"
+					tabindex="0"
+					onkeydown={() => {}}
 				>
-					<div
-						class="expand"
-						onclick={() => {
-							manager.activatePlayer();
-						}}
-						role="button"
-						tabindex="0"
-						onkeydown={() => {}}
-					>
-						<Maximize2 />
-					</div>
+					<Maximize2 />
 				</div>
-			{:else}
-				<div class="fakecover">
-					<Music3 />
-					<div
-						class="expand"
-						onclick={() => {
-							manager.activatePlayer();
-						}}
-						role="button"
-						tabindex="0"
-						onkeydown={() => {}}
-					>
-						<Maximize2 />
-					</div>
-				</div>
-			{/if}
+			</div>
 			<div class="details">
 				<div class="track-infos">
 					<h4>{manager.currentTrack.title}</h4>
@@ -310,8 +297,7 @@
 		color: var(--dark-fg);
 	}
 
-	.cover:hover .expand,
-	.fakecover:hover .expand {
+	.cover:hover .expand {
 		opacity: 1;
 	}
 

@@ -1,3 +1,5 @@
+import { convertFileSrc } from '@tauri-apps/api/core';
+
 export function clickOutside(element: Element, callbackFunction: () => void) {
 	function onClick(event: MouseEvent) {
 		if (!element.contains(event.target as Node)) {
@@ -46,4 +48,11 @@ export function formatTime(seconds: number) {
 	} else {
 		return new Date(seconds * 1000).toISOString().substring(14, 19);
 	}
+}
+export function getCoverUri(album_id: string, ext: String) {
+	return convertFileSrc(`cover:${album_id}${ext}`, 'mu');
+}
+
+export function getAudioUri(id: string) {
+	return convertFileSrc(`audio:${id}`, 'mu');
 }

@@ -2,10 +2,10 @@
 	import type Cmds from '$lib/commands.svelte';
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
-	import { convertFileSrc } from '@tauri-apps/api/core';
 	import { flip } from 'svelte/animate';
 
 	import { _ } from 'svelte-i18n';
+	import { getCoverUri } from '$lib/utils';
 
 	let cmds = getContext<Cmds>('cmds');
 	let manager = getContext<Manager>('manager');
@@ -27,10 +27,11 @@
 	<section class="songs">
 		{#if manager.queue.length > 0}
 			{#each manager.queue as track (track.id)}
-				<div class="track ns" role="button" tabindex="0" animate:flip={{ duration: 200 }}>
-					{#if track.cover}
-						<div class="cover" style="background-image: url({convertFileSrc(track.cover)});"></div>
-					{/if}
+				<div class="track ns" role="button" tabindex="0" animate:flip={{ duration: 200 }} draggable>
+					<div
+						class="cover"
+						style="background-image: url({getCoverUri(track.album_id, track.cover_ext)});"
+					></div>
 					<div class="infos">
 						<div class="details">
 							<h4>{track.title}</h4>

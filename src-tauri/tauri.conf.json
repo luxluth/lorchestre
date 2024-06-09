@@ -25,7 +25,7 @@
 			}
 		],
 		"security": {
-			"csp": "asset:",
+			"csp": "asset: audio:",
 			"dangerousDisableAssetCspModification": true,
 			"capabilities": [],
 			"assetProtocol": {

@@ -59,7 +59,7 @@ export type Track = {
 	album_id: string;
 	album_year?: u32;
 	lyrics: LyricLine[];
-	cover?: string;
+	cover_ext: string;
 	color?: Color;
 	created_at: SystemTime;
 	is_light?: boolean;

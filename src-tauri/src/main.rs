@@ -8,8 +8,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
+#[cfg(unix)]
+use std::os::unix::fs::{FileExt, MetadataExt};
+
+#[cfg(target_os = "windows")]
+use std::os::windows::fs::{FileExt, MetadataExt};
+
 use mu::{check_dir, Album, Media, Track};
-use tauri::Manager;
+use tauri::{http, Manager};
 
 enum CacheCompareDiff {
     ToAdd { files: Vec<PathBuf> },
@@ -239,6 +245,55 @@ fn set_locale(app: tauri::AppHandle, locale: String) {
     mu::utils::set_locale(Path::new(&cache_dir), locale)
 }
 
+#[derive(Debug)]
+enum ReqType {
+    Cover(String),
+    Audio(String),
+}
+
+impl ReqType {
+    pub fn parse(data: Vec<&str>) -> Option<Self> {
+        let mut iter = data.iter();
+        if let Some(kind) = iter.next() {
+            match *kind {
+                "cover" => {
+                    if let Some(cover_file) = iter.next() {
+                        return Some(ReqType::Cover(cover_file.to_string()));
+                    } else {
+                        return None;
+                    }
+                }
+                "audio" => {
+                    if let Some(id) = iter.next() {
+                        return Some(ReqType::Audio(id.to_string()));
+                    } else {
+                        return None;
+                    }
+                }
+                _ => return None,
+            }
+        } else {
+            None
+        }
+    }
+}
+
+fn range(data: (&str, &str)) -> (u64, u64) {
+    let (start, end) = data;
+
+    let start = match start {
+        "" => 0,
+        _ => start.parse::<u64>().unwrap(),
+    };
+
+    let end = match end {
+        "" => 0,
+        _ => end.parse::<u64>().unwrap(),
+    };
+
+    (start, end)
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -251,6 +306,129 @@ fn main() {
             locale,
             set_locale,
         ])
+        .register_asynchronous_uri_scheme_protocol("mu", move |app, request, responder| {
+            // let audio_dir = app.path().audio_dir().unwrap();
+            let cache_dir = app.path().app_cache_dir().unwrap();
+            let req_string = request
+                .uri()
+                .clone()
+                .into_parts()
+                .path_and_query
+                .unwrap()
+                .to_string()[1..]
+                .to_string();
+
+            let req = url_escape::decode(&req_string).to_string();
+            println!("{req}");
+
+            if let Some(req) = ReqType::parse(req.split(':').collect()) {
+                match req {
+                    ReqType::Cover(cover_file) => {
+                        let cover_path = format!("{}/covers/{}", cache_dir.display(), cover_file);
+                        let mut buf = vec![];
+                        if let Ok(mut file) = std::fs::File::open(&cover_path) {
+                            let _ = file.read_to_end(&mut buf);
+                            responder.respond(
+                                http::Response::builder()
+                                    .status(200)
+                                    .header("Access-Control-Allow-Origin", "*")
+                                    .body(buf)
+                                    .unwrap(),
+                            );
+                        } else {
+                            let buf = include_bytes!("./assets/default-cover.png");
+                            responder.respond(
+                                http::Response::builder()
+                                    .status(200)
+                                    .body(buf.to_vec())
+                                    .unwrap(),
+                            );
+                        }
+                    }
+                    ReqType::Audio(id) => {
+                        println!("{id}");
+                        let mut resp =
+                            http::Response::builder().header("Access-Control-Allow-Origin", "*");
+                        let media = get_chache(cache_dir, None);
+                        let mut buf: Vec<u8> = vec![];
+                        if let Some(song) = media.get_song(id) {
+                            let path = Path::new(&song.file_path);
+                            if !path.exists() {
+                                buf = "File doesn't exist".as_bytes().to_vec();
+                                resp = resp.status(404);
+                            } else {
+                                #[cfg(unix)]
+                                let size = fs::metadata(path).unwrap().size();
+
+                                #[cfg(target_os = "windows")]
+                                let size = fs::metadata(path).unwrap().file_size();
+
+                                println!("{size}ko");
+
+                                let audio = fs::File::open(path).unwrap();
+                                if let Some(r) = request.headers().get("range") {
+                                    let (start, mut end): (u64, u64) = r
+                                        .to_str()
+                                        .unwrap()
+                                        .to_lowercase()
+                                        .replace(' ', "")
+                                        .strip_prefix("bytes=")
+                                        .unwrap()
+                                        .split_once('-')
+                                        .map(range)
+                                        .unwrap();
+                                    if end > size {
+                                        resp = resp.status(416);
+                                        resp = resp
+                                            .header("Content-Range", &format!("bytes */{size}"));
+                                    } else {
+                                        if end == 0 {
+                                            end = start + 1024 * 32;
+                                            if end > size {
+                                                end = size
+                                            }
+                                        }
+
+                                        let reading_size = (end - start) as usize;
+
+                                        let mut buf = vec![0u8; reading_size];
+
+                                        #[cfg(unix)]
+                                        let _ = audio.read_at(&mut buf, start);
+
+                                        #[cfg(target_os = "windows")]
+                                        let _ = audio.seek_read(&mut buf, start);
+
+                                        resp = resp.status(206);
+                                        resp = resp.header(
+                                            "Content-Range",
+                                            &format!("bytes {start}-{end}/{size}"),
+                                        );
+                                        resp = resp.header("Accept-Ranges", "bytes");
+                                        resp = resp.header("Content-Type", song.mime.as_str());
+                                    }
+                                } else {
+                                    resp = resp.status(416);
+                                    resp = resp.header("Content-Range", &format!("bytes */{size}"));
+                                }
+                            }
+                        } else {
+                            buf = "Song not found".as_bytes().to_vec();
+                            resp = resp.status(404);
+                        }
+
+                        responder.respond(resp.body(buf).unwrap());
+                    }
+                }
+            } else {
+                responder.respond(
+                    http::Response::builder()
+                        .status(404)
+                        .body(Vec::new())
+                        .unwrap(),
+                );
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

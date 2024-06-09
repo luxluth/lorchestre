@@ -18,6 +18,7 @@
 	import type Ctx from '$lib/ctx.svelte';
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
+	import { getCoverUri } from '$lib/utils';
 
 	const { data }: { data: PageData } = $props();
 
@@ -79,25 +80,24 @@
 
 {#if album}
 	<section class="head">
-		{#if album.tracks[0].cover}
-			<div
-				class="cover"
-				style="--clr: {album.tracks[0].color
-					? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
-					: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(
-					album.tracks[0].cover
-				)}');"
+		<div
+			class="cover"
+			style="--clr: {album.tracks[0].color
+				? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
+				: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
+				album.id,
+				album.tracks[0].cover_ext
+			)}');"
+		>
+			<button
+				class="play"
+				onclick={async () => {
+					await playAlbum();
+				}}
 			>
-				<button
-					class="play"
-					onclick={async () => {
-						await playAlbum();
-					}}
-				>
-					<Play size={'2em'} fill={'var(--fg)'} />
-				</button>
-			</div>
-		{/if}
+				<Play size={'2em'} fill={'var(--fg)'} />
+			</button>
+		</div>
 		<div class="data">
 			<h1>{trim(album.name, 60)}</h1>
 			<h3>{album.artist}</h3>

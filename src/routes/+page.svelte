@@ -16,6 +16,7 @@
 
 	import type MediaState from '$lib/media.svelte';
 	import { _ } from 'svelte-i18n';
+	import { getCoverUri } from '$lib/utils';
 
 	let media = getContext<MediaState>('media');
 
@@ -78,14 +79,15 @@
 					showContext(e, tracks);
 				}}
 			>
-				{#if tracks[0].cover}
-					<div
-						class="cover"
-						style="--clr: {tracks[0].color
-							? `rgb(${tracks[0].color.r}, ${tracks[0].color.g}, ${tracks[0].color.b})`
-							: 'rgb(255, 255, 255)'}; background-image: url('{convertFileSrc(tracks[0].cover)}');"
-					></div>
-				{/if}
+				<div
+					class="cover"
+					style="--clr: {tracks[0].color
+						? `rgb(${tracks[0].color.r}, ${tracks[0].color.g}, ${tracks[0].color.b})`
+						: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
+						id,
+						tracks[0].cover_ext
+					)}');"
+				></div>
 				<p class="title ns">{trim(name)}</p>
 				<p class="artist ns">{artist}</p>
 			</a>

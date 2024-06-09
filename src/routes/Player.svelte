@@ -15,6 +15,7 @@
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
 	import { getContext } from 'svelte';
+	import { getAudioUri, getCoverUri } from '$lib/utils';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
@@ -25,9 +26,13 @@
 	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
 	let dotScale = $state('scale(1)');
 
+	$effect(() => {
+		console.log(sound);
+	});
+
 	let active = $state<boolean>(false);
 	let playing = $state<boolean>(false);
-	let srcUrl = $state<string>('');
+	// let srcUrl = $state<string>('');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 
 	$effect(() => {
@@ -99,17 +104,18 @@
 
 	manager.onplay = async (track: Track) => {
 		manager.currentTrack = track;
-		await getSrc(track.file_path);
+		// await getSrc(track.file_path);
+		// srcUrl = getAudioUri(track.id);
 		lrcMngr.reset(track.duration, track.lyrics);
 
 		if (track.lyrics.length > 0) {
-			lyricsParent.scrollTop = 0;
+			if (lyricsParent) {
+				lyricsParent.scrollTop = 0;
+			}
 		}
 
-		if (sound) {
-			sound.pause();
-		}
-		sound.src = srcUrl;
+		sound.src = getAudioUri(track.id as string);
+		sound.pause();
 		sound.currentTime = 0;
 		sound.onpause = () => {
 			manager.paused = true;
@@ -132,14 +138,13 @@
 		sound.onended = async () => {
 			await manager.next();
 		};
-
 		await sound.play();
 	};
 
-	async function getSrc(path: string) {
-		let blob = await (await fetch(convertFileSrc(path))).blob();
-		srcUrl = URL.createObjectURL(blob);
-	}
+	// async function getSrc(path: string) {
+	// 	let blob = await (await fetch(convertFileSrc(path))).blob();
+	// 	srcUrl = URL.createObjectURL(blob);
+	// }
 
 	async function toggleMediaPlayState() {
 		if (sound) {
@@ -197,120 +202,119 @@
 
 <div class:active class:playing class="__player" style={styleString}>
 	<div class="background-images">
-		{#if manager.currentTrack?.cover}
-			{#each layers as _, index}
-				<div
-					class:front={index === 0}
-					class:back={index === 1}
-					class:back_center={index === 2}
-					style="
-          background-image: url({convertFileSrc(manager.currentTrack?.cover as string)});"
-				></div>
-			{/each}
-		{/if}
+		{#each layers as _, index}
+			<div
+				class:front={index === 0}
+				class:back={index === 1}
+				class:back_center={index === 2}
+				style="
+          background-image: url({getCoverUri(manager.currentTrack?.album_id as string, manager.currentTrack?.cover_ext as string)});"
+			></div>
+		{/each}
 	</div>
-	{#if manager.currentTrack}
-		<section class="player">
-			{#if manager.currentTrack.cover}
-				<div
-					class="cover"
-					style="background-image: url({convertFileSrc(manager.currentTrack.cover)});"
+	<section class="player">
+		<div
+			class="cover"
+			style="background-image: url({getCoverUri(
+				manager.currentTrack?.album_id as string,
+				manager.currentTrack?.cover_ext as string
+			)});"
+		>
+			<div class="actions">
+				<button
+					class="close"
+					onclick={() => {
+						active = false;
+					}}
 				>
-					<div class="actions">
-						<button
-							class="close"
-							onclick={() => {
-								active = false;
-							}}
-						>
-							<X size={'3em'} />
-						</button>
-						<div class="volume">
-							<div class="vol-icon">
-								{#if manager.volume === 0}
-									<Volume size={'1.5em'} />
-								{:else if manager.volume >= 0.7}
-									<Volume2 size={'1.5em'} />
-								{:else if manager.volume > 0}
-									<Volume1 size={'1.5em'} />
-								{/if}
-							</div>
-							<Slider
-								value={manager.volume}
-								style="classic"
-								color={'var(--text)'}
-								thumbColor={'var(--text)'}
-								backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-								oninput={(data) => {
-									sound.volume = data;
-								}}
-							/>
-						</div>
-						<!-- <div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div> -->
-					</div>
-				</div>
-			{/if}
-			<div class="infos">
-				<h2 class="ns">{manager.currentTrack.title ?? 'Titre inconnu'}</h2>
-				<p class="artist ns">{manager.currentTrack.artists.join(', ') ?? 'Artiste inconnu'}</p>
-			</div>
-			<div class="controls">
-				<div class="actions">
-					<button>
-						<Rewind
-							fill={'var(--text)'}
-							color={'var(--text)'}
-							size={'2.5em'}
-							onclick={async () => {
-								await manager.prev();
-							}}
-						/>
-					</button>
-					<button class="playpause" onclick={toggleMediaPlayState}>
-						{#if manager.paused}
-							<Play fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
-						{:else}
-							<Pause fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
+					<X size={'3em'} />
+				</button>
+				<div class="volume">
+					<div class="vol-icon">
+						{#if manager.volume === 0}
+							<Volume size={'1.5em'} />
+						{:else if manager.volume >= 0.7}
+							<Volume2 size={'1.5em'} />
+						{:else if manager.volume > 0}
+							<Volume1 size={'1.5em'} />
 						{/if}
-					</button>
-					<button>
-						<FastForward
-							fill={'var(--text)'}
-							color={'var(--text)'}
-							size={'2.5em'}
-							onclick={async () => {
-								await manager.next();
-							}}
-						/>
-					</button>
-				</div>
-				<div class="progress-area">
-					<!-- <div class="time current ns"> -->
-					<!-- 	<span> -->
-					<!-- 		{formatTime(manager.currentTime)} -->
-					<!-- 	</span> -->
-					<!-- </div> -->
-					<div class="progressbar">
-						<Slider
-							value={percentage / 100}
-							color={'var(--text)'}
-							thumbColor={'var(--text)'}
-							style="thick"
-							backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-							oninput={(data) => {
-								playAt(data * manager.duration);
-							}}
-						/>
 					</div>
-					<!-- <div class="time ns"> -->
-					<!-- 	<span> -->
-					<!-- 		{formatTime(manager.duration)} -->
-					<!-- 	</span> -->
-					<!-- </div> -->
+					<Slider
+						value={manager.volume}
+						style="classic"
+						color={'var(--text)'}
+						thumbColor={'var(--text)'}
+						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
+						oninput={(data) => {
+							sound.volume = data;
+						}}
+					/>
 				</div>
+				<!-- <div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div> -->
 			</div>
-			<audio crossorigin="anonymous" bind:this={sound}></audio>
-		</section>
+		</div>
+		<div class="infos">
+			<h2 class="ns">{manager.currentTrack?.title ?? 'Titre inconnu'}</h2>
+			<p class="artist ns">{manager.currentTrack?.artists.join(', ') ?? 'Artiste inconnu'}</p>
+		</div>
+		<div class="controls">
+			<div class="actions">
+				<button>
+					<Rewind
+						fill={'var(--text)'}
+						color={'var(--text)'}
+						size={'2.5em'}
+						onclick={async () => {
+							await manager.prev();
+						}}
+					/>
+				</button>
+				<button class="playpause" onclick={toggleMediaPlayState}>
+					{#if manager.paused}
+						<Play fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
+					{:else}
+						<Pause fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
+					{/if}
+				</button>
+				<button>
+					<FastForward
+						fill={'var(--text)'}
+						color={'var(--text)'}
+						size={'2.5em'}
+						onclick={async () => {
+							await manager.next();
+						}}
+					/>
+				</button>
+			</div>
+			<div class="progress-area">
+				<!-- <div class="time current ns"> -->
+				<!-- 	<span> -->
+				<!-- 		{formatTime(manager.currentTime)} -->
+				<!-- 	</span> -->
+				<!-- </div> -->
+				<div class="progressbar">
+					<Slider
+						value={percentage / 100}
+						color={'var(--text)'}
+						thumbColor={'var(--text)'}
+						style="thick"
+						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
+						oninput={(data) => {
+							playAt(data * manager.duration);
+						}}
+					/>
+				</div>
+				<!-- <div class="time ns"> -->
+				<!-- 	<span> -->
+				<!-- 		{formatTime(manager.duration)} -->
+				<!-- 	</span> -->
+				<!-- </div> -->
+			</div>
+		</div>
+		<audio crossorigin="anonymous" bind:this={sound} src="undefiened"></audio>
+	</section>
+	{#if manager.currentTrack}
 		{#if manager.currentTrack.lyrics.length > 0}
 			<section class="lrc" bind:this={lyricsParent}>
 				{#each lrcMngr.lines as { text, startTime, id }}

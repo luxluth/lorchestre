@@ -57,6 +57,16 @@ impl Album {
     pub fn remove_track(&mut self, path: String) {
         self.tracks.retain(|x| x.file_path != path);
     }
+
+    pub fn get_song(&self, id: String) -> Option<Track> {
+        for track in &self.tracks {
+            if track.id == id {
+                return Some(track.clone());
+            }
+        }
+
+        return None;
+    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -67,9 +77,10 @@ pub struct Track {
     pub album: String,
     pub album_artist: Option<String>,
     pub album_id: String,
+    pub cover_ext: String,
+    pub mime: String,
     pub album_year: Option<u32>,
     pub lyrics: Vec<LyricLine>,
-    pub cover: Option<String>,
     pub color: Option<Color>,
     pub is_light: Option<bool>,
     pub file_path: String,
@@ -85,6 +96,10 @@ impl Track {
         let properties = tagged_file.properties();
         let bitrate = properties.audio_bitrate().unwrap_or(0);
         let duration = properties.duration();
+        let mime = mime_guess::from_path(&inode)
+            .first()
+            .unwrap_or(mime::Mime::from(mime::APPLICATION_OCTET_STREAM))
+            .to_string();
 
         let default_tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
 
@@ -100,6 +115,8 @@ impl Track {
             file_path: inode.to_str().unwrap().to_string(),
             ..Default::default()
         };
+
+        audio.mime = mime;
 
         if let Ok(meta) = inode.metadata() {
             if let Ok(created_at) = meta.created() {
@@ -185,10 +202,7 @@ impl Track {
 
             audio.is_light = Some(color.is_light_color());
             audio.color = Some(color);
-
-            let path = cover_path.to_str().unwrap().to_string();
-
-            audio.cover = Some(path);
+            audio.cover_ext = cover.ext;
         }
 
         audio.duration = duration.as_secs();
@@ -249,7 +263,8 @@ impl Default for Track {
             album_id: String::new(),
             album_year: None,
             lyrics: vec![],
-            cover: None,
+            cover_ext: ".png".to_string(),
+            mime: "audio/mp3".to_string(),
             color: None,
             is_light: None,
             file_path: String::new(),
@@ -316,6 +331,17 @@ impl Media {
         }
 
         None
+    }
+
+    pub fn get_song(&self, id: String) -> Option<Track> {
+        for album in &self.albums {
+            let res = album.get_song(id.clone());
+            if res.is_some() {
+                return res;
+            }
+        }
+
+        return None;
     }
 }
 
