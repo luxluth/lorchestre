@@ -22,12 +22,15 @@
 
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
-	//@ts-ignore
-	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
+
+	let sound = $state(new Audio());
 	let dotScale = $state('scale(1)');
 
 	$effect(() => {
-		console.log(sound);
+		sound.crossOrigin = 'anonymous';
+		sound.preload = 'metadata';
+		//@ts-ignore
+		window.__player_audio = sound;
 	});
 
 	let active = $state<boolean>(false);
@@ -48,6 +51,11 @@
 			}
 		}
 	};
+
+	async function getSrc(path: string) {
+		let blob = await (await fetch(convertFileSrc(path))).blob();
+		return URL.createObjectURL(blob);
+	}
 
 	function isElementVisible(element: HTMLElement) {
 		if (!element) {
@@ -114,7 +122,8 @@
 			}
 		}
 
-		sound.src = getAudioUri(track.id as string);
+		sound.src = await getSrc(track.file_path);
+		sound.load();
 		sound.pause();
 		sound.currentTime = 0;
 		sound.onpause = () => {
@@ -312,7 +321,6 @@
 				<!-- </div> -->
 			</div>
 		</div>
-		<audio crossorigin="anonymous" bind:this={sound} src="undefiened"></audio>
 	</section>
 	{#if manager.currentTrack}
 		{#if manager.currentTrack.lyrics.length > 0}

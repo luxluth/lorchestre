@@ -319,7 +319,7 @@ fn main() {
                 .to_string();
 
             let req = url_escape::decode(&req_string).to_string();
-            println!("{req}");
+            println!("{request:?}");
 
             if let Some(req) = ReqType::parse(req.split(':').collect()) {
                 match req {
@@ -383,7 +383,7 @@ fn main() {
                                             .header("Content-Range", &format!("bytes */{size}"));
                                     } else {
                                         if end == 0 {
-                                            end = start + 1024 * 32;
+                                            end = start + 1024 * 32 * 10;
                                             if end > size {
                                                 end = size
                                             }

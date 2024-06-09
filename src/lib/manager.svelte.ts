@@ -100,10 +100,17 @@ export default class Manager {
 	}
 
 	async next() {
+		console.log('next');
 		const track = this.queue.shift();
 		if (track) {
 			if (this.currentTrack) this.history.push(this.currentTrack);
 			if (this.onplay) await this.onplay(track);
+		} else {
+			if (this.onPlayerDeactivate) {
+				console.log('here');
+				this.onPlayerDeactivate();
+				this.currentTrack = undefined;
+			}
 		}
 	}
 

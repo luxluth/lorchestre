@@ -24,8 +24,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
       '@fontsource/calistoga':
-        specifier: ^5.0.20
-        version: 5.0.20
+        specifier: ^5.0.21
+        version: 5.0.21
       '@fontsource/ibm-plex-mono':
         specifier: ^5.0.13
         version: 5.0.13
@@ -59,6 +59,9 @@ importers:
       bits-ui:
         specifier: ^0.21.10
         version: 0.21.10(svelte@5.0.0-next.152)
+      howler:
+        specifier: ^2.2.4
+        version: 2.2.4
       lucide-svelte:
         specifier: ^0.379.0
         version: 0.379.0(svelte@5.0.0-next.152)
@@ -393,8 +396,8 @@ packages:
   '@fontsource-variable/noto-serif-jp@5.0.1':
     resolution: {integrity: sha512-Udcxa9WpHwAqY10DGpsVz9ISU9HW1z+anci9ukP5lLM8gb1N97aKDNjTgI83U+eqVIjBtF1qxHNSwikPJQIfNQ==}
 
-  '@fontsource/calistoga@5.0.20':
-    resolution: {integrity: sha512-eRZnet6fG4G4aD0ZB/DY84O0OOyqb5V8ISDXWUt6eLFTIdgR3Z4hqjkBEB05pYQ1sOfaXTwbM7OsiEFh8p+YwA==}
+  '@fontsource/calistoga@5.0.21':
+    resolution: {integrity: sha512-sO9ClnxiQVn1AitSZXoYW7xWOXrY1qfpXMNAlubaVzpa083/xV1IFuFNs1J0daoWPxiJb1ov4B5vAkGpg6F8UA==}
 
   '@fontsource/ibm-plex-mono@5.0.13':
     resolution: {integrity: sha512-gtlMmvk//2AgDEZDFsoL5z9mgW3ZZg/9SC7pIfDwNKp5DtZpApgqd1Fua3HhPwYRIHrT76IQ1tMTzQKLEGtJGQ==}
@@ -834,6 +837,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  howler@2.2.4:
+    resolution: {integrity: sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==}
 
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
@@ -1330,7 +1336,7 @@ snapshots:
 
   '@fontsource-variable/noto-serif-jp@5.0.1': {}
 
-  '@fontsource/calistoga@5.0.20': {}
+  '@fontsource/calistoga@5.0.21': {}
 
   '@fontsource/ibm-plex-mono@5.0.13': {}
 
@@ -1796,6 +1802,8 @@ snapshots:
   globrex@0.1.2: {}
 
   graceful-fs@4.2.11: {}
+
+  howler@2.2.4: {}
 
   import-fresh@3.3.0:
     dependencies:
