@@ -36,6 +36,7 @@
 	import LrcManager from '$lib/lrc.svelte';
 	import MediaState from '$lib/media.svelte';
 	import FilterQuery from '$lib/filterq.svelte';
+	import { invoke } from '@tauri-apps/api/core';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 	setContext<Manager>('manager', new Manager());
@@ -49,6 +50,7 @@
 		let media = getContext<MediaState>('media');
 		(async () => {
 			if (!media.loaded && !media.loading) {
+				await invoke('start_player');
 				await media.load();
 			}
 		})();

@@ -96,10 +96,7 @@ impl Track {
         let properties = tagged_file.properties();
         let bitrate = properties.audio_bitrate().unwrap_or(0);
         let duration = properties.duration();
-        let mime = mime_guess::from_path(&inode)
-            .first()
-            .unwrap_or(mime::Mime::from(mime::APPLICATION_OCTET_STREAM))
-            .to_string();
+        let mime = tagged_file.file_type();
 
         let default_tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
 
@@ -116,7 +113,22 @@ impl Track {
             ..Default::default()
         };
 
-        audio.mime = mime;
+        audio.mime = match mime {
+            lofty::file::FileType::Aac => "audio/aac",
+            lofty::file::FileType::Aiff => "audio/aiff",
+            lofty::file::FileType::Ape => "audio/ape",
+            lofty::file::FileType::Flac => "audio/flac",
+            lofty::file::FileType::Mpeg => "audio/mpeg",
+            lofty::file::FileType::Mp4 => "audio/mp4",
+            lofty::file::FileType::Mpc => "audio/mpc",
+            lofty::file::FileType::Opus => "audio/webm",
+            lofty::file::FileType::Vorbis => "audio/webm",
+            lofty::file::FileType::Speex => "audio/speex",
+            lofty::file::FileType::Wav => "audio/wav",
+            lofty::file::FileType::WavPack => "audio/wav",
+            _ => "application/octet-stream",
+        }
+        .to_string();
 
         if let Ok(meta) = inode.metadata() {
             if let Ok(created_at) = meta.created() {

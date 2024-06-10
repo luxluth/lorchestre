@@ -15,7 +15,9 @@ use std::os::unix::fs::{FileExt, MetadataExt};
 use std::os::windows::fs::{FileExt, MetadataExt};
 
 use mu::{check_dir, Album, Media, Track};
+use player::PlayerState;
 use tauri::{http, Manager};
+mod player;
 
 enum CacheCompareDiff {
     ToAdd { files: Vec<PathBuf> },
@@ -294,6 +296,20 @@ fn range(data: (&str, &str)) -> (u64, u64) {
     (start, end)
 }
 
+#[tauri::command]
+fn start_player(window: tauri::Window, player_state: tauri::State<'_, PlayerState>) {
+    let running = player_state.running.lock().unwrap();
+    if !*running {
+        eprintln!("[player] started");
+        drop(running);
+        let mut running = player_state.running.lock().unwrap();
+        let mut sx = player_state.sx.lock().unwrap();
+        let player = player_state.player.lock().unwrap();
+        *sx = Some(player.start(window));
+        *running = true;
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -305,21 +321,15 @@ fn main() {
             platform,
             locale,
             set_locale,
+            start_player,
         ])
-        .register_asynchronous_uri_scheme_protocol("mu", move |app, request, responder| {
+        .manage(PlayerState::default())
+        .register_uri_scheme_protocol("mu", move |app, request| {
             // let audio_dir = app.path().audio_dir().unwrap();
             let cache_dir = app.path().app_cache_dir().unwrap();
-            let req_string = request
-                .uri()
-                .clone()
-                .into_parts()
-                .path_and_query
-                .unwrap()
-                .to_string()[1..]
-                .to_string();
+            let req_string = request.uri().clone().path().to_string()[1..].to_string();
 
             let req = url_escape::decode(&req_string).to_string();
-            println!("{request:?}");
 
             if let Some(req) = ReqType::parse(req.split(':').collect()) {
                 match req {
@@ -328,21 +338,18 @@ fn main() {
                         let mut buf = vec![];
                         if let Ok(mut file) = std::fs::File::open(&cover_path) {
                             let _ = file.read_to_end(&mut buf);
-                            responder.respond(
-                                http::Response::builder()
-                                    .status(200)
-                                    .header("Access-Control-Allow-Origin", "*")
-                                    .body(buf)
-                                    .unwrap(),
-                            );
+
+                            http::Response::builder()
+                                .status(200)
+                                .header("Access-Control-Allow-Origin", "*")
+                                .body(buf)
+                                .unwrap()
                         } else {
                             let buf = include_bytes!("./assets/default-cover.png");
-                            responder.respond(
-                                http::Response::builder()
-                                    .status(200)
-                                    .body(buf.to_vec())
-                                    .unwrap(),
-                            );
+                            http::Response::builder()
+                                .status(200)
+                                .body(buf.to_vec())
+                                .unwrap()
                         }
                     }
                     ReqType::Audio(id) => {
@@ -417,16 +424,14 @@ fn main() {
                             resp = resp.status(404);
                         }
 
-                        responder.respond(resp.body(buf).unwrap());
+                        resp.body(buf).unwrap()
                     }
                 }
             } else {
-                responder.respond(
-                    http::Response::builder()
-                        .status(404)
-                        .body(Vec::new())
-                        .unwrap(),
-                );
+                http::Response::builder()
+                    .status(404)
+                    .body(Vec::new())
+                    .unwrap()
             }
         })
         .run(tauri::generate_context!())

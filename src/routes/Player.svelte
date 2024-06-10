@@ -3,7 +3,6 @@
 	import LrcManager from '$lib/lrc.svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { type Track, type Line } from '$lib/type';
-	import { convertFileSrc } from '@tauri-apps/api/core';
 
 	import X from 'lucide-svelte/icons/x';
 	import Play from 'lucide-svelte/icons/play';
@@ -14,8 +13,10 @@
 	import Volume1 from 'lucide-svelte/icons/volume-1';
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
+	import { Howl, Howler } from 'howler';
 	import { getContext } from 'svelte';
 	import { getAudioUri, getCoverUri } from '$lib/utils';
+	import { convertFileSrc } from '@tauri-apps/api/core';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
@@ -23,12 +24,10 @@
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 
-	let sound = $state(new Audio());
+	let sound = $state<Howl>();
 	let dotScale = $state('scale(1)');
 
 	$effect(() => {
-		sound.crossOrigin = 'anonymous';
-		sound.preload = 'metadata';
 		//@ts-ignore
 		window.__player_audio = sound;
 	});
@@ -37,6 +36,7 @@
 	let playing = $state<boolean>(false);
 	// let srcUrl = $state<string>('');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
+	let frameHandle: number = $state(0);
 
 	$effect(() => {
 		lrcMngr.update(manager.currentTime);
@@ -51,11 +51,6 @@
 			}
 		}
 	};
-
-	async function getSrc(path: string) {
-		let blob = await (await fetch(convertFileSrc(path))).blob();
-		return URL.createObjectURL(blob);
-	}
 
 	function isElementVisible(element: HTMLElement) {
 		if (!element) {
@@ -88,18 +83,71 @@
 		}
 	}
 
+	function roundDecimal(num: number | string): number {
+		if (typeof num === 'string') {
+			return Math.round(Number(num) * 1000) / 1000;
+		} else {
+			return Math.round(num * 1000) / 1000;
+		}
+	}
+
+	async function getSrc(path: string) {
+		let blob = await (await fetch(convertFileSrc(path))).blob();
+		console.debug('[getSrc]', blob.type);
+		return URL.createObjectURL(blob);
+	}
+
+	function tick() {
+		if (sound) {
+			manager.currentTime = roundDecimal(sound.seek() / sound.duration());
+		}
+		// if (analyser && canvas && canvasCtx) {
+		// let buffer = analyser.frequencyBinCount;
+		// let data = new Uint8Array(buffer);
+		// let width = canvas.width;
+		// let height = canvas.height;
+		// analyser.getByteFrequencyData(data);
+		// let barWidth = (width / buffer) * 2;
+		// let barHeight;
+		// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
+		// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
+		// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
+		//
+		// if (playing || song.playing()) {
+		// 	canvasCtx.clearRect(0, 0, width, height);
+		// 	let x = 0;
+		//
+		// 	for (let i = 0; i < buffer; i++) {
+		// 		barHeight = data[i];
+		// 		canvasCtx.fillStyle = grd;
+		// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
+		// 		x += barWidth + 1;
+		// 	}
+		// } else {
+		// }
+		// requestAnimationFrame(tick);
+		// }
+		frameHandle = requestAnimationFrame(tick);
+	}
+
 	manager.onplayat = (time: number) => {
-		sound.currentTime = time;
+		if (sound) {
+			sound.seek(time);
+		}
 	};
 	manager.ontooglepp = async () => {
 		await toggleMediaPlayState();
 	};
 	manager.onvolumechange = (vol: number) => {
-		sound.volume = vol;
+		if (sound) {
+			sound.volume(vol);
+		}
 	};
 
 	manager.ontimeupdate = (time: number) => {
-		sound.currentTime = time;
+		if (sound) {
+			sound.seek(time);
+		}
 	};
 
 	manager.onPlayerActivate = () => {
@@ -122,32 +170,52 @@
 			}
 		}
 
-		sound.src = await getSrc(track.file_path);
-		sound.load();
-		sound.pause();
-		sound.currentTime = 0;
-		sound.onpause = () => {
-			manager.paused = true;
-		};
-
-		sound.onplay = () => {
-			manager.paused = false;
-		};
-
-		sound.ontimeupdate = () => {
-			if (sound.currentTime) {
-				manager.currentTime = sound.currentTime;
+		sound = new Howl({
+			xhr: {
+				method: 'GET',
+				headers: {
+					'Access-Control-Allow-Origin': '*',
+					'Content-Type': track.mime
+				}
+			},
+			html5: true,
+			format: track.mime.split('/')[1],
+			src: [getAudioUri(track.id), await getSrc(track.file_path)],
+			loop: false,
+			onload: () => {
+				// loaded = true;
+				// Audio Context
+				// ctx = Howler.ctx;
+				// analyser = ctx.createAnalyser();
+				// analyser.fftSize = 128;
+				// Howler.masterGain.connect(analyser);
+			},
+			onloaderror: (e) => {
+				console.error('[howler::loadError]', e);
+				// loadError = true;
+			},
+			onend: () => {
+				playing = false;
+				manager.currentTime = 0;
+				(async () => {
+					await manager.next();
+				})();
+				cancelAnimationFrame(frameHandle);
+				// canvasCtx?.clearRect(0, 0, canvas.width, canvas.height);
+				// if (loop) song.play();
+			},
+			onpause: () => {
+				playing = false;
+				manager.paused = true;
+				cancelAnimationFrame(frameHandle);
+			},
+			onplay: () => {
+				manager.paused = false;
+				frameHandle = requestAnimationFrame(tick);
 			}
-		};
+		});
 
-		sound.onvolumechange = () => {
-			manager.volume = sound.volume;
-		};
-
-		sound.onended = async () => {
-			await manager.next();
-		};
-		await sound.play();
+		sound.play();
 	};
 
 	// async function getSrc(path: string) {
@@ -157,8 +225,8 @@
 
 	async function toggleMediaPlayState() {
 		if (sound) {
-			if (sound.paused) {
-				await sound.play();
+			if (manager.paused) {
+				sound.play();
 			} else {
 				sound.pause();
 			}
@@ -167,7 +235,7 @@
 
 	function playAt(time: number) {
 		if (sound) {
-			sound.currentTime = time;
+			sound.seek(time);
 		}
 
 		setTimeout(() => {
@@ -255,7 +323,7 @@
 						thumbColor={'var(--text)'}
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
 						oninput={(data) => {
-							sound.volume = data;
+							sound?.volume(data);
 						}}
 					/>
 				</div>

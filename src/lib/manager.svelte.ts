@@ -1,3 +1,4 @@
+import { emit } from '@tauri-apps/api/event';
 import { type Track } from './type';
 
 enum PlayingMode {
@@ -40,6 +41,7 @@ export default class Manager {
 	}
 
 	async play(track: Track) {
+		await emit('play', track);
 		if (this.onplay) {
 			await this.onplay(track);
 		}

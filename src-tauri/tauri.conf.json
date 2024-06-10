@@ -25,8 +25,7 @@
 			}
 		],
 		"security": {
-			"csp": "asset: audio:",
-			"dangerousDisableAssetCspModification": true,
+      "csp": "default-src 'self'; img-src 'self' asset: mu: https://asset.localhost https://mu.localhost",
 			"capabilities": [],
 			"assetProtocol": {
 				"enable": true,
