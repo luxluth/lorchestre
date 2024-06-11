@@ -5,14 +5,14 @@
 		thumbColor = 'var(--fg)',
 		backgroundColor = 'rgba(100, 100, 100, 0.18)',
 		style = 'classic',
-		oninput = (_data: number) => {}
+		oninput = async (_data: number) => {}
 	}: {
 		value: number;
 		color?: string;
 		thumbColor?: string;
 		backgroundColor?: string;
 		style?: 'classic' | 'minimal' | 'thick';
-		oninput?: (data: number) => void;
+		oninput?: (data: number) => Promise<void>;
 	} = $props();
 
 	let sliderElement: HTMLDivElement;
@@ -23,24 +23,24 @@
 		sliderWidth = sliderElement.clientWidth;
 	});
 
-	function updateValue(clientX: number) {
+	async function updateValue(clientX: number) {
 		const rect = sliderElement.getBoundingClientRect();
 		const newValue = (clientX - rect.left) / sliderWidth;
 		const clampedValue = Math.min(Math.max(newValue, 0), 1);
-		oninput(clampedValue);
+		await oninput(clampedValue);
 	}
 
 	/////// Event Handlers
 
-	function handleMouseDown(event: MouseEvent) {
+	async function handleMouseDown(event: MouseEvent) {
 		isDragging = true;
 		sliderWidth = sliderElement.clientWidth;
-		updateValue(event.clientX);
+		await updateValue(event.clientX);
 	}
 
-	function handleMouseMove(event: MouseEvent) {
+	async function handleMouseMove(event: MouseEvent) {
 		if (isDragging) {
-			updateValue(event.clientX);
+			await updateValue(event.clientX);
 		}
 	}
 
@@ -50,15 +50,15 @@
 		}
 	}
 
-	function handleTouchStart(event: TouchEvent) {
+	async function handleTouchStart(event: TouchEvent) {
 		isDragging = true;
 		sliderWidth = sliderElement.clientWidth;
-		updateValue(event.touches[0].clientX);
+		await updateValue(event.touches[0].clientX);
 	}
 
-	function handleTouchMove(event: TouchEvent) {
+	async function handleTouchMove(event: TouchEvent) {
 		if (isDragging) {
-			updateValue(event.touches[0].clientX);
+			await updateValue(event.touches[0].clientX);
 		}
 	}
 
@@ -95,13 +95,14 @@
 	class="slider"
 	class:isDragging
 	data-style={style}
-	style="--pos: {value *
-		100}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
+	style="--pos: {(value * 100).toFixed(
+		2
+	)}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
 	bind:this={sliderElement}
-	onmousedown={handleMouseDown}
-	ontouchstart={handleTouchStart}
+	onmousedown={async (e) => await handleMouseDown(e)}
+	ontouchstart={async (e) => await handleTouchStart(e)}
 	role="slider"
-	aria-valuenow={value}
+	aria-valuenow={Number(value.toFixed(2))}
 	tabindex="0"
 >
 	<div class="hitbox"></div>

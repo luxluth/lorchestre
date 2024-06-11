@@ -11,7 +11,6 @@
 	import Volume1 from 'lucide-svelte/icons/volume-1';
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
-	import { convertFileSrc } from '@tauri-apps/api/core';
 	import Slider from './Slider.svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { getContext } from 'svelte';
@@ -32,8 +31,8 @@
 		}
 	}
 
-	function playAt(pos: number) {
-		manager.timeTo(pos * manager.duration);
+	async function playAt(pos: number) {
+		await manager.seekTo(pos * manager.duration);
 	}
 </script>
 
@@ -116,12 +115,12 @@
 					</p>
 				</div>
 				<time class="currtime ns">{formatTime(manager.currentTime)}</time>
-				<div class="progressbar" style="--percent: {percentage}%;">
+				<div class="progressbar" style="--percent: {percentage.toFixed(0)}%;">
 					<Slider
 						value={percentage / 100}
 						style="minimal"
-						oninput={(data) => {
-							playAt(data);
+						oninput={async (data) => {
+							await playAt(data);
 						}}
 					/>
 				</div>
@@ -141,8 +140,8 @@
 			<Slider
 				value={manager.volume}
 				style="classic"
-				oninput={(data) => {
-					manager.volumeTo(data);
+				oninput={async (data) => {
+					await manager.volumeTo(data);
 				}}
 			/>
 		</section>

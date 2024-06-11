@@ -33,8 +33,8 @@
 						role="button"
 						tabindex="0"
 						onkeydown={() => {}}
-						onclick={() => {
-							manager.playAt(startTime);
+						onclick={async () => {
+							await manager.seekTo(startTime);
 						}}
 						class="line ns"
 						id={id.toString()}

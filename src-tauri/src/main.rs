@@ -334,7 +334,7 @@ fn main() {
             if let Some(req) = ReqType::parse(req.split(':').collect()) {
                 match req {
                     ReqType::Cover(cover_file) => {
-                        let cover_path = format!("{}/covers/{}", cache_dir.display(), cover_file);
+                        let cover_path = cache_dir.join("covers").join(cover_file);
                         let mut buf = vec![];
                         if let Ok(mut file) = std::fs::File::open(&cover_path) {
                             let _ = file.read_to_end(&mut buf);
@@ -345,6 +345,7 @@ fn main() {
                                 .body(buf)
                                 .unwrap()
                         } else {
+                            eprintln!("Fail to retrieve the cover file `{}`", cover_path.display());
                             let buf = include_bytes!("./assets/default-cover.png");
                             http::Response::builder()
                                 .status(200)

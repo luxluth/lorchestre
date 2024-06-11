@@ -48,10 +48,13 @@
 
 	$effect(() => {
 		let media = getContext<MediaState>('media');
+		let manager = getContext<Manager>('manager');
 		(async () => {
 			if (!media.loaded && !media.loading) {
-				await invoke('start_player');
 				await media.load();
+			}
+			if (!manager.watching) {
+				await manager.watchevents();
 			}
 		})();
 	});

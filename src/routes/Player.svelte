@@ -158,7 +158,7 @@
 		active = false;
 	};
 
-	manager.onplay = async (track: Track) => {
+	manager.onplay = (track: Track) => {
 		manager.currentTrack = track;
 		// await getSrc(track.file_path);
 		// srcUrl = getAudioUri(track.id);
@@ -169,74 +169,14 @@
 				lyricsParent.scrollTop = 0;
 			}
 		}
-
-		sound = new Howl({
-			xhr: {
-				method: 'GET',
-				headers: {
-					'Access-Control-Allow-Origin': '*',
-					'Content-Type': track.mime
-				}
-			},
-			html5: true,
-			format: track.mime.split('/')[1],
-			src: [getAudioUri(track.id), await getSrc(track.file_path)],
-			loop: false,
-			onload: () => {
-				// loaded = true;
-				// Audio Context
-				// ctx = Howler.ctx;
-				// analyser = ctx.createAnalyser();
-				// analyser.fftSize = 128;
-				// Howler.masterGain.connect(analyser);
-			},
-			onloaderror: (e) => {
-				console.error('[howler::loadError]', e);
-				// loadError = true;
-			},
-			onend: () => {
-				playing = false;
-				manager.currentTime = 0;
-				(async () => {
-					await manager.next();
-				})();
-				cancelAnimationFrame(frameHandle);
-				// canvasCtx?.clearRect(0, 0, canvas.width, canvas.height);
-				// if (loop) song.play();
-			},
-			onpause: () => {
-				playing = false;
-				manager.paused = true;
-				cancelAnimationFrame(frameHandle);
-			},
-			onplay: () => {
-				manager.paused = false;
-				frameHandle = requestAnimationFrame(tick);
-			}
-		});
-
-		sound.play();
 	};
 
-	// async function getSrc(path: string) {
-	// 	let blob = await (await fetch(convertFileSrc(path))).blob();
-	// 	srcUrl = URL.createObjectURL(blob);
-	// }
-
 	async function toggleMediaPlayState() {
-		if (sound) {
-			if (manager.paused) {
-				sound.play();
-			} else {
-				sound.pause();
-			}
-		}
+		await manager.tooglepp();
 	}
 
-	function playAt(time: number) {
-		if (sound) {
-			sound.seek(time);
-		}
+	async function playAt(time: number) {
+		await manager.seekTo(time);
 
 		setTimeout(() => {
 			const activeLines = lrcMngr.activeLines;
@@ -262,7 +202,7 @@
 		r: manager.currentTrack?.color?.r,
 		g: manager.currentTrack?.color?.g,
 		b: manager.currentTrack?.color?.b,
-		percent: `${percentage}%`,
+		percent: `${percentage.toFixed(0)}%`,
 		rd: '255',
 		gd: '255',
 		bd: '255',
@@ -322,8 +262,8 @@
 						color={'var(--text)'}
 						thumbColor={'var(--text)'}
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-						oninput={(data) => {
-							sound?.volume(data);
+						oninput={async (data) => {
+							await manager.volumeTo(data);
 						}}
 					/>
 				</div>
@@ -377,8 +317,8 @@
 						thumbColor={'var(--text)'}
 						style="thick"
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-						oninput={(data) => {
-							playAt(data * manager.duration);
+						oninput={async (data) => {
+							await playAt(data * manager.duration);
 						}}
 					/>
 				</div>
@@ -398,7 +338,7 @@
 						class="line ns"
 						data-time={startTime}
 						class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-						onclick={() => playAt(startTime)}
+						onclick={async () => await playAt(startTime)}
 						onkeydown={() => {}}
 						role="button"
 						tabindex="0"

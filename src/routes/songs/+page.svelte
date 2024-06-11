@@ -36,8 +36,8 @@
 		let songs = applyFilters(media.getSongs());
 		let song = songs.shift() as Track;
 		await manager.play(song);
-		manager.clearQueue();
-		manager.addManyToQueue(songs);
+		await manager.clearQueue();
+		await manager.addManyToQueue(songs);
 	}
 
 	async function play(track: Track) {
@@ -61,7 +61,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					manager.addToQueue(track);
+					await manager.addToQueue(track);
 				},
 				label: $_('album.page.ctx.add_queue'),
 				icon: ListEnd

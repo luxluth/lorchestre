@@ -39,9 +39,7 @@
 				action: async (_data: any) => {
 					let firstTrack = sortedTracks.shift() as Track;
 					manager.queue = [];
-					sortedTracks.forEach((track) => {
-						manager.addToQueue(track);
-					});
+					await manager.addManyToQueue(sortedTracks);
 					await manager.play(firstTrack);
 				},
 				label: $_('ctx.play'),
@@ -50,9 +48,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					sortedTracks.forEach((track) => {
-						manager.addToQueue(track);
-					});
+					await manager.addManyToQueue(sortedTracks);
 				},
 				label: $_('ctx.inqueue'),
 				icon: ListEnd
