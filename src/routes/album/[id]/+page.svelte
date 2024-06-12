@@ -55,7 +55,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					manager.addToQueue(track);
+					await manager.addToQueue(track);
 				},
 				label: $_('album.page.ctx.add_queue'),
 				icon: ListEnd
@@ -71,10 +71,9 @@
 		manager.queue = [];
 		let track = (album as Album).tracks[0];
 		await manager.play(track);
-
-		tracks.forEach((track, i) => {
-			if (i > 0) manager.addToQueue(track);
-		});
+		let toAddToTheQue = [...tracks];
+		toAddToTheQue.shift();
+		await manager.addManyToQueue(toAddToTheQue);
 	}
 </script>
 

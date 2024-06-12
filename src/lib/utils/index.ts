@@ -54,5 +54,7 @@ export function getCoverUri(album_id: string, ext: String) {
 }
 
 export function getAudioUri(id: string) {
-	return convertFileSrc(`audio:${id}`, 'mu');
+	let url = convertFileSrc(`audio:${id}`, 'mu');
+	console.log(url);
+	return url;
 }

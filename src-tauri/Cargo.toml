@@ -30,3 +30,4 @@ image = "0.25.1"
 lofty = "0.19.2"
 sys-locale = "0.3.1"
 url-escape = "0.1.1"
+rodio = { version = "0.18.1", features = ["symphonia-all"] }

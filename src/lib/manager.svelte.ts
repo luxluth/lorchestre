@@ -1,4 +1,7 @@
+import { emit } from '@tauri-apps/api/event';
 import { type Track } from './type';
+import { type UnlistenFn, listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 
 enum PlayingMode {
 	Normal,
@@ -11,6 +14,16 @@ enum QueueMode {
 	RepeatAll
 }
 
+enum QueueAddMode {
+	Top = 'Top',
+	Bottom = 'Bottom'
+}
+
+type QueueAdd = {
+	tracks: Array<Track>;
+	mode: QueueAddMode;
+};
+
 /**
  * The player Manager
  * That big man
@@ -22,14 +35,14 @@ export default class Manager {
 	volume: number = $state(1);
 	paused: boolean = $state(true);
 	duration: number = $derived(this.currentTrack ? this.currentTrack.duration : 0);
-	history: Track[] = $state([]);
 	qmode = $state(QueueMode.Continue);
 	pmode = $state(PlayingMode.Normal);
+	watching = false;
 	onplayat?: (time: number) => void;
 	ontooglepp?: () => Promise<void>;
 	onvolumechange?: (vol: number) => void;
 	ontimeupdate?: (time: number) => void;
-	onplay?: (track: Track) => Promise<void>;
+	onplay?: (track: Track) => void;
 	onPlayerActivate?: () => void;
 	onPlayerDeactivate?: () => void;
 
@@ -40,33 +53,32 @@ export default class Manager {
 	}
 
 	async play(track: Track) {
-		if (this.onplay) {
-			await this.onplay(track);
-		}
+		await emit('play', track);
 	}
 
-	timeTo(time: number) {
-		if (this.ontimeupdate) {
-			this.ontimeupdate(time);
-		}
+	async volumeTo(vol: number) {
+		await emit('volumeto', vol);
+		this.volume = vol;
 	}
 
-	volumeTo(vol: number) {
-		if (this.onvolumechange) {
-			this.onvolumechange(vol);
-		}
-	}
-
-	playAt(time: number) {
-		if (this.onplayat) {
-			this.onplayat(time);
-		}
+	async seekTo(time: number) {
+		await emit('seekto', time);
+		this.currentTime = time;
 	}
 
 	async tooglepp() {
-		if (this.ontooglepp) {
-			await this.ontooglepp();
+		if (this.paused) {
+			await this.requestplay();
+		} else {
+			await this.requestpause();
 		}
+	}
+
+	async requestplay() {
+		await emit('requestplay');
+	}
+	async requestpause() {
+		await emit('requestpause');
 	}
 
 	deactivate() {
@@ -76,55 +88,65 @@ export default class Manager {
 	}
 
 	async prev() {
-		let track = this.history.pop();
-		if (track) {
+		await emit('prevtrack');
+	}
+
+	async watchevents() {
+		await invoke('start_player');
+		await listen<Track | undefined>('newtrack', (ev) => {
+			this.currentTrack = ev.payload;
 			if (this.currentTrack) {
-				this.queue = [this.currentTrack, ...this.queue];
+				this.paused = false;
+				if (this.onplay) {
+					this.onplay(this.currentTrack);
+				}
+			} else {
+				this.paused = true;
 			}
-			if (this.onplay) await this.onplay(track);
-		}
-	}
-
-	clearQueue() {
-		this.queue = [];
-	}
-
-	addToQueue(track: Track) {
-		this.queue.push(track);
-	}
-
-	addManyToQueue(tracks: Track[]) {
-		tracks.forEach((track) => {
-			this.queue.push(track);
 		});
+
+		await listen<Track[]>('queueupdate', (ev) => {
+			this.queue = ev.payload;
+		});
+
+		await listen<number>('timeupdate', (ev) => {
+			this.currentTime = ev.payload;
+		});
+
+		await listen('pause', (_) => {
+			this.paused = true;
+		});
+
+		await listen('play', (_) => {
+			this.paused = false;
+		});
+
+		this.watching = true;
+	}
+
+	async clearQueue() {
+		await emit('queueclear');
+	}
+
+	async addToQueue(track: Track) {
+		const add: QueueAdd = {
+			tracks: [track],
+			mode: QueueAddMode.Bottom
+		};
+		await emit('queueadd', add);
+	}
+
+	async addManyToQueue(tracks: Track[]) {
+		const add: QueueAdd = {
+			tracks,
+			mode: QueueAddMode.Bottom
+		};
+		await emit('queueadd', add);
 	}
 
 	async next() {
-		console.log('next');
-		const track = this.queue.shift();
-		if (track) {
-			if (this.currentTrack) this.history.push(this.currentTrack);
-			if (this.onplay) await this.onplay(track);
-		} else {
-			if (this.onPlayerDeactivate) {
-				console.log('here');
-				this.onPlayerDeactivate();
-				this.currentTrack = undefined;
-			}
-		}
+		await emit('nexttrack');
 	}
 
-	constructor(options?: { queue?: Track[]; qmode?: QueueMode; pmode?: PlayingMode }) {
-		if (options) {
-			if (options.queue) {
-				this.queue = this.queue;
-			}
-			if (options.qmode) {
-				this.qmode = options.qmode;
-			}
-			if (options.pmode) {
-				this.pmode = options.pmode;
-			}
-		}
-	}
+	constructor() {}
 }

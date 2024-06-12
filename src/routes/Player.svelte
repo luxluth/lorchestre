@@ -3,7 +3,6 @@
 	import LrcManager from '$lib/lrc.svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { type Track, type Line } from '$lib/type';
-	import { convertFileSrc } from '@tauri-apps/api/core';
 
 	import X from 'lucide-svelte/icons/x';
 	import Play from 'lucide-svelte/icons/play';
@@ -14,8 +13,10 @@
 	import Volume1 from 'lucide-svelte/icons/volume-1';
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
+	import { Howl, Howler } from 'howler';
 	import { getContext } from 'svelte';
 	import { getAudioUri, getCoverUri } from '$lib/utils';
+	import { convertFileSrc } from '@tauri-apps/api/core';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
@@ -23,12 +24,10 @@
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 
-	let sound = $state(new Audio());
+	let sound = $state<Howl>();
 	let dotScale = $state('scale(1)');
 
 	$effect(() => {
-		sound.crossOrigin = 'anonymous';
-		sound.preload = 'metadata';
 		//@ts-ignore
 		window.__player_audio = sound;
 	});
@@ -37,6 +36,7 @@
 	let playing = $state<boolean>(false);
 	// let srcUrl = $state<string>('');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
+	let frameHandle: number = $state(0);
 
 	$effect(() => {
 		lrcMngr.update(manager.currentTime);
@@ -51,11 +51,6 @@
 			}
 		}
 	};
-
-	async function getSrc(path: string) {
-		let blob = await (await fetch(convertFileSrc(path))).blob();
-		return URL.createObjectURL(blob);
-	}
 
 	function isElementVisible(element: HTMLElement) {
 		if (!element) {
@@ -88,18 +83,71 @@
 		}
 	}
 
+	function roundDecimal(num: number | string): number {
+		if (typeof num === 'string') {
+			return Math.round(Number(num) * 1000) / 1000;
+		} else {
+			return Math.round(num * 1000) / 1000;
+		}
+	}
+
+	async function getSrc(path: string) {
+		let blob = await (await fetch(convertFileSrc(path))).blob();
+		console.debug('[getSrc]', blob.type);
+		return URL.createObjectURL(blob);
+	}
+
+	function tick() {
+		if (sound) {
+			manager.currentTime = roundDecimal(sound.seek() / sound.duration());
+		}
+		// if (analyser && canvas && canvasCtx) {
+		// let buffer = analyser.frequencyBinCount;
+		// let data = new Uint8Array(buffer);
+		// let width = canvas.width;
+		// let height = canvas.height;
+		// analyser.getByteFrequencyData(data);
+		// let barWidth = (width / buffer) * 2;
+		// let barHeight;
+		// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
+		// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
+		// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
+		//
+		// if (playing || song.playing()) {
+		// 	canvasCtx.clearRect(0, 0, width, height);
+		// 	let x = 0;
+		//
+		// 	for (let i = 0; i < buffer; i++) {
+		// 		barHeight = data[i];
+		// 		canvasCtx.fillStyle = grd;
+		// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
+		// 		x += barWidth + 1;
+		// 	}
+		// } else {
+		// }
+		// requestAnimationFrame(tick);
+		// }
+		frameHandle = requestAnimationFrame(tick);
+	}
+
 	manager.onplayat = (time: number) => {
-		sound.currentTime = time;
+		if (sound) {
+			sound.seek(time);
+		}
 	};
 	manager.ontooglepp = async () => {
 		await toggleMediaPlayState();
 	};
 	manager.onvolumechange = (vol: number) => {
-		sound.volume = vol;
+		if (sound) {
+			sound.volume(vol);
+		}
 	};
 
 	manager.ontimeupdate = (time: number) => {
-		sound.currentTime = time;
+		if (sound) {
+			sound.seek(time);
+		}
 	};
 
 	manager.onPlayerActivate = () => {
@@ -110,7 +158,7 @@
 		active = false;
 	};
 
-	manager.onplay = async (track: Track) => {
+	manager.onplay = (track: Track) => {
 		manager.currentTrack = track;
 		// await getSrc(track.file_path);
 		// srcUrl = getAudioUri(track.id);
@@ -121,54 +169,14 @@
 				lyricsParent.scrollTop = 0;
 			}
 		}
-
-		sound.src = await getSrc(track.file_path);
-		sound.load();
-		sound.pause();
-		sound.currentTime = 0;
-		sound.onpause = () => {
-			manager.paused = true;
-		};
-
-		sound.onplay = () => {
-			manager.paused = false;
-		};
-
-		sound.ontimeupdate = () => {
-			if (sound.currentTime) {
-				manager.currentTime = sound.currentTime;
-			}
-		};
-
-		sound.onvolumechange = () => {
-			manager.volume = sound.volume;
-		};
-
-		sound.onended = async () => {
-			await manager.next();
-		};
-		await sound.play();
 	};
 
-	// async function getSrc(path: string) {
-	// 	let blob = await (await fetch(convertFileSrc(path))).blob();
-	// 	srcUrl = URL.createObjectURL(blob);
-	// }
-
 	async function toggleMediaPlayState() {
-		if (sound) {
-			if (sound.paused) {
-				await sound.play();
-			} else {
-				sound.pause();
-			}
-		}
+		await manager.tooglepp();
 	}
 
-	function playAt(time: number) {
-		if (sound) {
-			sound.currentTime = time;
-		}
+	async function playAt(time: number) {
+		await manager.seekTo(time);
 
 		setTimeout(() => {
 			const activeLines = lrcMngr.activeLines;
@@ -194,7 +202,7 @@
 		r: manager.currentTrack?.color?.r,
 		g: manager.currentTrack?.color?.g,
 		b: manager.currentTrack?.color?.b,
-		percent: `${percentage}%`,
+		percent: `${percentage.toFixed(0)}%`,
 		rd: '255',
 		gd: '255',
 		bd: '255',
@@ -254,12 +262,11 @@
 						color={'var(--text)'}
 						thumbColor={'var(--text)'}
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-						oninput={(data) => {
-							sound.volume = data;
+						oninput={async (data) => {
+							await manager.volumeTo(data);
 						}}
 					/>
 				</div>
-				<!-- <div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div> -->
 			</div>
 		</div>
 		<div class="infos">
@@ -309,8 +316,8 @@
 						thumbColor={'var(--text)'}
 						style="thick"
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-						oninput={(data) => {
-							playAt(data * manager.duration);
+						oninput={async (data) => {
+							await playAt(data * manager.duration);
 						}}
 					/>
 				</div>
@@ -330,7 +337,7 @@
 						class="line ns"
 						data-time={startTime}
 						class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-						onclick={() => playAt(startTime)}
+						onclick={async () => await playAt(startTime)}
 						onkeydown={() => {}}
 						role="button"
 						tabindex="0"

@@ -1,7 +1,7 @@
 {
 	"bib": "Library",
 	"search": "Search",
-	"recent-added": "Recently added",
+	"recent-added": "Recently Added",
 	"albums": "Albums",
 	"settings": "Settings",
 	"songs": "Songs",
@@ -9,22 +9,22 @@
 	"indexing_msg": "Indexing local files...",
 	"ctx": {
 		"play": "Play",
-		"inqueue": "Add to the queue"
+		"inqueue": "Add to queue"
 	},
 	"cmds": {
 		"lrc": {
-			"empty": "No lyrics to show"
+			"empty": "No lyrics to display"
 		},
 		"waitlist": {
-			"title": "Waitlist",
-			"empty": "No song on the waitlist"
+			"title": "Queue",
+			"empty": "No songs in the queue"
 		}
 	},
 	"album": {
 		"page": {
 			"songs": "Tracks",
 			"ctx": {
-				"add_queue": "Add to the queue"
+				"add_queue": "Add to queue"
 			}
 		}
 	},
@@ -33,7 +33,7 @@
 		"section_ui_ux": {
 			"title": "Interface",
 			"language": {
-				"title": "Language"
+				"title": "Interface Language"
 			}
 		}
 	},
@@ -45,17 +45,24 @@
 			"filter_to_apply": "Filter to apply",
 			"sort_order": "Sort order",
 			"type": {
-				"alpha": "Alphabetic",
-				"date": "Date Added"
+				"alpha": "Alphabetical",
+				"date": "Date added"
 			},
 			"order": {
-				"asc": "Ascendant",
-				"desc": "Descendant"
+				"asc": "Ascending",
+				"desc": "Descending"
 			}
 		}
 	},
 
 	"misc": {
-		"goto_album_page": "Goto the album"
+		"goto_album_page": "Go to album page"
+	},
+
+	"stats_page": {
+		"total": "You have a total of",
+		"song": "track",
+		"songs": "tracks",
+		"latest_add": "Your latest addition is"
 	}
 }

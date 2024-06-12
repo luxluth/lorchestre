@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Clock from 'lucide-svelte/icons/clock';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Library from 'lucide-svelte/icons/library';
 	import ListMusic from 'lucide-svelte/icons/list-music';
+	import Flame from 'lucide-svelte/icons/flame';
 
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 	import { _ } from 'svelte-i18n';
@@ -14,14 +14,13 @@
 	<!-- {/if} -->
 	<section class="search">
 		<input type="search" name="search" placeholder={$_('search')} />
+		<a href="/stats" class:active={pathId == '/stats'}>
+			<Flame size={'1em'} />
+		</a>
 	</section>
 	<section>
 		<h4>{$_('bib')}</h4>
 		<div class="links">
-			<a href="/recently-added" class:active={pathId == '/recently-added'}>
-				<Clock size={'1em'} />
-				{$_('recent-added')}</a
-			>
 			<a href="/" class:active={pathId == '/'}>
 				<Library size={'1em'} />
 				{$_('albums')}</a
@@ -43,15 +42,38 @@
 </div>
 
 <style>
-	.dragzone {
-		z-index: 1000;
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 2em;
-		background-color: none;
-		width: 100%;
+	.search {
+		display: flex;
+		gap: 0.5em;
 	}
+
+	.search a {
+		color: var(--fg);
+		opacity: 0.7;
+		text-decoration: none;
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		padding-inline: 0.6em;
+		padding-block: 0.6em;
+		border-radius: 6px;
+		transition: all ease-in-out 0.1s;
+	}
+
+	.search a.active {
+		background: var(--highlight);
+		opacity: 1;
+	}
+
+	/* .dragzone { */
+	/* 	z-index: 1000; */
+	/* 	position: absolute; */
+	/* 	top: 0; */
+	/* 	left: 0; */
+	/* 	height: 2em; */
+	/* 	background-color: none; */
+	/* 	width: 100%; */
+	/* } */
 	section.settings {
 		flex-grow: 1;
 		display: flex;

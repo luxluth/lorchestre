@@ -57,5 +57,12 @@
 
 	"misc": {
 		"goto_album_page": "Accéder à l'album"
+	},
+
+	"stats_page": {
+		"total": "Vous avez un total de",
+		"song": "morceau",
+		"songs": "morceaux",
+		"latest_add": "Votre dernier ajout est"
 	}
 }
