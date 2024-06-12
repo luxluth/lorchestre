@@ -630,7 +630,7 @@
 	.__player .cover {
 		width: 60vh;
 		aspect-ratio: 1/1;
-		box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+		box-shadow: rgba(17, 12, 46, 0.08) 0px 48px 100px 0px;
 		border-radius: 10px;
 		/* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
 		background-size: cover;
@@ -644,7 +644,7 @@
 		width: 100%;
 		height: 100%;
 		position: absolute;
-		background: rgba(0, 0, 0, 0.3);
+		background: rgba(0, 0, 0, 0.2);
 		opacity: 0;
 		transition: opacity 0.3s ease-in-out;
 	}
