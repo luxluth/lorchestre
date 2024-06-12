@@ -131,7 +131,7 @@ export default class Manager {
 	async addToQueue(track: Track) {
 		const add: QueueAdd = {
 			tracks: [track],
-			mode: QueueAddMode.Top
+			mode: QueueAddMode.Bottom
 		};
 		await emit('queueadd', add);
 	}
@@ -139,7 +139,7 @@ export default class Manager {
 	async addManyToQueue(tracks: Track[]) {
 		const add: QueueAdd = {
 			tracks,
-			mode: QueueAddMode.Top
+			mode: QueueAddMode.Bottom
 		};
 		await emit('queueadd', add);
 	}

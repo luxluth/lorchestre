@@ -64,14 +64,24 @@ pub enum PlayerMessage {
 
     VolumeTo(f32),
     SeekTo(f32),
+
+    Ended,
 }
 
 pub enum SinkMessage {
-    SeekTo(Duration),
+    SeekTo {
+        time: Duration,
+        direction: SeekDirection,
+    },
     Stop,
     VolumeTo(f32),
     Pause,
     Play,
+}
+
+pub enum SeekDirection {
+    Backward(usize),
+    Forward(usize),
 }
 
 pub struct InnerPlayer {
@@ -143,22 +153,9 @@ impl Player {
                         }
                         player.emit("queueupdate", player.queue.clone());
                     }
-                    PlayerMessage::NextTrack => {
-                        if let Some(track) = player.queue.pop_front() {
-                            if let Some(ct) = player.current_track.clone() {
-                                player.history.push(ct);
-                            }
-                            player.play(track.clone(), sx2.clone());
-                            player.emit("newtrack", track);
-                        } else {
-                            player.emit::<Option<Track>>("newtrack", None);
-                            player.reset();
-                        }
-
-                        player.emit("queueupdate", player.queue.clone());
-                    }
+                    PlayerMessage::NextTrack | PlayerMessage::Ended => player.next(sx2.clone()),
                     PlayerMessage::TimeUpdate(time) => {
-                        player.update_time(time);
+                        player.update_time(time, sx2.clone());
                     }
                     PlayerMessage::VolumeTo(value) => {
                         player.volume_to(value);
@@ -184,10 +181,33 @@ pub struct SinkInfo {
 
 impl InnerPlayer {
     #[inline]
-    pub fn update_time(&mut self, value: f32) {
+    pub fn next(&mut self, sx: Sender<PlayerMessage>) {
+        if let Some(track) = self.queue.pop_front() {
+            if let Some(ct) = self.current_track.clone() {
+                self.history.push(ct);
+            }
+            self.play(track.clone(), sx);
+            self.emit("newtrack", track);
+        } else {
+            self.emit::<Option<Track>>("newtrack", None);
+            self.reset();
+        }
+
+        self.emit("queueupdate", self.queue.clone());
+    }
+
+    #[inline]
+    pub fn update_time(&mut self, value: f32, sx: Sender<PlayerMessage>) {
         if self.current_time != value {
             self.current_time = value;
             self.emit("timeupdate", value);
+            if let Some(t) = self.current_track.clone() {
+                if self.current_time >= t.duration as f32 {
+                    if value >= t.duration as f32 {
+                        let _ = sx.send(PlayerMessage::Ended);
+                    }
+                }
+            }
         }
     }
 
@@ -218,8 +238,17 @@ impl InnerPlayer {
 
     #[inline]
     pub fn seek_to(&mut self, time: f32) {
+        let offset = time - self.current_time;
+        let direction = if (time - self.current_time).is_sign_negative() {
+            SeekDirection::Backward(offset.abs() as usize)
+        } else {
+            SeekDirection::Forward(offset.abs() as usize)
+        };
         if let Some(sx) = self.sink_sx.clone() {
-            let _ = sx.send(SinkMessage::SeekTo(Duration::from_secs_f32(time)));
+            let _ = sx.send(SinkMessage::SeekTo {
+                time: Duration::from_secs_f32(time),
+                direction,
+            });
         }
     }
 
@@ -323,13 +352,16 @@ impl InnerPlayer {
         self.sink_sx = Some(sx.clone());
         self.current_track = Some(t.clone());
 
+        let sxp2 = sxp.clone();
+
         std::thread::spawn(move || {
             let (_stream, handle) = rodio::OutputStream::try_default().unwrap();
             let sink = rodio::Sink::try_new(&handle).unwrap();
             let file = File::open(&t.file_path).unwrap();
 
             let counter = Arc::from(AtomicUsize::new(0));
-            let periodic_counter = counter.clone();
+            let periodic_counter = Arc::clone(&counter);
+            let periodic_counter_seek = Arc::clone(&counter);
             let access_time = Duration::from_millis(1);
 
             let source = rodio::Decoder::new(BufReader::new(file))
@@ -341,13 +373,32 @@ impl InnerPlayer {
                     let _ = sxp.send(PlayerMessage::TimeUpdate(secs));
                 });
             sink.append(source);
-            eprintln!("playing");
 
             'sinkplaying: while let Ok(recv) = rx.recv() {
                 match recv {
-                    SinkMessage::SeekTo(time) => {
+                    SinkMessage::SeekTo { time, direction } => {
                         println!("seekTo: {}s", time.as_secs());
                         let _ = sink.try_seek(time);
+                        match direction {
+                            SeekDirection::Backward(offset) => {
+                                periodic_counter_seek.fetch_sub(offset * 1000, SeqCst);
+                                // eprintln!(
+                                //     "BACKWARD --> s: {}s @ offset: -{offset}s",
+                                //     periodic_counter_seek.load(SeqCst) / 1000
+                                // );
+                            }
+                            SeekDirection::Forward(offset) => {
+                                periodic_counter_seek.fetch_add(offset * 1000, SeqCst);
+                                // eprintln!(
+                                //     "FORWARD --> s: {}s @ offset: +{offset}s",
+                                //     periodic_counter_seek.load(SeqCst) / 1000
+                                // );
+                            }
+                        }
+
+                        let secs = periodic_counter_seek.load(SeqCst) as f32 / 1000f32;
+                        let secs = (secs * 100f32).trunc() / 100f32;
+                        let _ = sxp2.send(PlayerMessage::TimeUpdate(secs));
                     }
                     SinkMessage::Stop => {
                         sink.stop();

@@ -393,9 +393,7 @@
 
 	.__page_title {
 		font-weight: 800;
-		font-size: 1.5em;
 		padding-bottom: 2em;
-		text-align: center;
 	}
 
 	.songlist {

@@ -267,7 +267,6 @@
 						}}
 					/>
 				</div>
-				<!-- <div class="bitrate ns">{manager.currentTrack.bitrate}Kb/s</div> -->
 			</div>
 		</div>
 		<div class="infos">

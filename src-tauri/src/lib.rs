@@ -12,9 +12,6 @@ use std::time::SystemTime;
 use lofty::prelude::*;
 use lofty::probe::Probe;
 
-mod backend;
-use backend::{Backend, QueryResult};
-
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
     pub start_time: i64,
@@ -523,34 +520,5 @@ impl Songs {
         }
 
         Self { audios }
-    }
-}
-
-pub enum Backends {
-    FileSystem,
-}
-
-pub enum FileSystemSearchResponse {
-    Album(Album),
-    Track(Track),
-}
-
-pub type FileSystemQueryResult = QueryResult<FileSystemSearchResponse>;
-
-pub struct FileSystemBackend {
-    pub media: Media,
-}
-
-impl Backend<FileSystemQueryResult, Album, Track> for FileSystemBackend {
-    fn get_album(&self, id: String) -> Option<Album> {
-        return self.media.get_album(id);
-    }
-
-    fn get_song(&self, _id: String) -> Track {
-        todo!()
-    }
-
-    fn search(&self, _q: String) -> QueryResult<FileSystemQueryResult> {
-        todo!()
     }
 }

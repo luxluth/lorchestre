@@ -6,9 +6,9 @@
 	"settings": "設定",
 	"songs": "曲",
 	"no_media": "再生中の曲はありません",
-	"indexing_msg": "ローカルファイルのインデックスを作成中...",
+	"indexing_msg": "ローカルファイルをインデックス中...",
 	"ctx": {
-		"play": "再生開始",
+		"play": "再生",
 		"inqueue": "キューに追加"
 	},
 	"cmds": {
@@ -29,7 +29,7 @@
 		}
 	},
 	"settings_page": {
-		"tip_top": "アプリケーションの設定を管理",
+		"tip_top": "アプリの設定を管理する",
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
@@ -43,10 +43,10 @@
 
 		"filter": {
 			"filter_to_apply": "適用するフィルター",
-			"sort_order": "並び順",
+			"sort_order": "並び替え順",
 			"type": {
 				"alpha": "アルファベット順",
-				"date": "追加日"
+				"date": "追加日順"
 			},
 			"order": {
 				"asc": "昇順",
@@ -56,6 +56,13 @@
 	},
 
 	"misc": {
-		"goto_album_page": "アルバムに移動"
+		"goto_album_page": "アルバムページへ移動"
+	},
+
+	"stats_page": {
+		"total": "合計",
+		"song": "曲",
+		"songs": "曲",
+		"latest_add": "最後に追加された曲は"
 	}
 }
