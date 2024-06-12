@@ -1,3 +1,5 @@
+<img src="./assets/logo.svg" width="80" style="margin-right:10px" align="left" alt="nwg-shell logo">
+
 # ム (mu)
 
 A music player
