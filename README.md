@@ -1,12 +1,6 @@
-<div align="center">
-
-![logo](./assets/x256.svg)
-
 # ム (mu)
 
 A music player
-
-</div>
 
 ![preview](./assets/preview.png)
 
@@ -14,4 +8,3 @@ A music player
 
 - [x] Use local files (music directory) as media source
 - [ ] Use spotify as media source
-- [ ] Use mpd as media source
