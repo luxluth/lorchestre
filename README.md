@@ -5,8 +5,11 @@
 A music player
 
 ![preview](./assets/preview.png)
+
 ![songs view](./assets/songs-view.png)
+
 ![stats view](./assets/stats-view.png)
+
 ![playlist view](./assets/playlist-view.png)
 
 ## TODO
