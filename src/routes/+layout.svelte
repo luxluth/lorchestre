@@ -37,6 +37,7 @@
 	import MediaState from '$lib/media.svelte';
 	import FilterQuery from '$lib/filterq.svelte';
 	import List from '$lib/playlist.svelte';
+	import AlbumPageData from '$lib/album.svelte';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 	setContext<Manager>('manager', new Manager());
@@ -46,6 +47,7 @@
 	setContext<MediaState>('media', new MediaState());
 	setContext<FilterQuery>('filterq', new FilterQuery());
 	setContext<List>('list', new List());
+	setContext<AlbumPageData>('apd', new AlbumPageData());
 
 	$effect(() => {
 		let media = getContext<MediaState>('media');

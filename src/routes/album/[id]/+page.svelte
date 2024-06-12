@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { convertFileSrc } from '@tauri-apps/api/core';
-
-	import ListStart from 'lucide-svelte/icons/list-start';
 	import Play from 'lucide-svelte/icons/play';
 	import ListEnd from 'lucide-svelte/icons/list-end';
 

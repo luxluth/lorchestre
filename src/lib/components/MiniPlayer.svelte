@@ -16,9 +16,13 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri } from '$lib/utils';
+	import type AlbumPageData from '$lib/album.svelte';
+	import type MediaState from '$lib/media.svelte';
 
 	let manager = getContext<Manager>('manager');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
+	let adp = getContext<AlbumPageData>('apd');
+	let media = getContext<MediaState>('media');
 
 	function formatTime(time: number) {
 		if (isNaN(time)) {
@@ -109,7 +113,12 @@
 					<p>
 						<span>{manager.currentTrack.artists.join(', ')}</span> <span>—</span>
 						<span
-							><a href="/album/{manager.currentTrack.album_id}">{manager.currentTrack.album}</a
+							><a
+								href="/album/{manager.currentTrack.album_id}"
+								onclick={() => {
+									adp.activeAlbum = media.getAlbum(manager.currentTrack?.album_id as string)
+								}}
+								>{manager.currentTrack.album}</a
 							></span
 						>
 					</p>

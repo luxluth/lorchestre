@@ -17,8 +17,10 @@
 	import type MediaState from '$lib/media.svelte';
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri } from '$lib/utils';
+	import type AlbumPageData from '$lib/album.svelte';
 
 	let media = getContext<MediaState>('media');
+	let adp = getContext<AlbumPageData>('apd');
 
 	function sortTracks(t: Track[]) {
 		return t.sort((a, b) => a.track - b.track);
@@ -65,27 +67,27 @@
 
 {#if !media.loading}
 	<div class="__medias">
-		{#each media.albums as { tracks, artist, name, id }}
+		{#each media.albums as album}
 			<a
 				class="__audio"
-				data-id={id}
-				href="album/{id}"
+				data-id={album.id}
+				href="/album/{album.id}"
 				oncontextmenu={(e) => {
 					e.preventDefault();
-					showContext(e, tracks);
+					showContext(e, album.tracks);
 				}}
 			>
 				<div
 					class="cover"
-					style="--clr: {tracks[0].color
-						? `rgb(${tracks[0].color.r}, ${tracks[0].color.g}, ${tracks[0].color.b})`
+					style="--clr: {album.tracks[0].color
+						? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
 						: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
-						id,
-						tracks[0].cover_ext
+						album.id,
+						album.tracks[0].cover_ext
 					)}');"
 				></div>
-				<p class="title ns">{trim(name)}</p>
-				<p class="artist ns">{artist}</p>
+				<p class="title ns">{trim(album.name)}</p>
+				<p class="artist ns">{album.artist}</p>
 			</a>
 		{/each}
 	</div>
