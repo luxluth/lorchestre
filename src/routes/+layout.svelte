@@ -36,7 +36,7 @@
 	import LrcManager from '$lib/lrc.svelte';
 	import MediaState from '$lib/media.svelte';
 	import FilterQuery from '$lib/filterq.svelte';
-	import { invoke } from '@tauri-apps/api/core';
+	import List from '$lib/playlist.svelte';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 	setContext<Manager>('manager', new Manager());
@@ -45,6 +45,7 @@
 	setContext<LrcManager>('lm', new LrcManager(0, []));
 	setContext<MediaState>('media', new MediaState());
 	setContext<FilterQuery>('filterq', new FilterQuery());
+	setContext<List>('list', new List());
 
 	$effect(() => {
 		let media = getContext<MediaState>('media');

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { type UnlistenFn, listen } from '@tauri-apps/api/event';
-import type { Album, Media, Payload, Track } from './type';
+import type { Album, Media, Payload, Playlist, Track } from './type';
 
 type FP = {
 	FileProcessed: string;
@@ -20,6 +20,7 @@ type TF = {
 
 export default class MediaState {
 	albums: Album[] = $state([]);
+	playlists: Playlist[] = $state([]);
 	loaded = $state(false);
 	loading = $state(false);
 	private unlistenners = new Set<UnlistenFn>();
@@ -36,6 +37,7 @@ export default class MediaState {
 		this.unlistenners.add(
 			await listen<Ended>('cache-update-end', (ev) => {
 				this.albums = ev.payload.Ended.media.albums;
+				this.playlists = ev.payload.Ended.media.playlists;
 				this.loading = false;
 				this.loaded = true;
 

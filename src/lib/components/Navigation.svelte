@@ -6,6 +6,12 @@
 
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 	import { _ } from 'svelte-i18n';
+	import { getContext } from 'svelte';
+	import type MediaState from '$lib/media.svelte';
+	import List from 'lucide-svelte/icons/list';
+
+	let media = getContext<MediaState>('media');
+	let list = getContext<List>('list');
 </script>
 
 <div class="nav ns" style="--top-by: {platform === 'macos' ? '1em' : '1em'}">
@@ -30,6 +36,27 @@
 				{$_('songs')}
 			</a>
 		</div>
+	</section>
+	<section>
+		<h4>Playlits</h4>
+		{#if media.playlists.length === 0}
+			No playlist found
+		{:else}
+			<div class="links">
+				{#each media.playlists as playlist}
+					<a
+						href="/list"
+						class:active={pathId == '/list' && list.activeList?.id === playlist.id}
+						onclick={() => {
+							list.activeList = playlist;
+						}}
+					>
+						<List size={'1em'} />
+						{playlist.name}
+					</a>
+				{/each}
+			</div>
+		{/if}
 	</section>
 	<section class="settings">
 		<div class="links">

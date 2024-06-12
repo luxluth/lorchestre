@@ -2,6 +2,7 @@ use color_thief::ColorFormat;
 use glob::glob;
 use lofty::picture::{MimeType, PictureType};
 use lrc::Lyrics;
+use m3u8::Playlist;
 use mime_guess::{self, mime};
 use std::collections::HashMap;
 use std::fs;
@@ -11,6 +12,8 @@ use std::time::SystemTime;
 
 use lofty::prelude::*;
 use lofty::probe::Probe;
+
+pub mod m3u8;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
@@ -293,12 +296,14 @@ pub struct Songs {
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Media {
     pub albums: Vec<Album>,
+    pub playlists: Vec<Playlist>,
 }
 
 impl Media {
     pub fn new(songs: Songs) -> Self {
         Self {
             albums: songs.get_albums(),
+            playlists: vec![],
         }
     }
 
@@ -315,6 +320,35 @@ impl Media {
             let albums = Songs { audios: vec![song] }.get_albums();
             self.albums.extend(albums);
         }
+    }
+
+    pub fn add_media(&mut self, path: PathBuf, covers_dir: String) {
+        let ext = path.extension().unwrap().to_str().unwrap();
+        if ext == "m3u8" {
+            self.add_playlist(m3u8::M3U8::parse(covers_dir, path));
+        } else {
+            self.add_song(Track::from_file(covers_dir.clone(), path));
+        }
+    }
+
+    pub fn remove_media(&mut self, path: PathBuf) {
+        let ext = path.extension().unwrap().to_str().unwrap();
+        if ext == "m3u8" {
+            self.remove_playlist(path);
+        } else {
+            self.remove_song(path);
+        }
+    }
+
+    #[inline]
+    pub fn add_playlist(&mut self, playlist: Playlist) {
+        self.playlists.push(playlist);
+    }
+
+    #[inline]
+    pub fn remove_playlist(&mut self, path: PathBuf) {
+        self.playlists
+            .retain(|x| x.path != format!("{}", path.display()));
     }
 
     pub fn remove_song(&mut self, path: PathBuf) {

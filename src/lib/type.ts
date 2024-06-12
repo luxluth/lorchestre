@@ -70,8 +70,16 @@ export type Track = {
 	id: string;
 };
 
+export type Playlist = {
+	name: string;
+	tracks: Track[];
+	path: string;
+	id: string;
+};
+
 export type Media = {
 	albums: Album[];
+	playlists: Playlist[];
 };
 
 export type Line = {

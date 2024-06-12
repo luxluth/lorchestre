@@ -14,7 +14,7 @@ use std::os::unix::fs::{FileExt, MetadataExt};
 #[cfg(target_os = "windows")]
 use std::os::windows::fs::{FileExt, MetadataExt};
 
-use mu::{check_dir, Album, Media, Track};
+use mu::{check_dir, Album, Media};
 use player::PlayerState;
 use tauri::{http, Manager};
 mod player;
@@ -83,7 +83,7 @@ fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
 
     let p_string = format!("{}/.cache.json", app_cache_dir.display());
     let covers_dir = format!("{}/covers", app_cache_dir.display());
-    let ac_string = format!("{}/.cache.audios", app_cache_dir.display());
+    let ac_string = format!("{}/.cache.list", app_cache_dir.display());
     let ac_path = Path::new(&ac_string);
 
     let prev_audio_files = mu::utils::read_cahe_audio_files(ac_path);
@@ -121,7 +121,7 @@ fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
                                     CachePayLoad::FileProcessed(format!("+ {}", file.display())),
                                 );
                             }
-                            cache_data.add_song(Track::from_file(covers_dir.clone(), file));
+                            cache_data.add_media(file, covers_dir.clone());
                         }
                     }
                     CacheCompareDiff::ToRemove { files } => {
@@ -132,7 +132,7 @@ fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
                                     CachePayLoad::FileProcessed(format!("- {}", file.display())),
                                 );
                             }
-                            cache_data.remove_song(file);
+                            cache_data.remove_media(file);
                         }
                     }
                     CacheCompareDiff::NoDiff => {
@@ -162,7 +162,7 @@ fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
                     );
                 }
 
-                cache.add_song(Track::from_file(covers_dir.clone(), file));
+                cache.add_media(file, covers_dir.clone());
             }
             needs_update = true;
         }
@@ -183,7 +183,7 @@ fn get_chache(app_cache_dir: PathBuf, window: Option<tauri::Window>) -> Media {
                 );
             }
 
-            cache.add_song(Track::from_file(covers_dir.clone(), file));
+            cache.add_media(file, covers_dir.clone());
         }
         needs_update = true;
     }
