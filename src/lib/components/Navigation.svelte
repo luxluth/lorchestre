@@ -38,9 +38,9 @@
 		</div>
 	</section>
 	<section>
-		<h4>Playlits</h4>
+		<h4>{$_('playlist')}</h4>
 		{#if media.playlists.length === 0}
-			No playlist found
+			<p class="np">{$_('no_playlist_found')}</p>
 		{:else}
 			<div class="links">
 				{#each media.playlists as playlist}
@@ -69,6 +69,10 @@
 </div>
 
 <style>
+	.np {
+		padding: 1em;
+	}
+
 	.search {
 		display: flex;
 		gap: 0.5em;

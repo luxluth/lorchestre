@@ -7,6 +7,8 @@
 	"songs": "Chansons",
 	"no_media": "Aucune chanson en cours de lecture",
 	"indexing_msg": "Indexation des fichiers locaux...",
+	"playlist": "Liste de lecture",
+	"no_playlist_found": "Aucune liste de lecture trouvée",
 	"ctx": {
 		"play": "Lancer la lecture",
 		"inqueue": "Ajouter la file d'attente"

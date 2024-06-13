@@ -7,6 +7,8 @@
 	"songs": "曲",
 	"no_media": "再生中の曲はありません",
 	"indexing_msg": "ローカルファイルをインデックス中...",
+	"playlist": "プレイリスト",
+	"no_playlist_found": "プレイリストが見つかりません",
 	"ctx": {
 		"play": "再生",
 		"inqueue": "キューに追加"

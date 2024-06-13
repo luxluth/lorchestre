@@ -7,6 +7,8 @@
 	"songs": "Songs",
 	"no_media": "No song currently playing",
 	"indexing_msg": "Indexing local files...",
+	"playlist": "Playlist",
+	"no_playlist_found": "No playlist found",
 	"ctx": {
 		"play": "Play",
 		"inqueue": "Add to queue"
