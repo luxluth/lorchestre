@@ -17,6 +17,7 @@
 	import { getContext } from 'svelte';
 	import { getAudioUri, getCoverUri } from '$lib/utils';
 	import { convertFileSrc } from '@tauri-apps/api/core';
+	import Marquee from '$lib/components/Marquee.svelte';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
@@ -270,8 +271,13 @@
 			</div>
 		</div>
 		<div class="infos">
-			<h2 class="ns">{manager.currentTrack?.title ?? 'Titre inconnu'}</h2>
-			<p class="artist ns">{manager.currentTrack?.artists.join(', ') ?? 'Artiste inconnu'}</p>
+			<Marquee width={'40vw'}>
+				<h2 class="ns">{manager.currentTrack?.title ?? 'Titre inconnu'}</h2>
+			</Marquee>
+
+			<Marquee width={'40vw'}>
+				<p class="artist ns">{manager.currentTrack?.artists.join(', ') ?? 'Artiste inconnu'}</p>
+			</Marquee>
 		</div>
 		<div class="controls">
 			<div class="actions">

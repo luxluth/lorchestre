@@ -12,6 +12,7 @@
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
 	import Slider from './Slider.svelte';
+	import Marquee from './Marquee.svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
@@ -109,19 +110,23 @@
 			</div>
 			<div class="details">
 				<div class="track-infos">
-					<h4>{manager.currentTrack.title}</h4>
-					<p>
-						<span>{manager.currentTrack.artists.join(', ')}</span> <span>—</span>
-						<span
-							><a
-								href="/album/{manager.currentTrack.album_id}"
-								onclick={() => {
-									adp.activeAlbum = media.getAlbum(manager.currentTrack?.album_id as string)
-								}}
-								>{manager.currentTrack.album}</a
-							></span
-						>
-					</p>
+					<Marquee width={'20vw'}>
+						<h4>{manager.currentTrack.title}</h4>
+					</Marquee>
+					<Marquee width={'14vw'}>
+						<p>
+							<span>{manager.currentTrack.artists.join(', ')}</span> <span>—</span>
+							<span
+								><a
+									href="/album/{manager.currentTrack.album_id}"
+									onclick={() => {
+                    adp.activeAlbum = media.getAlbum(manager.currentTrack?.album_id as string)
+                  }}
+									>{manager.currentTrack.album}</a
+								></span
+							>
+						</p>
+					</Marquee>
 				</div>
 				<time class="currtime ns">{formatTime(manager.currentTime)}</time>
 				<div class="progressbar" style="--percent: {percentage.toFixed(0)}%;">
@@ -258,7 +263,7 @@
 
 	.player,
 	.player_shell {
-		width: 26em;
+		width: 27vw;
 		border-radius: 3px;
 		overflow: hidden;
 		border: 1px solid rgba(100, 100, 100, 0.18);
@@ -332,7 +337,9 @@
 	}
 
 	.player .details .track-infos {
-		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	.player .details .track-infos p {
@@ -359,9 +366,10 @@
 
 	time {
 		position: absolute;
-		bottom: 10px;
+		font-family: var(--font-mono);
+		bottom: 8px;
 		opacity: 0.3;
-		font-size: 0.9em;
+		font-size: 0.85vw;
 	}
 
 	time.currtime {
