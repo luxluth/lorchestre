@@ -38,6 +38,7 @@
 	import FilterQuery from '$lib/filterq.svelte';
 	import List from '$lib/playlist.svelte';
 	import AlbumPageData from '$lib/album.svelte';
+	import { browser, dev } from '$app/environment';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 	setContext<Manager>('manager', new Manager());
@@ -48,6 +49,12 @@
 	setContext<FilterQuery>('filterq', new FilterQuery());
 	setContext<List>('list', new List());
 	setContext<AlbumPageData>('apd', new AlbumPageData());
+
+	if (browser) {
+		if (!dev) {
+			window.addEventListener('contextmenu', (e) => e.preventDefault());
+		}
+	}
 
 	$effect(() => {
 		let media = getContext<MediaState>('media');
