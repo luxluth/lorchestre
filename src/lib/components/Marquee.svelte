@@ -10,6 +10,8 @@
 	let state = new MarqueeState();
 
 	onMount(() => {
+		state.updateOverflow(content, marquee);
+
 		const resizeObserver = new ResizeObserver(() => {
 			state.updateOverflow(content, marquee);
 		});
@@ -18,19 +20,27 @@
 		resizeObserver.observe(content);
 		const mutationObserver = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
-				if (mutation.type === 'attributes') {
-					state.updateOverflow(content, marquee);
+				if (mutation.type === 'attributes' && mutation.attributeName === 'data-width') {
+					if (!state.ismodifing) {
+						console.log('from data-width');
+						// Temporarily disconnect the observer
+						mutationObserver.disconnect();
+						state.updateOverflow(content, marquee);
+						// Reconnect the observer after waiting for the dom to update
+						setTimeout(() => {
+							mutationObserver.observe(content, {
+								attributeFilter: ['data-width']
+							});
+						}, 70);
+					}
 				}
 			});
 		});
 
 		mutationObserver.observe(content, {
-			attributes: true,
-			childList: true,
-			subtree: true
+			attributeFilter: ['data-width']
 		});
 
-		state.updateOverflow(content, marquee);
 		return () => {
 			resizeObserver.unobserve(marquee);
 			resizeObserver.unobserve(content);
