@@ -231,6 +231,7 @@ impl InnerPlayer {
 
     #[inline]
     pub fn volume_to(&mut self, value: f32) {
+        self.volume = value;
         if let Some(sx) = self.sink_sx.clone() {
             let _ = sx.send(SinkMessage::VolumeTo(value));
         }
@@ -351,6 +352,7 @@ impl InnerPlayer {
         let (sx, rx) = channel::<SinkMessage>();
         self.sink_sx = Some(sx.clone());
         self.current_track = Some(t.clone());
+        let volume = self.volume;
 
         let sxp2 = sxp.clone();
 
@@ -372,6 +374,7 @@ impl InnerPlayer {
                     let secs = (secs * 100f32).trunc() / 100f32;
                     let _ = sxp.send(PlayerMessage::TimeUpdate(secs));
                 });
+            sink.set_volume(volume);
             sink.append(source);
 
             'sinkplaying: while let Ok(recv) = rx.recv() {
