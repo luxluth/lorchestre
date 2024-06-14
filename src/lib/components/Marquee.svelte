@@ -101,12 +101,18 @@
 	}
 
 	.content {
-		display: grid;
-		width: fit-content;
-		grid-template-columns: auto 1fr;
+		display: flex;
+		justify-content: center;
 		white-space: nowrap;
 		letter-spacing: -0.05vw;
 		gap: 2em;
+		height: fit-content;
+	}
+
+	.content.overflow {
+		display: grid;
+		width: fit-content;
+		grid-template-columns: auto 1fr;
 	}
 
 	.animating.overflow {
