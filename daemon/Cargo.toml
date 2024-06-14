@@ -1,0 +1,22 @@
+[package]
+name = "mud"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.5" }
+clap = { version = "4.5.7", features = ["derive"] }
+color-thief = "0.2.2"
+dirs = "5.0.1"
+glob = "0.3.1"
+image = "0.25.1"
+lrc = "0.1.8"
+md5 = "0.7.0"
+mime_guess = "2.0.4"
+rusqlite = { version = "0.31.0", features = ["bundled"] }
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = "1.0.117"
+socketioxide = "0.13.1"
+tokio = { version = "1.38.0", features = ["full"] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
