@@ -20,7 +20,6 @@
 	import type AlbumPageData from '$lib/album.svelte';
 
 	let media = getContext<MediaState>('media');
-	let adp = getContext<AlbumPageData>('apd');
 
 	function sortTracks(t: Track[]) {
 		return t.sort((a, b) => a.track - b.track);
@@ -65,7 +64,7 @@
 
 <h1 class="__page_title ns">{$_('albums')}</h1>
 
-{#if !media.loading}
+{#if media.loaded}
 	<div class="__medias">
 		{#each media.albums as album}
 			<a
@@ -92,48 +91,25 @@
 		{/each}
 	</div>
 {:else}
-	<div class="msg">
-		<div class="icon">
-			<LoaderCircle />
-			{$_('indexing_msg')}
-		</div>
-		<div class="data">{media.loading_data}</div>
-		<div class="data">{media.treatedFilesCount}/{media.files_count}</div>
+	<div class="loading">
+		<div class="dot"></div>
 	</div>
 {/if}
 
 <style>
-	.msg {
+	.loading {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 		height: 100%;
 		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5em;
 	}
 
-	.msg .data {
-		font-size: 0.5em;
-		font-family: var(--font-mono);
-	}
-
-	.msg .icon {
-		font-size: 2rem;
-		font-weight: bold;
-	}
-
-	.msg .icon :global(svg) {
-		animation: rotate 0.5s linear infinite;
-	}
-
-	@keyframes rotate {
-		from {
-			transform: rotate(0deg);
-		}
-		to {
-			transform: rotate(360deg);
-		}
+	.dot {
+		height: 2em;
+		width: 2em;
+		border-radius: 50%;
+		background-color: var(--fg);
 	}
 
 	.__page_title {

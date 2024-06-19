@@ -58,9 +58,9 @@ impl Album {
         self.tracks.retain(|x| x.file_path != path);
     }
 
-    pub fn get_song(&self, id: String) -> Option<Track> {
+    pub fn get_song(&self, id: &String) -> Option<Track> {
         for track in &self.tracks {
-            if track.id == id {
+            if track.id == id.clone() {
                 return Some(track.clone());
             }
         }
@@ -347,9 +347,9 @@ impl Media {
         self.albums.retain(|x| !x.tracks.is_empty());
     }
 
-    pub fn get_album(&self, id: String) -> Option<Album> {
+    pub fn get_album(&self, id: &String) -> Option<Album> {
         for album in self.albums.iter() {
-            if album.id == id {
+            if album.id == id.clone() {
                 return Some(Album {
                     name: album.name.clone(),
                     artist: album.artist.clone(),
@@ -365,7 +365,14 @@ impl Media {
 
     pub fn get_song(&self, id: &String) -> Option<Track> {
         for album in &self.albums {
-            let res = album.get_song(id.clone());
+            let res = album.get_song(id);
+            if res.is_some() {
+                return res;
+            }
+        }
+
+        for playlist in &self.playlists {
+            let res = playlist.get_song(id);
             if res.is_some() {
                 return res;
             }

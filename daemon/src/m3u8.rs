@@ -15,6 +15,18 @@ pub struct Playlist {
     pub id: String,
 }
 
+impl Playlist {
+    pub fn get_song(&self, id: &String) -> Option<Track> {
+        for track in &self.tracks {
+            if track.id == id.clone() {
+                return Some(track.clone());
+            }
+        }
+
+        None
+    }
+}
+
 impl M3U8 {
     pub fn parse(covers_dir: String, path: PathBuf) -> Playlist {
         let p = path.clone();

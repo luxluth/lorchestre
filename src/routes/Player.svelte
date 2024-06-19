@@ -15,8 +15,7 @@
 
 	import { Howl, Howler } from 'howler';
 	import { getContext } from 'svelte';
-	import { getAudioUri, getCoverUri } from '$lib/utils';
-	import { convertFileSrc } from '@tauri-apps/api/core';
+	import { getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
 
 	let manager = getContext<Manager>('manager');
@@ -73,34 +72,9 @@
 		return isInDOM && hasSize && isDisplayed && isVisible && isInViewport;
 	}
 
-	function formatTime(time: number) {
-		if (isNaN(time)) {
-			return '--:--';
-		}
-		if (time >= 60 * 60) {
-			return new Date(time * 1000).toISOString().substring(11, 16);
-		} else {
-			return new Date(time * 1000).toISOString().substring(14, 19);
-		}
-	}
-
-	function roundDecimal(num: number | string): number {
-		if (typeof num === 'string') {
-			return Math.round(Number(num) * 1000) / 1000;
-		} else {
-			return Math.round(num * 1000) / 1000;
-		}
-	}
-
-	async function getSrc(path: string) {
-		let blob = await (await fetch(convertFileSrc(path))).blob();
-		console.debug('[getSrc]', blob.type);
-		return URL.createObjectURL(blob);
-	}
-
 	function tick() {
 		if (sound) {
-			manager.currentTime = roundDecimal(sound.seek() / sound.duration());
+			manager.currentTime = sound.seek();
 		}
 		// if (analyser && canvas && canvasCtx) {
 		// let buffer = analyser.frequencyBinCount;
@@ -131,24 +105,20 @@
 		frameHandle = requestAnimationFrame(tick);
 	}
 
-	manager.onplayat = (time: number) => {
+	manager.onseekto = (time: number) => {
 		if (sound) {
 			sound.seek(time);
 		}
 	};
-	manager.ontooglepp = async () => {
+	manager.ontogglepp = async () => {
 		await toggleMediaPlayState();
 	};
 	manager.onvolumechange = (vol: number) => {
-		if (sound) {
-			sound.volume(vol);
-		}
+		sound?.volume(vol);
 	};
 
 	manager.ontimeupdate = (time: number) => {
-		if (sound) {
-			sound.seek(time);
-		}
+		sound?.seek(time);
 	};
 
 	manager.onPlayerActivate = () => {
@@ -159,7 +129,7 @@
 		active = false;
 	};
 
-	manager.onplay = (track: Track) => {
+	manager.onplay = async (track: Track) => {
 		manager.currentTrack = track;
 		// await getSrc(track.file_path);
 		// srcUrl = getAudioUri(track.id);
@@ -170,10 +140,67 @@
 				lyricsParent.scrollTop = 0;
 			}
 		}
+
+		sound?.stop();
+		sound?.unload();
+
+		sound = new Howl({
+			xhr: {
+				method: 'GET',
+				headers: {
+					'Access-Control-Allow-Origin': '*',
+					'Content-Type': track.mime,
+					'Content-Range': 'bytes=0-'
+				}
+			},
+			html5: true,
+			format: track.mime.split('/')[1],
+			src: [`http://localhost:7700/audio/${track.id}`],
+			loop: false,
+			onload: () => {
+				// loaded = true;
+				// Audio Context
+				// ctx = Howler.ctx;
+				// analyser = ctx.createAnalyser();
+				// analyser.fftSize = 128;
+				// Howler.masterGain.connect(analyser);
+			},
+			onloaderror: (e) => {
+				console.error('[howler::loadError]', e);
+				// loadError = true;
+			},
+			onend: () => {
+				playing = false;
+				manager.currentTime = 0;
+				(async () => {
+					await manager.next();
+				})();
+				cancelAnimationFrame(frameHandle);
+				// canvasCtx?.clearRect(0, 0, canvas.width, canvas.height);
+				// if (loop) song.play();
+			},
+			onpause: () => {
+				playing = false;
+				manager.paused = true;
+				cancelAnimationFrame(frameHandle);
+			},
+			onplay: () => {
+				manager.paused = false;
+				frameHandle = requestAnimationFrame(tick);
+			}
+		});
+
+		sound.play();
 	};
 
 	async function toggleMediaPlayState() {
-		await manager.tooglepp();
+		if (sound) {
+			if (manager.paused) {
+				sound.play();
+			} else {
+				sound.pause();
+			}
+		}
 	}
 
 	async function playAt(time: number) {
@@ -264,7 +291,7 @@
 						thumbColor={'var(--text)'}
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
 						oninput={async (data) => {
-							await manager.volumeTo(data);
+							manager.volumeTo(data);
 						}}
 					/>
 				</div>

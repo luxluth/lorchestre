@@ -1,7 +1,4 @@
-import { emit } from '@tauri-apps/api/event';
 import { type Track } from './type';
-import { type UnlistenFn, listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
 
 enum PlayingMode {
 	Normal,
@@ -14,15 +11,10 @@ enum QueueMode {
 	RepeatAll
 }
 
-enum QueueAddMode {
-	Top = 'Top',
-	Bottom = 'Bottom'
-}
-
-type QueueAdd = {
-	tracks: Array<Track>;
-	mode: QueueAddMode;
-};
+// enum QueueAddMode {
+// 	Top = 'Top',
+// 	Bottom = 'Bottom'
+// }
 
 /**
  * The player Manager
@@ -32,17 +24,17 @@ export default class Manager {
 	queue: Track[] = $state([]);
 	currentTrack?: Track = $state();
 	currentTime = $state(0);
+	history: Track[] = $state([]);
 	volume: number = $state(1);
 	paused: boolean = $state(true);
 	duration: number = $derived(this.currentTrack ? this.currentTrack.duration : 0);
 	qmode = $state(QueueMode.Continue);
 	pmode = $state(PlayingMode.Normal);
-	watching = false;
-	onplayat?: (time: number) => void;
-	ontooglepp?: () => Promise<void>;
+	onseekto?: (time: number) => void;
+	ontogglepp?: () => Promise<void>;
 	onvolumechange?: (vol: number) => void;
 	ontimeupdate?: (time: number) => void;
-	onplay?: (track: Track) => void;
+	onplay?: (track: Track) => Promise<void>;
 	onPlayerActivate?: () => void;
 	onPlayerDeactivate?: () => void;
 
@@ -53,32 +45,22 @@ export default class Manager {
 	}
 
 	async play(track: Track) {
-		await emit('play', track);
+		await this.onplay?.(track);
+		this.paused = false;
 	}
 
 	async volumeTo(vol: number) {
-		await emit('volumeto', vol);
 		this.volume = vol;
+		this.onvolumechange?.(vol);
 	}
 
 	async seekTo(time: number) {
-		await emit('seekto', time);
 		this.currentTime = time;
+		this.ontimeupdate?.(time);
 	}
 
-	async tooglepp() {
-		if (this.paused) {
-			await this.requestplay();
-		} else {
-			await this.requestpause();
-		}
-	}
-
-	async requestplay() {
-		await emit('requestplay');
-	}
-	async requestpause() {
-		await emit('requestpause');
+	async togglepp() {
+		await this.ontogglepp?.();
 	}
 
 	deactivate() {
@@ -88,65 +70,52 @@ export default class Manager {
 	}
 
 	async prev() {
-		await emit('prevtrack');
-	}
-
-	async watchevents() {
-		await invoke('start_player');
-		await listen<Track | undefined>('newtrack', (ev) => {
-			this.currentTrack = ev.payload;
+		let track = this.history.pop();
+		if (track) {
 			if (this.currentTrack) {
-				this.paused = false;
-				if (this.onplay) {
-					this.onplay(this.currentTrack);
-				}
-			} else {
-				this.paused = true;
+				this.queue = [this.currentTrack, ...this.queue];
 			}
-		});
-
-		await listen<Track[]>('queueupdate', (ev) => {
-			this.queue = ev.payload;
-		});
-
-		await listen<number>('timeupdate', (ev) => {
-			this.currentTime = ev.payload;
-		});
-
-		await listen('pause', (_) => {
-			this.paused = true;
-		});
-
-		await listen('play', (_) => {
-			this.paused = false;
-		});
-
-		this.watching = true;
+			if (this.onplay) await this.onplay(track);
+		}
 	}
 
 	async clearQueue() {
-		await emit('queueclear');
+		this.queue = [];
 	}
 
 	async addToQueue(track: Track) {
-		const add: QueueAdd = {
-			tracks: [track],
-			mode: QueueAddMode.Bottom
-		};
-		await emit('queueadd', add);
+		this.queue.push(track);
 	}
 
 	async addManyToQueue(tracks: Track[]) {
-		const add: QueueAdd = {
-			tracks,
-			mode: QueueAddMode.Bottom
-		};
-		await emit('queueadd', add);
+		this.queue.push(...tracks);
 	}
 
 	async next() {
-		await emit('nexttrack');
+		const track = this.queue.shift();
+		if (track) {
+			if (this.currentTrack) this.history.push(this.currentTrack);
+			if (this.onplay) await this.onplay(track);
+		} else {
+			if (this.onPlayerDeactivate) {
+				console.log('here');
+				this.onPlayerDeactivate();
+				this.currentTrack = undefined;
+			}
+		}
 	}
 
-	constructor() {}
+	constructor(options?: { queue?: Track[]; qmode?: QueueMode; pmode?: PlayingMode }) {
+		if (options) {
+			if (options.queue) {
+				this.queue = this.queue;
+			}
+			if (options.qmode) {
+				this.qmode = options.qmode;
+			}
+			if (options.pmode) {
+				this.pmode = options.pmode;
+			}
+		}
+	}
 }

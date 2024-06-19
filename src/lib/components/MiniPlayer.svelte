@@ -60,7 +60,7 @@
 				<button
 					class="playpause"
 					onclick={async () => {
-						await manager.tooglepp();
+						await manager.togglepp();
 					}}
 				>
 					{#if manager.paused}

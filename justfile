@@ -1,10 +1,22 @@
 dev:
   pnpm tauri dev
 
-build: build-linux-x86_64
+build:
+  pnpm install
+  just _build-{{os()}}
 
-build-linux-x86_64:
-  NO_STRIP=true pnpm tauri build -v -t x86_64-unknown-linux-gnu
+build-daemon:
+  #!/bin/bash
+  echo $(pwd)
+  cd daemon/
+  cargo build --release
+  cd ..
+  cp daemon/target/release/mud src-tauri/target/release/
 
-build-linux-arm:
-  NO_STRIP=true pnpm tauri build -v -t aarch64-unknown-linux-gnu
+_build-linux:
+  NO_STRIP=true pnpm tauri build -v
+  just build-daemon
+
+_build-macos:
+  pnpm tauri build -v
+  just build-daemon
