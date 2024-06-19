@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { convertFileSrc } from '@tauri-apps/api/core';
 	import {
 		ContextMenuItemType,
 		type ContextMenuEvent,

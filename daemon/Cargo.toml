@@ -21,11 +21,10 @@ rusqlite = { version = "0.31.0", features = ["bundled"] }
 serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
 socketioxide = { version = "0.13.1", features = ["state"] }
-sys-locale = "0.3.1"
 tokio = { version = "1.38.0", features = ["full"] }
-toml = "0.8.14"
 tower = "0.4.13"
 tower-http = { version = "0.5.2", features = ["cors"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
+muconf = { path = "../conf" }

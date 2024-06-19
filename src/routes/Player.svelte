@@ -25,7 +25,11 @@
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 
 	let sound = $state<Howl>();
-	let dotScale = $state('scale(1)');
+	let ctx = $state<AudioContext>();
+	let analyser = $state<AnalyserNode>();
+	let frequencyData = $state<Uint8Array>();
+	let soundfreq = $state<number>(255);
+	let hasLyrics = $derived(manager.currentTrack ? manager.currentTrack.lyrics.length > 0 : false);
 
 	$effect(() => {
 		//@ts-ignore
@@ -76,32 +80,41 @@
 		if (sound) {
 			manager.currentTime = sound.seek();
 		}
-		// if (analyser && canvas && canvasCtx) {
-		// let buffer = analyser.frequencyBinCount;
-		// let data = new Uint8Array(buffer);
-		// let width = canvas.width;
-		// let height = canvas.height;
-		// analyser.getByteFrequencyData(data);
-		// let barWidth = (width / buffer) * 2;
-		// let barHeight;
-		// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
-		// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
-		// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
-		//
-		// if (playing || song.playing()) {
-		// 	canvasCtx.clearRect(0, 0, width, height);
-		// 	let x = 0;
-		//
-		// 	for (let i = 0; i < buffer; i++) {
-		// 		barHeight = data[i];
-		// 		canvasCtx.fillStyle = grd;
-		// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
-		// 		x += barWidth + 1;
-		// 	}
-		// } else {
-		// }
-		// requestAnimationFrame(tick);
-		// }
+		if (analyser) {
+			// frequencyData = frequencyData as Uint8Array;
+			// analyser.getByteFrequencyData(frequencyData);
+			// const bassData = frequencyData.slice(0, 16);
+			// const bassAverage = bassData.reduce((sum, value) => sum + value, 0) / bassData.length;
+			// soundfreq = bassAverage;
+			//
+			// const avgFrequency =
+			// 	frequencyData.reduce((sum, value) => sum + value, 0) / frequencyData.length;
+			// console.log(dotScale);
+			// let buffer = analyser.frequencyBinCount;
+			// let data = new Uint8Array(buffer);
+			// let width = canvas.width;
+			// let height = canvas.height;
+			// analyser.getByteFrequencyData(data);
+			// let barWidth = (width / buffer) * 2;
+			// let barHeight;
+			// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
+			// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
+			// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
+			//
+			// if (playing || song.playing()) {
+			// 	canvasCtx.clearRect(0, 0, width, height);
+			// 	let x = 0;
+			//
+			// 	for (let i = 0; i < buffer; i++) {
+			// 		barHeight = data[i];
+			// 		canvasCtx.fillStyle = grd;
+			// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
+			// 		x += barWidth + 1;
+			// 	}
+			// } else {
+			// }
+			// requestAnimationFrame(tick);
+		}
 		frameHandle = requestAnimationFrame(tick);
 	}
 
@@ -149,11 +162,10 @@
 				method: 'GET',
 				headers: {
 					'Access-Control-Allow-Origin': '*',
-					'Content-Type': track.mime,
-					'Content-Range': 'bytes=0-'
+					'Content-Type': track.mime
 				}
 			},
-			html5: true,
+
 			format: track.mime.split('/')[1],
 			src: [`http://localhost:7700/audio/${track.id}`],
 			loop: false,
@@ -162,8 +174,11 @@
 				// Audio Context
 				// ctx = Howler.ctx;
 				// analyser = ctx.createAnalyser();
-				// analyser.fftSize = 128;
+				// analyser.fftSize = 256;
+				// frequencyData = new Uint8Array(analyser.frequencyBinCount);
 				// Howler.masterGain.connect(analyser);
+				// analyser.connect(ctx.destination);
+				// console.log(analyser, frequencyData);
 			},
 			onloaderror: (e) => {
 				console.error('[howler::loadError]', e);
@@ -186,6 +201,7 @@
 			},
 			onplay: () => {
 				manager.paused = false;
+				ctx?.resume();
 				frameHandle = requestAnimationFrame(tick);
 			}
 		});
@@ -245,7 +261,7 @@
 	);
 </script>
 
-<div class:active class:playing class="__player" style={styleString}>
+<div class:active class:playing class:no_lyrics={!hasLyrics} class="__player" style={styleString}>
 	<div class="background-images">
 		{#each layers as _, index}
 			<div
@@ -362,29 +378,27 @@
 			</div>
 		</div>
 	</section>
-	{#if manager.currentTrack}
-		{#if manager.currentTrack.lyrics.length > 0}
-			<section class="lrc" bind:this={lyricsParent}>
-				{#each lrcMngr.lines as { text, startTime, id }}
-					<div
-						class="line ns"
-						data-time={startTime}
-						class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-						onclick={async () => await playAt(startTime)}
-						onkeydown={() => {}}
-						role="button"
-						tabindex="0"
-						class:instrumental={text == '♪'}
-					>
-						{#if text == '♪'}
-							<div class="dot" style="transform: {dotScale};"></div>
-						{:else}
-							{text}
-						{/if}
-					</div>
-				{/each}
-			</section>
-		{/if}
+	{#if hasLyrics}
+		<section class="lrc" bind:this={lyricsParent}>
+			{#each lrcMngr.lines as { text, startTime, id }}
+				<div
+					class="line ns"
+					data-time={startTime}
+					class:active={lrcMngr.activeLines.find((i) => i.id === id)}
+					onclick={async () => await playAt(startTime)}
+					onkeydown={() => {}}
+					role="button"
+					tabindex="0"
+					class:instrumental={text == '♪'}
+				>
+					{#if text == '♪'}
+						<div class="dot"></div>
+					{:else}
+						{text}
+					{/if}
+				</div>
+			{/each}
+		</section>
 	{/if}
 </div>
 
@@ -500,6 +514,12 @@
 		transition: transform 0.3s ease-in-out;
 	}
 
+	.__player.no_lyrics {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
 	.__player .background-images {
 		position: absolute;
 		top: 0;
@@ -576,9 +596,10 @@
 
 	.__player .lrc {
 		height: 100%;
+		width: 100%;
 		overflow-y: auto;
-		max-width: 50em;
 		position: relative;
+		padding-inline: 1em;
 
 		mask: linear-gradient(
 			180deg,
@@ -602,7 +623,7 @@
 		padding: 0.25em;
 		font-weight: 600;
 		opacity: 0.3;
-		transition: all 0.2s ease-in-out;
+		transition: all 0.09s ease-in-out;
 		cursor: pointer;
 		line-height: 1;
 		border-radius: 8px;
@@ -643,6 +664,7 @@
 		height: 0.5em;
 		width: 0.5em;
 		border-radius: 50%;
+		/* transform: scale(var(--freq)); */
 	}
 
 	.line.active.instrumental {

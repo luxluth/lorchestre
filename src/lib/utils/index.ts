@@ -1,5 +1,4 @@
 import { MUD_ENDPOINT } from '$lib/config';
-import { convertFileSrc } from '@tauri-apps/api/core';
 
 export function clickOutside(element: Element, callbackFunction: () => void) {
 	function onClick(event: MouseEvent) {
@@ -55,7 +54,5 @@ export function getCoverUri(album_id: string, ext: String) {
 }
 
 export function getAudioUri(id: string) {
-	let url = convertFileSrc(`audio:${id}`, 'mu');
-	console.log(url);
-	return url;
+	return `${MUD_ENDPOINT}/audio/${id}`;
 }

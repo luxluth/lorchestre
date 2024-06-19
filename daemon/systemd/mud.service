@@ -1,0 +1,10 @@
+[Unit]
+Description=Mu Daemon Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mud
+
+[Install]
+WantedBy=default.target

@@ -1464,6 +1464,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "muconf"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "sys-locale",
+ "toml",
+]
+
+[[package]]
 name = "mud"
 version = "0.0.0"
 dependencies = [
@@ -1480,13 +1489,12 @@ dependencies = [
  "lrc",
  "md5",
  "mime_guess",
+ "muconf",
  "rusqlite",
  "serde",
  "serde_json",
  "socketioxide",
- "sys-locale",
  "tokio",
- "toml",
  "tower",
  "tower-http",
  "tracing",
