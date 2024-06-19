@@ -15,8 +15,7 @@
 
 	import { Howl, Howler } from 'howler';
 	import { getContext } from 'svelte';
-	import { getAudioUri, getCoverUri } from '$lib/utils';
-	import { convertFileSrc } from '@tauri-apps/api/core';
+	import { getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
 
 	let manager = getContext<Manager>('manager');
@@ -26,7 +25,11 @@
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 
 	let sound = $state<Howl>();
-	let dotScale = $state('scale(1)');
+	let ctx = $state<AudioContext>();
+	let analyser = $state<AnalyserNode>();
+	let frequencyData = $state<Uint8Array>();
+	let soundfreq = $state<number>(255);
+	let hasLyrics = $derived(manager.currentTrack ? manager.currentTrack.lyrics.length > 0 : false);
 
 	$effect(() => {
 		//@ts-ignore
@@ -73,82 +76,62 @@
 		return isInDOM && hasSize && isDisplayed && isVisible && isInViewport;
 	}
 
-	function formatTime(time: number) {
-		if (isNaN(time)) {
-			return '--:--';
-		}
-		if (time >= 60 * 60) {
-			return new Date(time * 1000).toISOString().substring(11, 16);
-		} else {
-			return new Date(time * 1000).toISOString().substring(14, 19);
-		}
-	}
-
-	function roundDecimal(num: number | string): number {
-		if (typeof num === 'string') {
-			return Math.round(Number(num) * 1000) / 1000;
-		} else {
-			return Math.round(num * 1000) / 1000;
-		}
-	}
-
-	async function getSrc(path: string) {
-		let blob = await (await fetch(convertFileSrc(path))).blob();
-		console.debug('[getSrc]', blob.type);
-		return URL.createObjectURL(blob);
-	}
-
 	function tick() {
 		if (sound) {
-			manager.currentTime = roundDecimal(sound.seek() / sound.duration());
+			manager.currentTime = sound.seek();
 		}
-		// if (analyser && canvas && canvasCtx) {
-		// let buffer = analyser.frequencyBinCount;
-		// let data = new Uint8Array(buffer);
-		// let width = canvas.width;
-		// let height = canvas.height;
-		// analyser.getByteFrequencyData(data);
-		// let barWidth = (width / buffer) * 2;
-		// let barHeight;
-		// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
-		// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
-		// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
-		//
-		// if (playing || song.playing()) {
-		// 	canvasCtx.clearRect(0, 0, width, height);
-		// 	let x = 0;
-		//
-		// 	for (let i = 0; i < buffer; i++) {
-		// 		barHeight = data[i];
-		// 		canvasCtx.fillStyle = grd;
-		// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
-		// 		x += barWidth + 1;
-		// 	}
-		// } else {
-		// }
-		// requestAnimationFrame(tick);
-		// }
+		if (analyser) {
+			// frequencyData = frequencyData as Uint8Array;
+			// analyser.getByteFrequencyData(frequencyData);
+			// const bassData = frequencyData.slice(0, 16);
+			// const bassAverage = bassData.reduce((sum, value) => sum + value, 0) / bassData.length;
+			// soundfreq = bassAverage;
+			//
+			// const avgFrequency =
+			// 	frequencyData.reduce((sum, value) => sum + value, 0) / frequencyData.length;
+			// console.log(dotScale);
+			// let buffer = analyser.frequencyBinCount;
+			// let data = new Uint8Array(buffer);
+			// let width = canvas.width;
+			// let height = canvas.height;
+			// analyser.getByteFrequencyData(data);
+			// let barWidth = (width / buffer) * 2;
+			// let barHeight;
+			// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
+			// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
+			// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
+			//
+			// if (playing || song.playing()) {
+			// 	canvasCtx.clearRect(0, 0, width, height);
+			// 	let x = 0;
+			//
+			// 	for (let i = 0; i < buffer; i++) {
+			// 		barHeight = data[i];
+			// 		canvasCtx.fillStyle = grd;
+			// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
+			// 		x += barWidth + 1;
+			// 	}
+			// } else {
+			// }
+			// requestAnimationFrame(tick);
+		}
 		frameHandle = requestAnimationFrame(tick);
 	}
 
-	manager.onplayat = (time: number) => {
+	manager.onseekto = (time: number) => {
 		if (sound) {
 			sound.seek(time);
 		}
 	};
-	manager.ontooglepp = async () => {
+	manager.ontogglepp = async () => {
 		await toggleMediaPlayState();
 	};
 	manager.onvolumechange = (vol: number) => {
-		if (sound) {
-			sound.volume(vol);
-		}
+		sound?.volume(vol);
 	};
 
 	manager.ontimeupdate = (time: number) => {
-		if (sound) {
-			sound.seek(time);
-		}
+		sound?.seek(time);
 	};
 
 	manager.onPlayerActivate = () => {
@@ -159,7 +142,7 @@
 		active = false;
 	};
 
-	manager.onplay = (track: Track) => {
+	manager.onplay = async (track: Track) => {
 		manager.currentTrack = track;
 		// await getSrc(track.file_path);
 		// srcUrl = getAudioUri(track.id);
@@ -170,10 +153,70 @@
 				lyricsParent.scrollTop = 0;
 			}
 		}
+
+		sound?.stop();
+		sound?.unload();
+
+		sound = new Howl({
+			xhr: {
+				method: 'GET',
+				headers: {
+					'Access-Control-Allow-Origin': '*',
+					'Content-Type': track.mime
+				}
+			},
+
+			format: track.mime.split('/')[1],
+			src: [`http://localhost:7700/audio/${track.id}`],
+			loop: false,
+			onload: () => {
+				// loaded = true;
+				// Audio Context
+				// ctx = Howler.ctx;
+				// analyser = ctx.createAnalyser();
+				// analyser.fftSize = 256;
+				// frequencyData = new Uint8Array(analyser.frequencyBinCount);
+				// Howler.masterGain.connect(analyser);
+				// analyser.connect(ctx.destination);
+				// console.log(analyser, frequencyData);
+			},
+			onloaderror: (e) => {
+				console.error('[howler::loadError]', e);
+				// loadError = true;
+			},
+			onend: () => {
+				playing = false;
+				manager.currentTime = 0;
+				(async () => {
+					await manager.next();
+				})();
+				cancelAnimationFrame(frameHandle);
+				// canvasCtx?.clearRect(0, 0, canvas.width, canvas.height);
+				// if (loop) song.play();
+			},
+			onpause: () => {
+				playing = false;
+				manager.paused = true;
+				cancelAnimationFrame(frameHandle);
+			},
+			onplay: () => {
+				manager.paused = false;
+				ctx?.resume();
+				frameHandle = requestAnimationFrame(tick);
+			}
+		});
+
+		sound.play();
 	};
 
 	async function toggleMediaPlayState() {
-		await manager.tooglepp();
+		if (sound) {
+			if (manager.paused) {
+				sound.play();
+			} else {
+				sound.pause();
+			}
+		}
 	}
 
 	async function playAt(time: number) {
@@ -218,7 +261,7 @@
 	);
 </script>
 
-<div class:active class:playing class="__player" style={styleString}>
+<div class:active class:playing class:no_lyrics={!hasLyrics} class="__player" style={styleString}>
 	<div class="background-images">
 		{#each layers as _, index}
 			<div
@@ -264,7 +307,7 @@
 						thumbColor={'var(--text)'}
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
 						oninput={async (data) => {
-							await manager.volumeTo(data);
+							manager.volumeTo(data);
 						}}
 					/>
 				</div>
@@ -335,29 +378,27 @@
 			</div>
 		</div>
 	</section>
-	{#if manager.currentTrack}
-		{#if manager.currentTrack.lyrics.length > 0}
-			<section class="lrc" bind:this={lyricsParent}>
-				{#each lrcMngr.lines as { text, startTime, id }}
-					<div
-						class="line ns"
-						data-time={startTime}
-						class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-						onclick={async () => await playAt(startTime)}
-						onkeydown={() => {}}
-						role="button"
-						tabindex="0"
-						class:instrumental={text == '♪'}
-					>
-						{#if text == '♪'}
-							<div class="dot" style="transform: {dotScale};"></div>
-						{:else}
-							{text}
-						{/if}
-					</div>
-				{/each}
-			</section>
-		{/if}
+	{#if hasLyrics}
+		<section class="lrc" bind:this={lyricsParent}>
+			{#each lrcMngr.lines as { text, startTime, id }}
+				<div
+					class="line ns"
+					data-time={startTime}
+					class:active={lrcMngr.activeLines.find((i) => i.id === id)}
+					onclick={async () => await playAt(startTime)}
+					onkeydown={() => {}}
+					role="button"
+					tabindex="0"
+					class:instrumental={text == '♪'}
+				>
+					{#if text == '♪'}
+						<div class="dot"></div>
+					{:else}
+						{text}
+					{/if}
+				</div>
+			{/each}
+		</section>
 	{/if}
 </div>
 
@@ -473,6 +514,12 @@
 		transition: transform 0.3s ease-in-out;
 	}
 
+	.__player.no_lyrics {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
 	.__player .background-images {
 		position: absolute;
 		top: 0;
@@ -549,9 +596,10 @@
 
 	.__player .lrc {
 		height: 100%;
+		width: 100%;
 		overflow-y: auto;
-		max-width: 50em;
 		position: relative;
+		padding-inline: 1em;
 
 		mask: linear-gradient(
 			180deg,
@@ -575,7 +623,7 @@
 		padding: 0.25em;
 		font-weight: 600;
 		opacity: 0.3;
-		transition: all 0.2s ease-in-out;
+		transition: all 0.09s ease-in-out;
 		cursor: pointer;
 		line-height: 1;
 		border-radius: 8px;
@@ -616,6 +664,7 @@
 		height: 0.5em;
 		width: 0.5em;
 		border-radius: 50%;
+		/* transform: scale(var(--freq)); */
 	}
 
 	.line.active.instrumental {

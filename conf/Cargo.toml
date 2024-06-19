@@ -1,0 +1,9 @@
+[package]
+name = "muconf"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.203", features = ["derive"] }
+sys-locale = "0.3.1"
+toml = "0.8.14"

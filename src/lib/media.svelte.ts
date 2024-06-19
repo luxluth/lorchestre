@@ -1,29 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
-import { type UnlistenFn, listen } from '@tauri-apps/api/event';
-import type { Album, Media, Payload, Playlist, Track } from './type';
-
-type FP = {
-	FileProcessed: string;
-};
-
-type Ended = {
-	Ended: {
-		media: Media;
-	};
-};
-
-type TF = {
-	TotalFiles: {
-		count: number;
-	};
-};
+import type { Album, Media, Playlist, Track } from './type';
+import { MUD_ENDPOINT } from './config';
 
 export default class MediaState {
 	albums: Album[] = $state([]);
 	playlists: Playlist[] = $state([]);
 	loaded = $state(false);
 	loading = $state(false);
-	private unlistenners = new Set<UnlistenFn>();
 	loading_data = $state('');
 	files_count = $state(100);
 	treatedFilesCount = $state(0);
@@ -31,37 +13,10 @@ export default class MediaState {
 	constructor() {}
 
 	async load() {
-		this.loading = true;
-		this.treatedFilesCount = 0;
-
-		this.unlistenners.add(
-			await listen<Ended>('cache-update-end', (ev) => {
-				this.albums = ev.payload.Ended.media.albums;
-				this.playlists = ev.payload.Ended.media.playlists;
-				this.loading = false;
-				this.loaded = true;
-
-				this.unlistenners.forEach((e) => {
-					e();
-				});
-			})
-		);
-
-		this.unlistenners.add(
-			await listen<TF>('cache-update-files', (ev) => {
-				this.treatedFilesCount = 0;
-				this.files_count = ev.payload.TotalFiles.count;
-			})
-		);
-
-		this.unlistenners.add(
-			await listen<FP>('cache-update-data', (ev) => {
-				this.loading_data = ev.payload.FileProcessed;
-				this.treatedFilesCount++;
-			})
-		);
-
-		await invoke('index');
+		let media = (await (await fetch(`${MUD_ENDPOINT}/media`)).json()) as Media;
+		this.albums = media.albums;
+		this.playlists = media.playlists;
+		this.loaded = true;
 	}
 
 	getSongs() {

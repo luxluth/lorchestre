@@ -1,6 +1,10 @@
+pub mod m3u8;
+
 use color_thief::ColorFormat;
 use glob::glob;
 use lofty::picture::{MimeType, PictureType};
+use lofty::prelude::*;
+use lofty::probe::Probe;
 use lrc::Lyrics;
 use m3u8::Playlist;
 use mime_guess::{self, mime};
@@ -9,11 +13,7 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-
-use lofty::prelude::*;
-use lofty::probe::Probe;
-
-pub mod m3u8;
+use uuid::Uuid;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
@@ -58,14 +58,14 @@ impl Album {
         self.tracks.retain(|x| x.file_path != path);
     }
 
-    pub fn get_song(&self, id: String) -> Option<Track> {
+    pub fn get_song(&self, id: &String) -> Option<Track> {
         for track in &self.tracks {
-            if track.id == id {
+            if track.id == id.clone() {
                 return Some(track.clone());
             }
         }
 
-        return None;
+        None
     }
 }
 
@@ -167,7 +167,7 @@ impl Track {
         bytes.extend(
             audio
                 .artists
-                .get(0)
+                .first()
                 .unwrap_or(&"@UNKNOWN@".to_string())
                 .as_bytes(),
         );
@@ -247,19 +247,6 @@ impl Track {
             }
         }
 
-        let data = format!(
-            "{}{}{}{}###{}{}",
-            audio.title,
-            audio.album,
-            audio.duration,
-            audio.artists.join(";"),
-            audio.album_id,
-            audio.track,
-        );
-
-        let id = md5::compute(data);
-        audio.id = format!("{id:x}");
-
         audio
     }
 }
@@ -282,7 +269,7 @@ impl Default for Track {
             file_path: String::new(),
             bitrate: 0,
             duration: 0,
-            id: String::new(),
+            id: format!("{:x}", Uuid::new_v4().as_u128()),
             created_at: SystemTime::UNIX_EPOCH,
         }
     }
@@ -360,14 +347,14 @@ impl Media {
         self.albums.retain(|x| !x.tracks.is_empty());
     }
 
-    pub fn get_album(&self, id: String) -> Option<Album> {
+    pub fn get_album(&self, id: &String) -> Option<Album> {
         for album in self.albums.iter() {
-            if album.id == id {
+            if album.id == id.clone() {
                 return Some(Album {
                     name: album.name.clone(),
                     artist: album.artist.clone(),
                     tracks: album.tracks.clone(),
-                    year: album.year.clone(),
+                    year: album.year,
                     id: album.id.clone(),
                 });
             }
@@ -376,15 +363,22 @@ impl Media {
         None
     }
 
-    pub fn get_song(&self, id: String) -> Option<Track> {
+    pub fn get_song(&self, id: &String) -> Option<Track> {
         for album in &self.albums {
-            let res = album.get_song(id.clone());
+            let res = album.get_song(id);
             if res.is_some() {
                 return res;
             }
         }
 
-        return None;
+        for playlist in &self.playlists {
+            let res = playlist.get_song(id);
+            if res.is_some() {
+                return res;
+            }
+        }
+
+        None
     }
 }
 
@@ -395,7 +389,7 @@ impl Songs {
         for audio in self.audios {
             album_map
                 .entry(audio.album_id.clone())
-                .or_insert_with(Vec::new) // Insert a new Vec<Audio> if the key does not exist
+                .or_default()
                 .push(audio);
         }
 
@@ -405,7 +399,7 @@ impl Songs {
                 artist: v[0].album_artist.clone().unwrap_or(String::from(
                     v[0].artists
                         .clone()
-                        .get(0)
+                        .first()
                         .unwrap_or(&"@UNKNOWN@".to_string()),
                 )),
                 year: v[0].album_year,
@@ -449,11 +443,7 @@ pub mod utils {
                 let mut chars = x.chars();
                 let openparen = chars.next().unwrap();
                 let nextdata = chars.next().unwrap();
-                if openparen == '[' && nextdata.is_ascii_digit() {
-                    return true;
-                } else {
-                    return false;
-                }
+                openparen == '[' && nextdata.is_ascii_digit()
             })
             .map(|x| x.to_string())
             .collect();
@@ -465,20 +455,18 @@ pub mod utils {
         let mut files = vec![];
         if let Some(audio_dir) = dirs::audio_dir() {
             if let Ok(paths) = glob(&format!("{}/**/*", audio_dir.display())) {
-                for path in paths {
-                    if let Ok(inode) = path {
-                        if inode.is_file() {
-                            let guess = mime_guess::from_path(&inode)
-                                .first_or("text/plain".parse().unwrap());
-                            if guess.type_() == super::mime::AUDIO {
-                                files.push(inode);
-                            }
+                for inode in paths.flatten() {
+                    if inode.is_file() {
+                        let guess =
+                            mime_guess::from_path(&inode).first_or("text/plain".parse().unwrap());
+                        if guess.type_() == super::mime::AUDIO {
+                            files.push(inode);
                         }
                     }
                 }
             }
         }
-        return files;
+        files
     }
 
     pub fn cache_audio_files(cache_path: &std::path::Path) {
@@ -489,25 +477,6 @@ pub mod utils {
         let data = files.join("\n");
         let mut f = std::fs::File::create(cache_path).unwrap();
         let _ = f.write_all(data.as_bytes());
-    }
-
-    pub fn get_locale(cache_path: &std::path::Path) -> String {
-        let mut buf = String::new();
-        if cache_path.exists() {
-            let mut f = std::fs::File::open(cache_path).unwrap();
-            let _ = f.read_to_string(&mut buf);
-            return buf;
-        } else {
-            let sl = sys_locale::get_locale().unwrap_or("en-GB".to_string());
-            let mut f = std::fs::File::create(cache_path).unwrap();
-            let _ = f.write_all(sl.as_bytes());
-            return sl;
-        }
-    }
-
-    pub fn set_locale(cache_path: &std::path::Path, locale: String) {
-        let mut f = std::fs::File::create(cache_path).unwrap();
-        let _ = f.write_all(locale.as_bytes());
     }
 
     pub fn read_cahe_audio_files(cache_path: &std::path::Path) -> Vec<PathBuf> {
@@ -533,7 +502,7 @@ pub mod utils {
 
                 let digest = md5::compute(files);
 
-                return format!("{digest:x}");
+                format!("{digest:x}")
             } else {
                 String::new()
             }

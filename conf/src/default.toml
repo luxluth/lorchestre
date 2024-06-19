@@ -1,0 +1,13 @@
+# Gobal configuration
+# Here are client ux related configuration
+
+[global]
+enable_blur = true # Enabling blur can have performance hit on linux platforms
+lang = "{{LANG}}"  # Can be any suported language (e.g. en, fr, ja)
+theme = "auto"     # Either auto | dark | light
+
+# Network configuration
+
+[network]
+port = 7700        # The port that use mud
+host = "localhost" # The host to lauch mud on

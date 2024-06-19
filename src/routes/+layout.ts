@@ -1,7 +1,7 @@
-import { invoke } from '@tauri-apps/api/core';
 import type { LayoutLoad } from './$types';
 import { _init } from '$lib/i18n';
 import { locale } from 'svelte-i18n';
+import { invoke } from '@tauri-apps/api/core';
 
 export const prerender = true;
 export const ssr = false;
