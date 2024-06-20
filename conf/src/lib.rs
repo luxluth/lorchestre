@@ -3,10 +3,32 @@ use std::{
     path::PathBuf,
 };
 
+#[macro_export]
+macro_rules! update_conf {
+    ($config:expr, $category:ident, $field:ident, $value:expr) => {{
+        if let Some(ref mut cat) = $config.$category {
+            cat.$field = $value;
+        } else {
+            let mut cat = <$crate::Config as Default>::default().$category.unwrap();
+            cat.$field = $value;
+            $config.$category = Some(cat);
+        }
+    }};
+}
+
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Network {
     pub port: Option<u32>,
     pub host: Option<String>,
+}
+
+impl Default for Network {
+    fn default() -> Self {
+        Self {
+            port: Some(7700),
+            host: Some("localhost".to_string()),
+        }
+    }
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
@@ -16,23 +38,33 @@ pub struct Global {
     pub theme: Option<String>,
 }
 
+impl Default for Global {
+    fn default() -> Self {
+        let l = sys_locale::get_locale().unwrap_or("en-GB".to_string());
+        Self {
+            enable_blur: Some(true),
+            lang: Some(l),
+            theme: Some("auto".to_string()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Config {
     pub global: Option<Global>,
     pub network: Option<Network>,
 }
 
-impl Config {
-    fn default() -> (Config, String) {
-        let data = include_str!("./default.toml");
-        let data = data.replace(
-            "{{LANG}}",
-            &sys_locale::get_locale().unwrap_or("en-GB".to_string()),
-        );
-
-        (toml::from_str(&data).unwrap(), data)
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            global: Some(Global::default()),
+            network: Some(Network::default()),
+        }
     }
+}
 
+impl Config {
     pub fn dump(path: &PathBuf, new_config: Config) {
         let mut f = std::fs::File::create(path).unwrap();
         let _ = f.write_all(toml::to_string(&new_config).unwrap().as_bytes());
@@ -44,64 +76,14 @@ impl Config {
             let mut f = std::fs::File::open(path).unwrap();
             let _ = f.read_to_string(&mut buf);
 
-            toml::from_str(&buf).unwrap()
+            match toml::from_str::<Config>(&buf) {
+                Ok(parsed_conf) => parsed_conf,
+                Err(_) => Config::default(),
+            }
         } else {
-            let (conf, conf_s) = Config::default();
-            let mut f = std::fs::File::create(path).unwrap();
-            let _ = f.write_all(conf_s.as_bytes());
+            let conf = Config::default();
+            Config::dump(path, conf.clone());
             conf
         }
-    }
-
-    /// Function to update the global section
-    pub fn update_global(&mut self, new_global: Global) {
-        self.global = Some(new_global);
-    }
-
-    /// Function to update the network section
-    pub fn update_network(&mut self, new_network: Network) {
-        self.network = Some(new_network);
-    }
-
-    /// Function to update a specific field in the global section
-    pub fn update_global_field<F>(&mut self, update_fn: F)
-    where
-        F: FnOnce(&mut Global),
-    {
-        if let Some(ref mut global) = self.global {
-            update_fn(global);
-        } else {
-            let mut new_global = Global {
-                enable_blur: None,
-                lang: None,
-                theme: None,
-            };
-            update_fn(&mut new_global);
-            self.global = Some(new_global);
-        }
-    }
-
-    /// Function to update a specific field in the network section
-    pub fn update_network_field<F>(&mut self, update_fn: F)
-    where
-        F: FnOnce(&mut Network),
-    {
-        if let Some(ref mut network) = self.network {
-            update_fn(network);
-        } else {
-            let mut new_network = Network {
-                port: None,
-                host: None,
-            };
-            update_fn(&mut new_network);
-            self.network = Some(new_network);
-        }
-    }
-
-    /// Function to load, update, and save the configuration
-    pub fn load_update_save(path: &PathBuf, update_fn: impl FnOnce(&mut Config)) {
-        let mut config = Config::get(path);
-        update_fn(&mut config);
-        Config::dump(path, config);
     }
 }

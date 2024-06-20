@@ -50,15 +50,14 @@
 
 <style>
 	.__ctxmenu {
-		transform-origin: top left;
 		position: fixed;
 		z-index: 200;
 		width: 16rem;
-		border: 2px solid rgba(100, 100, 100, 0.18);
-		border-radius: 6px;
+		border: 1px solid rgba(100, 100, 100, 0.18);
+		border-radius: 8px;
 		background-color: var(--bg);
 		color: var(--fg);
-		padding: 2px;
+		box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 	}
 
 	hr {
@@ -93,6 +92,17 @@
 		padding: 0.5em;
 		align-items: center;
 		border-radius: 4px;
+		margin: 4px;
+		transition: background 0.1s ease-in-out;
+	}
+
+	.icon {
+		opacity: 0.7;
+	}
+
+	.label {
+		font-weight: 500;
+		letter-spacing: -0.05vw;
 	}
 
 	.item:hover {

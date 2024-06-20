@@ -130,3 +130,29 @@ export enum FilterOrder {
 	Ascendant,
 	Descendant
 }
+
+export type Network = {
+	port?: u32;
+	host?: string;
+};
+
+export type Theme = 'auto' | 'dark' | 'light';
+
+export type Global = {
+	enable_blur?: boolean;
+	lang?: string;
+	theme?: Theme;
+};
+
+export type Config = {
+	global?: Global;
+	network?: Network;
+};
+
+type DeepRequired<T> = {
+	[K in keyof T]-?: NonNullable<T[K]> extends object
+		? DeepRequired<NonNullable<T[K]>>
+		: NonNullable<T[K]>;
+};
+
+export type DefinedConfig = DeepRequired<Config>;

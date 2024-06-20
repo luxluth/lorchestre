@@ -25,20 +25,48 @@ fn locale(app: tauri::AppHandle) -> String {
 }
 
 #[tauri::command]
-fn set_locale(app: tauri::AppHandle, locale: String) {
+fn config(app: tauri::AppHandle) -> Config {
     let path = app.path().app_config_dir().unwrap().join("config.toml");
-    Config::load_update_save(&path, |config| {
-        config.update_global_field(|global| {
-            global.lang = Some(locale);
-        });
-    });
+    Config::get(&path)
+}
+
+#[tauri::command]
+fn default_config() -> Config {
+    Config::default()
+}
+
+#[tauri::command]
+fn set_locale(app: tauri::AppHandle, locale: String) -> Config {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let mut config = Config::get(&path);
+    muconf::update_conf!(config, global, lang, Some(locale));
+    Config::dump(&path, config.clone());
+
+    config
+}
+
+#[tauri::command]
+fn set_theme(app: tauri::AppHandle, theme: String) -> Config {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let mut config = Config::get(&path);
+    muconf::update_conf!(config, global, theme, Some(theme));
+    Config::dump(&path, config.clone());
+
+    config
 }
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![platform, locale, set_locale,])
+        .invoke_handler(tauri::generate_handler![
+            platform,
+            locale,
+            set_locale,
+            config,
+            default_config,
+            set_theme
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
