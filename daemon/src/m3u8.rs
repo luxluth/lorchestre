@@ -28,7 +28,7 @@ impl Playlist {
 }
 
 impl M3U8 {
-    pub fn parse(covers_dir: String, path: PathBuf) -> Playlist {
+    pub fn parse(covers_dir: &PathBuf, path: PathBuf) -> Playlist {
         let p = path.clone();
         let name = p.file_stem().unwrap().to_str().unwrap_or("@UNKNOWN@");
         let mut text = String::new();
@@ -43,7 +43,7 @@ impl M3U8 {
                 .filter(|x| !x.is_empty() && !x.starts_with('#'))
                 .map(|x| Path::new(x).to_path_buf())
                 .filter(|p| p.exists())
-                .map(|inode| Track::from_file(covers_dir.clone(), inode))
+                .map(|inode| Track::from_file(covers_dir, inode))
                 .collect(),
             id: String::new(),
         };

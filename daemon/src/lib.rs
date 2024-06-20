@@ -11,7 +11,7 @@ use mime_guess::{self, mime};
 use std::collections::HashMap;
 use std::fs;
 use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::time::SystemTime;
 use uuid::Uuid;
 
@@ -91,7 +91,7 @@ pub struct Track {
 }
 
 impl Track {
-    pub fn from_file(covers_dir: String, inode: PathBuf) -> Self {
+    pub fn from_file(covers_dir: &PathBuf, inode: PathBuf) -> Self {
         let tagged_file = Probe::open(&inode).unwrap().read().unwrap();
         let properties = tagged_file.properties();
         let bitrate = properties.audio_bitrate().unwrap_or(0);
@@ -192,7 +192,7 @@ impl Track {
                 },
             };
 
-            let pathstr = format!("{covers_dir}/{digest:x}{}", cover.ext);
+            let pathstr = covers_dir.join(format!("{digest:x}{}", cover.ext));
             let cover_path = std::path::Path::new(&pathstr);
 
             if !cover_path.exists() {
@@ -309,12 +309,12 @@ impl Media {
         }
     }
 
-    pub fn add_media(&mut self, path: PathBuf, covers_dir: String) {
+    pub fn add_media(&mut self, path: PathBuf, covers_dir: &PathBuf) {
         let ext = path.extension().unwrap().to_str().unwrap();
         if ext == "m3u8" {
             self.add_playlist(m3u8::M3U8::parse(covers_dir, path));
         } else {
-            self.add_song(Track::from_file(covers_dir.clone(), path));
+            self.add_song(Track::from_file(covers_dir, path));
         }
     }
 
@@ -412,8 +412,7 @@ impl Songs {
     }
 }
 
-pub fn check_dir(dir: String) {
-    let dir = Path::new(&dir);
+pub fn check_dir(dir: &PathBuf) {
     if !dir.exists() {
         fs::DirBuilder::new().recursive(true).create(dir).unwrap();
     }
@@ -513,13 +512,13 @@ pub mod utils {
 }
 
 impl Songs {
-    pub fn new(cache_dir: PathBuf, audio_files: Vec<PathBuf>) -> Self {
-        check_dir(format!("{}/covers", cache_dir.display()));
-        let covers_dir = format!("{}/covers", cache_dir.display());
+    pub fn new(cache_dir: &PathBuf, audio_files: Vec<PathBuf>) -> Self {
+        let covers_dir = cache_dir.join("covers");
+        check_dir(&covers_dir);
         let mut audios: Vec<Track> = vec![];
 
         for audio_file in audio_files {
-            audios.push(Track::from_file(covers_dir.clone(), audio_file))
+            audios.push(Track::from_file(&covers_dir, audio_file))
         }
 
         Self { audios }

@@ -15,9 +15,9 @@ pub enum CacheCompareDiff {
 
 pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
     info!("Starting cache process...");
-    let p_string = format!("{}/.cache.json", cache_dir.display());
-    let covers_dir = format!("{}/covers", cache_dir.display());
-    let ac_string = format!("{}/.cache.list", cache_dir.display());
+    let p_string = cache_dir.join(".cache.json");
+    let covers_dir = cache_dir.join("covers");
+    let ac_string = cache_dir.join(".cache.list");
     let ac_path = Path::new(&ac_string);
 
     let prev_audio_files = mud::utils::read_cahe_audio_files(ac_path);
@@ -40,7 +40,7 @@ pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
                     CacheCompareDiff::ToAdd { files } => {
                         for file in files {
                             info!("+ {}", file.display().to_string());
-                            cache_data.add_media(file, covers_dir.clone());
+                            cache_data.add_media(file, &covers_dir);
                         }
                     }
                     CacheCompareDiff::ToRemove { files } => {
@@ -62,14 +62,14 @@ pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
             warn!("[WARN] Unmatched Media cache verison");
             for file in curr_audio_files {
                 info!("+ {}", file.display().to_string());
-                cache.add_media(file, covers_dir.clone());
+                cache.add_media(file, &covers_dir);
             }
             needs_update = true;
         }
     } else {
         for file in curr_audio_files {
             info!("+ {}", file.display().to_string());
-            cache.add_media(file, covers_dir.clone());
+            cache.add_media(file, &covers_dir);
         }
         needs_update = true;
     }
