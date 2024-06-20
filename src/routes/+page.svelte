@@ -11,7 +11,6 @@
 
 	import ListEnd from 'lucide-svelte/icons/list-end';
 	import Play from 'lucide-svelte/icons/play';
-	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 
 	import type MediaState from '$lib/media.svelte';
 	import { _ } from 'svelte-i18n';
@@ -79,11 +78,15 @@
 					class="cover"
 					style="--clr: {album.tracks[0].color
 						? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
-						: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
-						album.id,
-						album.tracks[0].cover_ext
-					)}');"
-				></div>
+						: 'rgb(255, 255, 255)'};"
+				>
+					<img
+						class="ns"
+						src={getCoverUri(album.id, album.tracks[0].cover_ext)}
+						alt=""
+						loading="lazy"
+					/>
+				</div>
 				<p class="title ns">{trim(album.name)}</p>
 				<p class="artist ns">{album.artist}</p>
 			</a>
@@ -140,7 +143,12 @@
 		background-color: var(--clr);
 		border-radius: 10px;
 		margin-bottom: 0.3em;
-		background-size: cover;
+		overflow: hidden;
+	}
+
+	.__audio .cover img {
+		width: 100%;
+		height: 100%;
 	}
 
 	.__audio .artist {
