@@ -70,6 +70,10 @@ export type Track = {
 	id: string;
 };
 
+export type QueueTrack = Track & {
+	uuid: string;
+};
+
 export type Playlist = {
 	name: string;
 	tracks: Track[];
@@ -156,3 +160,8 @@ type DeepRequired<T> = {
 };
 
 export type DefinedConfig = DeepRequired<Config>;
+
+export enum QueueAddMode {
+	Top,
+	Bottom
+}

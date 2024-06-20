@@ -2,7 +2,7 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import LrcManager from '$lib/lrc.svelte';
 	import type Manager from '$lib/manager.svelte';
-	import { type Track } from '$lib/type';
+	import { type QueueTrack, type Track } from '$lib/type';
 
 	import X from 'lucide-svelte/icons/x';
 	import Play from 'lucide-svelte/icons/play';
@@ -103,7 +103,7 @@
 		sound.src = '';
 	};
 
-	manager.onplay = async (track: Track) => {
+	manager.onplay = async (track: QueueTrack) => {
 		manager.currentTrack = track;
 		lrcMngr.reset(track.duration, track.lyrics);
 

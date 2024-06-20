@@ -88,7 +88,7 @@
 		font-size: 2rem;
 		padding: 0.2em;
 		border-radius: 4px;
-		transition: opacity 0.1s ease-in-out;
+		transition: all 0.2s ease-in-out;
 	}
 
 	.line:active {

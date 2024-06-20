@@ -1,4 +1,6 @@
 import { MUD_ENDPOINT } from '$lib/config';
+import type { QueueTrack, Track } from '$lib/type';
+import { v4 as uuidv4 } from 'uuid';
 
 export function clickOutside(element: Element, callbackFunction: () => void) {
 	function onClick(event: MouseEvent) {
@@ -55,4 +57,11 @@ export function getCoverUri(album_id: string, ext: String) {
 
 export function getAudioUri(id: string) {
 	return `${MUD_ENDPOINT}/audio/${id}`;
+}
+
+export function toQueueTrack(track: Track): QueueTrack {
+	return {
+		...track,
+		uuid: uuidv4()
+	};
 }
