@@ -36,6 +36,9 @@
 			"title": "Interface",
 			"language": {
 				"title": "Langage de l'interface"
+			},
+			"theme": {
+				"title": "Apparence de l'application"
 			}
 		}
 	},

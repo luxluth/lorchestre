@@ -56,6 +56,11 @@
 		if (!dev) {
 			window.addEventListener('contextmenu', (e) => e.preventDefault());
 		}
+		let conf = getContext<AppConfig>('appconf');
+		document.body.setAttribute(
+			'data-theme',
+			conf.config?.global?.theme ?? conf.defaults.global.theme
+		);
 	}
 
 	$effect(() => {

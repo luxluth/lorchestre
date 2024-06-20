@@ -18,5 +18,6 @@ export default class AppConfig {
 
 	async setTheme(theme: Theme) {
 		this.config = await invoke<Config>('set_theme', { theme });
+		document.body.setAttribute('data-theme', theme);
 	}
 }

@@ -10,7 +10,7 @@
 	"playlist": "Playlist",
 	"no_playlist_found": "No playlist found",
 	"ctx": {
-		"play": "Play",
+		"play": "Start playing",
 		"inqueue": "Add to queue"
 	},
 	"cmds": {
@@ -36,6 +36,9 @@
 			"title": "Interface",
 			"language": {
 				"title": "Interface Language"
+			},
+			"theme": {
+				"title": "Application theme"
 			}
 		}
 	},
@@ -58,7 +61,7 @@
 	},
 
 	"misc": {
-		"goto_album_page": "Go to album page"
+		"goto_album_page": "Go to album"
 	},
 
 	"stats_page": {

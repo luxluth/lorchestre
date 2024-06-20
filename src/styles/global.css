@@ -11,6 +11,24 @@ html {
 	--font-mono: 'IBM Plex Mono', monospace;
 }
 
+body[data-theme='dark'] {
+	--fg: var(--dark-fg);
+	--bg: var(--dark-bg);
+	--highlight: var(--dark-highlight);
+
+	color: var(--dark-fg);
+	background-color: var(--dark-bg);
+}
+
+body[data-theme='light'] {
+	--fg: var(--light-fg);
+	--bg: var(--light-bg);
+	--highlight: var(--light-highlight);
+
+	color: var(--light-fg);
+	background-color: var(--light-bg);
+}
+
 :root {
 	--fg: var(--light-fg);
 	--bg: var(--light-bg);
@@ -43,6 +61,18 @@ html {
 	background: rgba(255, 255, 255, 0.9);
 	backdrop-filter: blur(4px);
 	-webkit-backdrop-filter: blur(4px);
+}
+
+body[data-theme='light'] .glass {
+	background: rgba(255, 255, 255, 0.9);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
+body[data-theme='dark'] .glass {
+	background: rgba(24, 24, 24, 0.9);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 }
 
 @media (prefers-color-scheme: dark) {
