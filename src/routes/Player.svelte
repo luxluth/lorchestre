@@ -206,6 +206,7 @@
 			}
 		});
 
+		sound.volume(manager.volume);
 		sound.play();
 	};
 
