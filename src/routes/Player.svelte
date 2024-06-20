@@ -2,7 +2,7 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import LrcManager from '$lib/lrc.svelte';
 	import type Manager from '$lib/manager.svelte';
-	import { type Track, type Line } from '$lib/type';
+	import { type Track } from '$lib/type';
 
 	import X from 'lucide-svelte/icons/x';
 	import Play from 'lucide-svelte/icons/play';
@@ -13,7 +13,6 @@
 	import Volume1 from 'lucide-svelte/icons/volume-1';
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
-	import { Howl, Howler } from 'howler';
 	import { getContext } from 'svelte';
 	import { getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
@@ -24,11 +23,8 @@
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 
-	let sound = $state<Howl>();
-	let ctx = $state<AudioContext>();
-	let analyser = $state<AnalyserNode>();
-	let frequencyData = $state<Uint8Array>();
-	let soundfreq = $state<number>(255);
+	//@ts-ignore
+	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
 	let hasLyrics = $derived(manager.currentTrack ? manager.currentTrack.lyrics.length > 0 : false);
 
 	$effect(() => {
@@ -76,62 +72,22 @@
 		return isInDOM && hasSize && isDisplayed && isVisible && isInViewport;
 	}
 
-	function tick() {
-		if (sound) {
-			manager.currentTime = sound.seek();
-		}
-		if (analyser) {
-			// frequencyData = frequencyData as Uint8Array;
-			// analyser.getByteFrequencyData(frequencyData);
-			// const bassData = frequencyData.slice(0, 16);
-			// const bassAverage = bassData.reduce((sum, value) => sum + value, 0) / bassData.length;
-			// soundfreq = bassAverage;
-			//
-			// const avgFrequency =
-			// 	frequencyData.reduce((sum, value) => sum + value, 0) / frequencyData.length;
-			// console.log(dotScale);
-			// let buffer = analyser.frequencyBinCount;
-			// let data = new Uint8Array(buffer);
-			// let width = canvas.width;
-			// let height = canvas.height;
-			// analyser.getByteFrequencyData(data);
-			// let barWidth = (width / buffer) * 2;
-			// let barHeight;
-			// let grd = canvasCtx.createLinearGradient(0, height, 0, height / 2);
-			// grd.addColorStop(0, 'rgba(0,0,200,0.2)');
-			// grd.addColorStop(1, 'rgba(255,0,0,0.2)');
-			//
-			// if (playing || song.playing()) {
-			// 	canvasCtx.clearRect(0, 0, width, height);
-			// 	let x = 0;
-			//
-			// 	for (let i = 0; i < buffer; i++) {
-			// 		barHeight = data[i];
-			// 		canvasCtx.fillStyle = grd;
-			// 		canvasCtx.fillRect(x, height, barWidth, -(barHeight / 2));
-			// 		x += barWidth + 1;
-			// 	}
-			// } else {
-			// }
-			// requestAnimationFrame(tick);
-		}
-		frameHandle = requestAnimationFrame(tick);
-	}
-
 	manager.onseekto = (time: number) => {
 		if (sound) {
-			sound.seek(time);
+			sound.currentTime = time;
 		}
 	};
 	manager.ontogglepp = async () => {
 		await toggleMediaPlayState();
 	};
 	manager.onvolumechange = (vol: number) => {
-		sound?.volume(vol);
+		if (sound) {
+			sound.volume = vol;
+		}
 	};
 
 	manager.ontimeupdate = (time: number) => {
-		sound?.seek(time);
+		if (sound) sound.currentTime = time;
 	};
 
 	manager.onPlayerActivate = () => {
@@ -142,10 +98,13 @@
 		active = false;
 	};
 
+	manager.onstop = () => {
+		sound.pause();
+		sound.src = '';
+	};
+
 	manager.onplay = async (track: Track) => {
 		manager.currentTrack = track;
-		// await getSrc(track.file_path);
-		// srcUrl = getAudioUri(track.id);
 		lrcMngr.reset(track.duration, track.lyrics);
 
 		if (track.lyrics.length > 0) {
@@ -154,66 +113,36 @@
 			}
 		}
 
-		sound?.stop();
-		sound?.unload();
+		sound.src = `http://localhost:7700/audio/${track.id}`;
 
-		sound = new Howl({
-			xhr: {
-				method: 'GET',
-				headers: {
-					'Access-Control-Allow-Origin': '*',
-					'Content-Type': track.mime
-				}
-			},
+		sound.onended = () => {
+			playing = false;
+			manager.currentTime = 0;
+			(async () => {
+				await manager.next();
+			})();
+		};
+		sound.onpause = () => {
+			playing = false;
+			manager.paused = true;
+		};
 
-			format: track.mime.split('/')[1],
-			src: [`http://localhost:7700/audio/${track.id}`],
-			loop: false,
-			onload: () => {
-				// loaded = true;
-				// Audio Context
-				// ctx = Howler.ctx;
-				// analyser = ctx.createAnalyser();
-				// analyser.fftSize = 256;
-				// frequencyData = new Uint8Array(analyser.frequencyBinCount);
-				// Howler.masterGain.connect(analyser);
-				// analyser.connect(ctx.destination);
-				// console.log(analyser, frequencyData);
-			},
-			onloaderror: (e) => {
-				console.error('[howler::loadError]', e);
-				// loadError = true;
-			},
-			onend: () => {
-				playing = false;
-				manager.currentTime = 0;
-				(async () => {
-					await manager.next();
-				})();
-				cancelAnimationFrame(frameHandle);
-				// canvasCtx?.clearRect(0, 0, canvas.width, canvas.height);
-				// if (loop) song.play();
-			},
-			onpause: () => {
-				playing = false;
-				manager.paused = true;
-				cancelAnimationFrame(frameHandle);
-			},
-			onplay: () => {
-				manager.paused = false;
-				ctx?.resume();
-				frameHandle = requestAnimationFrame(tick);
-			}
-		});
+		sound.onplay = () => {
+			manager.paused = false;
+		};
 
-		sound.volume(manager.volume);
+		sound.ontimeupdate = () => {
+			manager.currentTime = sound.currentTime;
+		};
+
+		sound.volume = manager.volume;
 		sound.play();
 	};
 
 	async function toggleMediaPlayState() {
 		if (sound) {
 			if (manager.paused) {
-				sound.play();
+				await sound.play();
 			} else {
 				sound.pause();
 			}
@@ -402,6 +331,7 @@
 		</section>
 	{/if}
 </div>
+<audio bind:this={sound} hidden></audio>
 
 <style>
 	.__player .controls {
@@ -624,7 +554,7 @@
 		padding: 0.25em;
 		font-weight: 600;
 		opacity: 0.3;
-		transition: all 0.09s ease-in-out;
+		transition: all 0.2s ease-in-out;
 		cursor: pointer;
 		line-height: 1;
 		border-radius: 8px;

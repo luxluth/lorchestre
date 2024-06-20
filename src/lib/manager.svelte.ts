@@ -37,6 +37,7 @@ export default class Manager {
 	onplay?: (track: Track) => Promise<void>;
 	onPlayerActivate?: () => void;
 	onPlayerDeactivate?: () => void;
+	onstop?: () => void;
 
 	activatePlayer() {
 		if (this.onPlayerActivate) {
@@ -100,7 +101,9 @@ export default class Manager {
 			if (this.onPlayerDeactivate) {
 				console.log('here');
 				this.onPlayerDeactivate();
+				this.paused = true;
 				this.currentTrack = undefined;
+				this.onstop?.();
 			}
 		}
 	}

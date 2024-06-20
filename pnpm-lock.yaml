@@ -59,9 +59,6 @@ importers:
       bits-ui:
         specifier: ^0.21.10
         version: 0.21.10(svelte@5.0.0-next.160)
-      howler:
-        specifier: ^2.2.4
-        version: 2.2.4
       lucide-svelte:
         specifier: ^0.379.0
         version: 0.379.0(svelte@5.0.0-next.160)
@@ -837,9 +834,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  howler@2.2.4:
-    resolution: {integrity: sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==}
 
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
@@ -1802,8 +1796,6 @@ snapshots:
   globrex@0.1.2: {}
 
   graceful-fs@4.2.11: {}
-
-  howler@2.2.4: {}
 
   import-fresh@3.3.0:
     dependencies:
