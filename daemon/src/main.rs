@@ -4,7 +4,7 @@ mod utils;
 use axum::{
     body::Body,
     extract::{Path, State},
-    http::StatusCode,
+    http::{header::CACHE_CONTROL, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     routing::get,
     Json, Router,
@@ -77,7 +77,13 @@ async fn cover(State(state): State<AppData>, Path(handle): Path<String>) -> Resp
         warn!("Fail to retrieve the cover file `{}`", path.display());
         let buf = include_bytes!("./assets/default-cover.png");
         let body = Body::from(buf.as_slice());
-        let resp = Response::new(body);
+        let mut resp = Response::new(body);
+
+        resp.headers_mut().insert(
+            CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=2419200, immutable"),
+        );
+
         resp
     }
 }
