@@ -11,7 +11,8 @@
 	"no_playlist_found": "No playlist found",
 	"ctx": {
 		"play": "Start playing",
-		"inqueue": "Add to queue"
+		"inqueue": "Add to queue",
+		"top_of_q": "Add to top of queue"
 	},
 	"cmds": {
 		"lrc": {
@@ -19,7 +20,8 @@
 		},
 		"waitlist": {
 			"title": "Queue",
-			"empty": "No songs in the queue"
+			"empty": "No songs in the queue",
+			"clear_queue": "Clear"
 		}
 	},
 	"album": {
@@ -38,7 +40,7 @@
 				"title": "Interface Language"
 			},
 			"theme": {
-				"title": "Application theme"
+				"title": "Application Appearance"
 			}
 		}
 	},

@@ -4,6 +4,7 @@
 	import type Manager from '$lib/manager.svelte';
 	import {
 		ContextMenuItemType,
+		QueueAddMode,
 		type ContextMenuEvent,
 		type ContextMenuItem,
 		type Track
@@ -11,6 +12,7 @@
 	import { formatTime } from '$lib/utils';
 	import Disc from 'lucide-svelte/icons/disc';
 	import ListEnd from 'lucide-svelte/icons/list-end';
+	import ListStart from 'lucide-svelte/icons/list-start';
 	import Play from 'lucide-svelte/icons/play';
 	import { _ } from 'svelte-i18n';
 
@@ -31,6 +33,14 @@
 				},
 				label: $_('songs_page.listen'),
 				icon: Play
+			},
+			{
+				type: ContextMenuItemType.Action,
+				action: async (_data: any) => {
+					await manager.addToQueue(track, QueueAddMode.Top);
+				},
+				label: $_('ctx.top_of_q'),
+				icon: ListStart
 			},
 			{
 				type: ContextMenuItemType.Action,
@@ -68,6 +78,9 @@
 	oncontextmenu={(e) => {
 		e.preventDefault();
 		showContext(e, song);
+	}}
+	ondblclick={async () => {
+		await manager.play(song);
 	}}
 >
 	<div

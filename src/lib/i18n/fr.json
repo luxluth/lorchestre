@@ -11,7 +11,8 @@
 	"no_playlist_found": "Aucune liste de lecture trouvée",
 	"ctx": {
 		"play": "Lancer la lecture",
-		"inqueue": "Ajouter la file d'attente"
+		"inqueue": "Ajouter la file d'attente",
+		"top_of_q": "Ajouter en haut de file"
 	},
 	"cmds": {
 		"lrc": {
@@ -19,7 +20,8 @@
 		},
 		"waitlist": {
 			"title": "File d'attente",
-			"empty": "Aucune chanson dans la file d'attente"
+			"empty": "Aucune chanson dans la file d'attente",
+			"clear_queue": "Vider"
 		}
 	},
 	"album": {

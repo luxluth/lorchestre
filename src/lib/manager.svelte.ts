@@ -1,4 +1,5 @@
-import { type Track } from './type';
+import { type Track, type QueueTrack, QueueAddMode } from './type';
+import { toQueueTrack } from './utils';
 
 enum PlayingMode {
 	Normal,
@@ -11,20 +12,15 @@ enum QueueMode {
 	RepeatAll
 }
 
-// enum QueueAddMode {
-// 	Top = 'Top',
-// 	Bottom = 'Bottom'
-// }
-
 /**
  * The player Manager
  * That big man
  */
 export default class Manager {
-	queue: Track[] = $state([]);
-	currentTrack?: Track = $state();
+	queue: QueueTrack[] = $state([]);
+	currentTrack?: QueueTrack = $state();
 	currentTime = $state(0);
-	history: Track[] = $state([]);
+	history: QueueTrack[] = $state([]);
 	volume: number = $state(1);
 	paused: boolean = $state(true);
 	duration: number = $derived(this.currentTrack ? this.currentTrack.duration : 0);
@@ -34,7 +30,7 @@ export default class Manager {
 	ontogglepp?: () => Promise<void>;
 	onvolumechange?: (vol: number) => void;
 	ontimeupdate?: (time: number) => void;
-	onplay?: (track: Track) => Promise<void>;
+	onplay?: (track: QueueTrack) => Promise<void>;
 	onPlayerActivate?: () => void;
 	onPlayerDeactivate?: () => void;
 	onstop?: () => void;
@@ -46,7 +42,7 @@ export default class Manager {
 	}
 
 	async play(track: Track) {
-		await this.onplay?.(track);
+		await this.onplay?.(toQueueTrack(track));
 		this.paused = false;
 	}
 
@@ -84,12 +80,51 @@ export default class Manager {
 		this.queue = [];
 	}
 
-	async addToQueue(track: Track) {
-		this.queue.push(track);
+	async shiftTo(t: QueueTrack) {
+		let new_queue = [];
+		let push = false;
+		for (let i = 0; i < this.queue.length; i++) {
+			if (push) {
+				new_queue.push(this.queue[i]);
+			}
+
+			if (this.queue[i].id === t.id && this.queue[i].uuid === t.uuid) {
+				await this.play(t as Track);
+				push = true;
+			}
+		}
+
+		this.queue = new_queue;
 	}
 
-	async addManyToQueue(tracks: Track[]) {
-		this.queue.push(...tracks);
+	remove(track: QueueTrack) {
+		this.queue = this.queue.filter((t) => t.id !== track.id && t.uuid !== track.uuid);
+	}
+
+	async addToQueue(track: Track, mode = QueueAddMode.Bottom) {
+		switch (mode) {
+			case QueueAddMode.Top:
+				this.queue = [toQueueTrack(track), ...this.queue];
+				break;
+			case QueueAddMode.Bottom:
+				this.queue.push(toQueueTrack(track));
+				break;
+		}
+	}
+
+	async addManyToQueue(tracks: Track[], mode = QueueAddMode.Bottom) {
+		switch (mode) {
+			case QueueAddMode.Top:
+				tracks.reverse().forEach((track) => {
+					this.addToQueue(track, mode);
+				});
+				break;
+			case QueueAddMode.Bottom:
+				tracks.forEach((track) => {
+					this.addToQueue(track);
+				});
+				break;
+		}
 	}
 
 	async next() {

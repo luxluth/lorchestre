@@ -1,17 +1,18 @@
 {
 	"bib": "ライブラリ",
 	"search": "検索",
-	"recent-added": "最近追加された",
+	"recent-added": "最近追加されたもの",
 	"albums": "アルバム",
 	"settings": "設定",
 	"songs": "曲",
 	"no_media": "再生中の曲はありません",
-	"indexing_msg": "ローカルファイルをインデックスしています...",
-	"playlist": "プレイリスト",
-	"no_playlist_found": "プレイリストが見つかりません",
+	"indexing_msg": "ローカルファイルを索引しています...",
+	"playlist": "再生リスト",
+	"no_playlist_found": "再生リストが見つかりません",
 	"ctx": {
 		"play": "再生を開始",
-		"inqueue": "キューに追加"
+		"inqueue": "キューに追加",
+		"top_of_q": "キューの先頭に追加"
 	},
 	"cmds": {
 		"lrc": {
@@ -19,26 +20,27 @@
 		},
 		"waitlist": {
 			"title": "キュー",
-			"empty": "キューに曲がありません"
+			"empty": "キューに曲がありません",
+			"clear_queue": "クリア"
 		}
 	},
 	"album": {
 		"page": {
-			"songs": "トラック",
+			"songs": "曲",
 			"ctx": {
 				"add_queue": "キューに追加"
 			}
 		}
 	},
 	"settings_page": {
-		"tip_top": "アプリケーション設定を管理する",
+		"tip_top": "アプリ設定を管理する",
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
 				"title": "インターフェース言語"
 			},
 			"theme": {
-				"title": "アプリケーションの外観"
+				"title": "アプリの外観"
 			}
 		}
 	},
@@ -61,13 +63,13 @@
 	},
 
 	"misc": {
-		"goto_album_page": "アルバムに行く"
+		"goto_album_page": "アルバムへ"
 	},
 
 	"stats_page": {
 		"total": "合計",
-		"song": "トラック",
-		"songs": "トラック",
+		"song": "曲",
+		"songs": "曲",
 		"latest_add": "最新の追加は"
 	}
 }
