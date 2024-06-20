@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		ContextMenuItemType,
+		QueueAddMode,
 		type ContextMenuEvent,
 		type ContextMenuItem,
 		type Track
@@ -16,6 +17,7 @@
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri } from '$lib/utils';
 	import type AlbumPageData from '$lib/album.svelte';
+	import ListStart from 'lucide-svelte/icons/list-start';
 
 	let media = getContext<MediaState>('media');
 
@@ -44,6 +46,15 @@
 				label: $_('ctx.play'),
 				icon: Play
 			},
+			{
+				type: ContextMenuItemType.Action,
+				action: async (_data: any) => {
+					await manager.addManyToQueue(sortedTracks, QueueAddMode.Top);
+				},
+				label: $_('ctx.top_of_q'),
+				icon: ListStart
+			},
+
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {

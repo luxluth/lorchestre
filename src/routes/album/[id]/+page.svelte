@@ -10,12 +10,14 @@
 		type ContextMenuItem,
 		ContextMenuItemType,
 		type ContextMenuEvent,
-		type Album
+		type Album,
+		QueueAddMode
 	} from '$lib/type';
 	import type Ctx from '$lib/ctx.svelte';
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { getCoverUri } from '$lib/utils';
+	import ListStart from 'lucide-svelte/icons/list-start';
 
 	const { data }: { data: PageData } = $props();
 
@@ -43,12 +45,20 @@
 		return text.slice(0, len) + (text.length > len ? '...' : '');
 	}
 
-	function play(t: Track) {
-		manager.play(t);
+	async function play(t: Track) {
+		await manager.play(t);
 	}
 
 	function showContext(e: ContextMenuEvent, track: Track) {
 		const items: ContextMenuItem[] = [
+			{
+				type: ContextMenuItemType.Action,
+				action: async (_data: any) => {
+					await manager.addToQueue(track, QueueAddMode.Top);
+				},
+				label: $_('ctx.top_of_q'),
+				icon: ListStart
+			},
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
@@ -112,13 +122,16 @@
 				}}
 				role="button"
 				tabindex="0"
+				ondblclick={async () => {
+					await play(track);
+				}}
 				onkeydown={() => {}}
 			>
 				<div class="trackn">
 					<div class="no">{track.track > 0 ? track.track : ''}</div>
 					<button
-						onclick={() => {
-							play(track);
+						onclick={async () => {
+							await play(track);
 						}}
 					>
 						<Play size={'1.5em'} fill={'var(--fg)'} />
