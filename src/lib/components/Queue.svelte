@@ -3,12 +3,25 @@
 	import { getContext } from 'svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { flip } from 'svelte/animate';
+	import Trash2 from 'lucide-svelte/icons/trash-2';
+	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri } from '$lib/utils';
+	import type { QueueTrack } from '$lib/type';
+	import X from 'lucide-svelte/icons/x';
 
 	let cmds = getContext<Cmds>('cmds');
 	let manager = getContext<Manager>('manager');
+
+	const flipDurationMs = 200;
+
+	function handleDndConsiderColumns(e: CustomEvent<DndEvent<QueueTrack>>) {
+		manager.queue = e.detail.items;
+	}
+	function handleDndFinalizeColumns(e: CustomEvent<DndEvent<QueueTrack>>) {
+		manager.queue = e.detail.items;
+	}
 
 	function formatTime(time: number) {
 		if (isNaN(time)) {
@@ -23,11 +36,48 @@
 </script>
 
 <div class="__queue glass" class:active={cmds.queue}>
-	<h3>{$_('cmds.waitlist.title')}</h3>
-	<section class="songs">
+	<header>
+		<h3>{$_('cmds.waitlist.title')}</h3>
+		<button
+			class:inactive={manager.queue.length === 0}
+			class="btn"
+			data-kind="desctructive"
+			onclick={() => {
+				manager.clearQueue();
+			}}
+		>
+			<div class="icon">
+				<Trash2 size={'1em'} />
+			</div>
+			{$_('cmds.waitlist.clear_queue')}
+		</button>
+	</header>
+	<section
+		class="songs"
+		use:dndzone={{
+			items: manager.queue,
+			flipDurationMs,
+			type: 'columns',
+			dropTargetStyle: {
+				backgroundColor: 'var(--bg)',
+				opacity: '0.5'
+			}
+		}}
+		onconsider={handleDndConsiderColumns}
+		onfinalize={handleDndFinalizeColumns}
+	>
 		{#if manager.queue.length > 0}
-			{#each manager.queue as track (track.id)}
-				<div class="track ns" role="button" tabindex="0" animate:flip={{ duration: 200 }} draggable>
+			{#each manager.queue as track (track.uuid + track.id)}
+				<div
+					class="track ns"
+					role="button"
+					tabindex="0"
+					animate:flip={{ duration: flipDurationMs }}
+					draggable
+					ondblclick={async () => {
+						await manager.shiftTo(track);
+					}}
+				>
 					<div
 						class="cover"
 						style="background-image: url({getCoverUri(track.album_id, track.cover_ext)});"
@@ -37,7 +87,14 @@
 							<h4>{track.title}</h4>
 							<p>{track.artists[0]}</p>
 						</div>
-						<div class="duration">{formatTime(track.duration)}</div>
+						<div class="duration">
+							<button
+								onclick={() => {
+									manager.remove(track);
+								}}><X color={'var(--fg)'} /></button
+							>
+							<time>{formatTime(track.duration)}</time>
+						</div>
 					</div>
 				</div>
 			{/each}
@@ -64,12 +121,15 @@
 		border-radius: 8px;
 	}
 
-	.__queue.active {
-		transform: translateX(0);
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-bottom: 2em;
 	}
 
-	.__queue h3 {
-		padding-bottom: 1em;
+	.__queue.active {
+		transform: translateX(0);
 	}
 
 	.__queue .songs {
@@ -114,6 +174,27 @@
 
 	.track .infos .duration {
 		opacity: 0.3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.track .infos .duration button {
+		background: none;
+		border: none;
+		display: none;
+	}
+
+	.track:hover .infos .duration {
+		opacity: 1;
+	}
+
+	.track:hover .infos .duration button {
+		display: block;
+	}
+
+	.track:hover .infos .duration time {
+		display: none;
 	}
 
 	.infos .details p {
