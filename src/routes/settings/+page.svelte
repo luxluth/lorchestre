@@ -4,8 +4,13 @@
 	import Lang from './Lang.svelte';
 	import { getContext } from 'svelte';
 	import type AppConfig from '$lib/config.svelte';
+	import { setTitle } from '$lib/utils';
 
 	let appConf = getContext<AppConfig>('appconf');
+
+	$effect(() => {
+		setTitle(`mu -- ${$_('settings').toLowerCase()}`);
+	});
 </script>
 
 <h1>{$_('settings')}</h1>

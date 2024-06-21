@@ -1,6 +1,7 @@
 import { MUD_ENDPOINT } from '$lib/config';
 import type { QueueTrack, Track } from '$lib/type';
 import { v4 as uuidv4 } from 'uuid';
+import { getCurrent } from '@tauri-apps/api/window';
 
 export function clickOutside(element: Element, callbackFunction: () => void) {
 	function onClick(event: MouseEvent) {
@@ -64,4 +65,10 @@ export function toQueueTrack(track: Track): QueueTrack {
 		...track,
 		uuid: uuidv4()
 	};
+}
+
+export function setTitle(text: string) {
+	(async () => {
+		await getCurrent().setTitle(text);
+	})();
 }

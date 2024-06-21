@@ -15,6 +15,8 @@
 	import Song from '$lib/components/Song.svelte';
 	import type MediaState from '$lib/media.svelte';
 	import type AlbumPageData from '$lib/album.svelte';
+	import { browser } from '$app/environment';
+	import { setTitle } from '$lib/utils';
 
 	let list = getContext<List>('list');
 	let manager = getContext<Manager>('manager');
@@ -100,6 +102,12 @@
 	];
 
 	let searchInput = $state('');
+
+	$effect(() => {
+		setTitle(
+			`mu -- ${$_('playlist').toLowerCase()} -- ${list.activeList ? list.activeList.name : ''}`
+		);
+	});
 </script>
 
 <div class="page ns">

@@ -5,7 +5,7 @@
 	import { tweened } from 'svelte/motion';
 	import { cubicOut, quartInOut } from 'svelte/easing';
 
-	import { formatTime, getCoverUri } from '$lib/utils';
+	import { formatTime, getCoverUri, setTitle } from '$lib/utils';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
@@ -38,6 +38,10 @@
 	function getLatestSong() {
 		song = sortTracksByDate(media.getSongs())[0];
 	}
+
+	$effect(() => {
+		setTitle('mu');
+	});
 </script>
 
 <p class="ns">{$_('stats_page.total')}</p>
@@ -62,9 +66,12 @@
 			<div class="title">{song.title}</div>
 			<div class="artist">{song.album_artist ?? song.artists[0]}</div>
 			<div class="dur">{formatTime(song.duration)}</div>
-			<button class="play" onclick={async () => {
+			<button
+				class="play"
+				onclick={async () => {
 					await manager.play(song as Track);
-				}}>
+				}}
+			>
 				<Play size={'1.5em'} fill={'var(--bg)'} />
 			</button>
 		</div>

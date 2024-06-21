@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Play from 'lucide-svelte/icons/play';
 	import ListEnd from 'lucide-svelte/icons/list-end';
+	import { setTitle } from '$lib/utils';
 
 	import { _ } from 'svelte-i18n';
 
@@ -18,6 +19,7 @@
 	import type Manager from '$lib/manager.svelte';
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
+	import { browser } from '$app/environment';
 
 	const { data }: { data: PageData } = $props();
 
@@ -82,10 +84,18 @@
 		toAddToTheQue.shift();
 		await manager.addManyToQueue(toAddToTheQue);
 	}
+
+	if (browser) {
+		setTitle(`mu -- ${album ? album.name : 'Album not found'}`);
+	}
 </script>
 
+<svelte:head>
+	<title>mu - {album ? album.name : ''}</title>
+</svelte:head>
+
 {#if album}
-	<section class="head">
+	<section class="head ns">
 		<div
 			class="cover"
 			style="--clr: {album.tracks[0].color
@@ -111,7 +121,7 @@
 		</div>
 	</section>
 
-	<h2 class="section-title">{$_('album.page.songs')}</h2>
+	<h2 class="section-title ns">{$_('album.page.songs')}</h2>
 	<section class="tracks ns">
 		{#each tracks as track}
 			<div
@@ -231,6 +241,7 @@
 		line-height: 1;
 		height: 100%;
 		padding-bottom: 0.1em;
+		word-break: break-word;
 	}
 
 	.head .data h3 {

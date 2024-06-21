@@ -8,6 +8,7 @@
 		"fs:read-all",
 		"fs:allow-appcache-read-recursive",
 		"fs:allow-resource-read-recursive",
-		"fs:allow-audio-read-recursive"
+		"fs:allow-audio-read-recursive",
+    "window:allow-set-title"
 	]
 }

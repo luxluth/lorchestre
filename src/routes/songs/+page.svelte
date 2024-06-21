@@ -17,6 +17,7 @@
 	import type FilterQuery from '$lib/filterq.svelte';
 	import Song from '$lib/components/Song.svelte';
 	import type AlbumPageData from '$lib/album.svelte';
+	import { setTitle } from '$lib/utils';
 
 	let manager = getContext<Manager>('manager');
 	let media = getContext<MediaState>('media');
@@ -101,6 +102,9 @@
 	];
 
 	let searchInput = $state('');
+	$effect(() => {
+		setTitle(`mu -- ${$_('songs').toLowerCase()}`);
+	});
 </script>
 
 <h1 class="__page_title ns">{$_('songs')}</h1>

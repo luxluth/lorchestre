@@ -15,7 +15,7 @@
 
 	import type MediaState from '$lib/media.svelte';
 	import { _ } from 'svelte-i18n';
-	import { getCoverUri } from '$lib/utils';
+	import { getCoverUri, setTitle } from '$lib/utils';
 	import type AlbumPageData from '$lib/album.svelte';
 	import ListStart from 'lucide-svelte/icons/list-start';
 
@@ -54,7 +54,6 @@
 				label: $_('ctx.top_of_q'),
 				icon: ListStart
 			},
-
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
@@ -69,6 +68,10 @@
 		ctx.items = items;
 		ctx.visible = true;
 	}
+
+	$effect(() => {
+		setTitle(`mu -- ${$_('albums').toLowerCase()}`);
+	});
 </script>
 
 <h1 class="__page_title ns">{$_('albums')}</h1>
@@ -142,6 +145,10 @@
 		text-decoration: none;
 		color: var(--fg);
 		cursor: pointer;
+	}
+
+	.__audio .title {
+		word-wrap: break-word;
 	}
 
 	.__audio .cover {
