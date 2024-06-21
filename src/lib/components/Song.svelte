@@ -37,7 +37,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					await manager.addToQueue(track, QueueAddMode.Top);
+					manager.addToQueue(track, QueueAddMode.Top);
 				},
 				label: $_('ctx.top_of_q'),
 				icon: ListStart
@@ -45,7 +45,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					await manager.addToQueue(track);
+					manager.addToQueue(track);
 				},
 				label: $_('album.page.ctx.add_queue'),
 				icon: ListEnd
@@ -110,7 +110,7 @@
 		</button>
 	</div>
 	<div class="title-part" aria-colindex="2" role="gridcell">
-		<h4 class="title">{song.title}</h4>
+		<h4 class="title">{trim(song.title, 30)}</h4>
 	</div>
 	<div class="artist" aria-colindex="3" role="gridcell">{trim(song.artists.join(', '))}</div>
 	<div class="album" aria-colindex="4" role="gridcell">
@@ -161,6 +161,7 @@
 		text-align: center;
 		justify-self: end;
 		opacity: 0.5;
+		width: 100%;
 	}
 
 	.iscurrent {
