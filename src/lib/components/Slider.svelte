@@ -89,13 +89,19 @@
 			removeGlobalEventListeners();
 		};
 	});
+
+	function clamp(value: number) {
+		if (value < 0) return 0.0;
+		if (value > 1) return 1.0;
+		return value;
+	}
 </script>
 
 <div
 	class="slider"
 	class:isDragging
 	data-style={style}
-	style="--pos: {(value * 100).toFixed(
+	style="--pos: {(clamp(value) * 100).toFixed(
 		2
 	)}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
 	bind:this={sliderElement}
