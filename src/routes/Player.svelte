@@ -199,7 +199,10 @@
 				class:back={index === 1}
 				class:back_center={index === 2}
 				style="
-          background-image: url({getCoverUri(manager.currentTrack?.album_id as string, manager.currentTrack?.cover_ext as string)});"
+          background-image: url({getCoverUri(
+					manager.currentTrack?.album_id as string,
+					manager.currentTrack?.cover_ext as string
+				)});"
 			></div>
 		{/each}
 	</div>
@@ -283,11 +286,6 @@
 				</button>
 			</div>
 			<div class="progress-area">
-				<!-- <div class="time current ns"> -->
-				<!-- 	<span> -->
-				<!-- 		{formatTime(manager.currentTime)} -->
-				<!-- 	</span> -->
-				<!-- </div> -->
 				<div class="progressbar">
 					<Slider
 						value={percentage / 100}
@@ -300,11 +298,6 @@
 						}}
 					/>
 				</div>
-				<!-- <div class="time ns"> -->
-				<!-- 	<span> -->
-				<!-- 		{formatTime(manager.duration)} -->
-				<!-- 	</span> -->
-				<!-- </div> -->
 			</div>
 		</div>
 	</section>
@@ -350,18 +343,6 @@
 		justify-content: space-evenly;
 		align-items: center;
 	}
-
-	/* .__player .controls .progress-area div.time { */
-	/* 	position: relative; */
-	/* 	opacity: 0.5; */
-	/* } */
-	/**/
-	/* .__player .controls .progress-area div.time span { */
-	/* 	position: absolute; */
-	/* 	bottom: 50%; */
-	/* 	left: 50%; */
-	/* 	transform: translate(-50%, 50%); */
-	/* } */
 
 	.__player .controls .progressbar {
 		flex-grow: 1;
@@ -531,6 +512,7 @@
 		overflow-y: auto;
 		position: relative;
 		padding-inline: 1em;
+		scroll-behavior: smooth;
 
 		mask: linear-gradient(
 			180deg,
@@ -549,19 +531,35 @@
 		margin-bottom: 50%;
 	}
 
+	@keyframes activeLineAnimation {
+		0% {
+			opacity: 0.7;
+			/* text-shadow: none; */
+		}
+		50% {
+			opacity: 0.8;
+			/* text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); */
+		}
+		100% {
+			opacity: 1;
+			/* text-shadow: 0 0 10px rgba(255, 255, 255, 1); */
+		}
+	}
+
 	.__player .lrc .line {
 		font-size: 3em;
 		padding: 0.25em;
 		font-weight: 600;
 		opacity: 0.3;
-		transition: all 0.2s ease-in-out;
 		cursor: pointer;
 		line-height: 1;
 		border-radius: 8px;
+		margin-block: 0.5em;
+		transition: opacity 0.1s ease-in;
 	}
 
 	.__player .lrc .line.active {
-		opacity: 1;
+		animation: activeLineAnimation 0.4s ease-in forwards;
 	}
 
 	.__player .lrc .line:active {
@@ -595,7 +593,6 @@
 		height: 0.5em;
 		width: 0.5em;
 		border-radius: 50%;
-		/* transform: scale(var(--freq)); */
 	}
 
 	.line.active.instrumental {
