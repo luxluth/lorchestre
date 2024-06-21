@@ -19,6 +19,7 @@
 	import { getCoverUri } from '$lib/utils';
 	import type AlbumPageData from '$lib/album.svelte';
 	import type MediaState from '$lib/media.svelte';
+	import { PlayingMode } from '$lib/type';
 
 	let manager = getContext<Manager>('manager');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
@@ -44,7 +45,12 @@
 <div class="mp" class:dead={typeof manager.currentTrack === 'undefined'}>
 	{#if manager.currentTrack}
 		<section class="controls">
-			<button>
+			<button
+				class:active={manager.pmode === PlayingMode.Shuffle}
+				onclick={async () => {
+					await manager.toggleShuffle();
+				}}
+			>
 				<Shuffle size={'1.5em'} />
 			</button>
 			<div class="actions">
@@ -120,9 +126,8 @@
 								><a
 									href="/album/{manager.currentTrack.album_id}"
 									onclick={() => {
-                    adp.activeAlbum = media.getAlbum(manager.currentTrack?.album_id as string)
-                  }}
-									>{manager.currentTrack.album}</a
+										adp.activeAlbum = media.getAlbum(manager.currentTrack?.album_id as string);
+									}}>{manager.currentTrack.album}</a
 								></span
 							>
 						</p>
@@ -246,11 +251,28 @@
 
 	.controls button {
 		background: none;
+		position: relative;
 		border: none;
 		opacity: 0.5;
 		cursor: pointer;
 		transition: opacity 0.2s ease-in-out;
 		color: var(--fg);
+	}
+
+	.controls button.active {
+		opacity: 1;
+	}
+
+	.controls button.active::after {
+		content: '';
+		position: absolute;
+		width: 3px;
+		height: 3px;
+		background: var(--fg);
+		border-radius: 50%;
+		bottom: 1px;
+		left: 50%;
+		transform: translateX(calc(-50% - 1.5px));
 	}
 
 	.controls button:hover {

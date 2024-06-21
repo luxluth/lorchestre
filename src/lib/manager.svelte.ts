@@ -31,8 +31,13 @@ export default class Manager {
 		}
 	}
 
-	async play(track: Track) {
-		await this.onplay?.(toQueueTrack(track));
+	async play(track: Track | QueueTrack) {
+		if (typeof (track as QueueTrack)['uuid'] !== 'undefined') {
+			await this.onplay?.(track as QueueTrack);
+		} else {
+			this.clearQueue();
+			await this.onplay?.(toQueueTrack(track));
+		}
 		this.paused = false;
 	}
 
@@ -60,12 +65,34 @@ export default class Manager {
 		switch (this.pmode) {
 			case PlayingMode.Normal:
 				this.pmode = PlayingMode.Shuffle;
-				this.lastQueueOrder = this.queue;
+				this.lastQueueOrder = this.queue.map((t) => {
+					return {
+						title: t.title,
+						artists: t.artists,
+						track: t.track,
+						album: t.album,
+						album_artist: t.album_artist,
+						album_id: t.album_id,
+						album_year: t.album_year,
+						lyrics: t.lyrics,
+						cover_ext: t.cover_ext,
+						mime: t.mime,
+						color: t.color,
+						created_at: t.created_at,
+						is_light: t.is_light,
+						file_path: t.file_path,
+						duration: t.duration,
+						bitrate: t.bitrate,
+						id: t.id,
+						uuid: t.uuid
+					} as const;
+				});
 				this.queue = this.shuffle(this.queue);
 				break;
 			case PlayingMode.Shuffle:
 				this.pmode = PlayingMode.Normal;
 				this.queue = this.lastQueueOrder;
+				// console.log('queue-reset', this.queue);
 				if (this.currentTrack) await this.shiftTo(this.currentTrack, false);
 				break;
 		}
@@ -106,20 +133,14 @@ export default class Manager {
 	}
 
 	async shiftTo(t: QueueTrack, play = true) {
-		let new_queue = [];
-		let push = false;
-		for (let i = 0; i < this.queue.length; i++) {
-			if (push) {
-				new_queue.push(this.queue[i]);
-			}
-
-			if (this.queue[i].id === t.id && this.queue[i].uuid === t.uuid) {
-				if (play) await this.play(t as Track);
-				push = true;
-			}
+		let id = this.queue.findIndex((tr) => tr.id == t.id && tr.uuid == t.uuid);
+		// console.log('shift-to', id, this.queue.length, t);
+		if (id >= 0) {
+			const track = this.queue[id];
+			this.queue = this.queue.slice(id + 1);
+			// console.log('new-queue', this.queue);
+			if (play) await this.play(track);
 		}
-
-		this.queue = new_queue;
 	}
 
 	remove(track: QueueTrack) {
