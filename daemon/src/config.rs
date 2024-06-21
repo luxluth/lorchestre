@@ -7,7 +7,7 @@ pub struct Dir {
     pub config: PathBuf,
     pub app: PathBuf,
     pub cache: PathBuf,
-    pub audio: PathBuf,
+    // pub audio: PathBuf,
 }
 
 pub fn get_dirs() -> Dir {
@@ -15,7 +15,7 @@ pub fn get_dirs() -> Dir {
         config: dirs::config_dir().unwrap().join(APP_ID),
         app: dirs::data_local_dir().unwrap().join(APP_ID),
         cache: dirs::cache_dir().unwrap().join(APP_ID),
-        audio: dirs::audio_dir().unwrap(),
+        // audio: dirs::audio_dir().unwrap(),
     };
 
     if !dir.config.exists() {

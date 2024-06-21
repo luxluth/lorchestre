@@ -42,6 +42,7 @@
 	import { browser, dev } from '$app/environment';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
+	setContext<AppConfig>('appconf', new AppConfig(data.config, data.default_config));
 	setContext<Manager>('manager', new Manager());
 	setContext<Ctx>('ctx', new Ctx());
 	setContext<Cmds>('cmds', new Cmds());
@@ -50,7 +51,6 @@
 	setContext<FilterQuery>('filterq', new FilterQuery());
 	setContext<List>('list', new List());
 	setContext<AlbumPageData>('apd', new AlbumPageData());
-	setContext<AppConfig>('appconf', new AppConfig(data.config, data.default_config));
 
 	if (browser) {
 		if (!dev) {

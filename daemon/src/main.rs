@@ -6,13 +6,14 @@ use axum::{
     extract::{Path, State},
     http::{header::CACHE_CONTROL, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, put},
     Json, Router,
 };
 use axum_extra::{headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
 use config::Dir;
 use mud::Media;
+use socketioxide::{extract::SocketRef, SocketIo};
 use std::io::Read;
 use tokio::fs::File;
 use tower::ServiceBuilder;
@@ -24,6 +25,11 @@ use tracing_subscriber::FmtSubscriber;
 struct AppData {
     media: Media,
     dirs: Dir,
+    io: SocketIo,
+}
+
+async fn on_connect(socket: SocketRef) {
+    info!("socket connected: {}", socket.id);
 }
 
 #[tokio::main]
@@ -47,14 +53,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let (layer, io) = SocketIo::new_layer();
+    io.ns("/", on_connect);
+
     let app = Router::new()
         .route("/", get(ping))
         .route("/media", get(media))
         .route("/audio/:id", get(audio))
         .route("/album/:id", get(album))
         .route("/cover/:handle", get(cover))
-        .with_state(AppData { media: m, dirs })
-        .layer(ServiceBuilder::new().layer(CorsLayer::permissive()));
+        .route("/updatemusic", put(updatemusic))
+        .with_state(AppData {
+            media: m,
+            dirs: dirs.clone(),
+            io,
+        })
+        .layer(
+            ServiceBuilder::new()
+                .layer(CorsLayer::permissive())
+                .layer(layer),
+        );
 
     let listener = tokio::net::TcpListener::bind(format!("{host}:{port}")).await?;
     info!("MUD started on http://{host}:{port}");
@@ -86,6 +104,13 @@ async fn cover(State(state): State<AppData>, Path(handle): Path<String>) -> Resp
 
         resp
     }
+}
+
+async fn updatemusic(State(state): State<AppData>) {
+    let _ = state.io.emit("updatingmedia", true);
+    let m = utils::cache_resolve(&state.dirs.cache).await;
+    let _ = state.io.emit("newmedia", m);
+    let _ = state.io.emit("updatingmedia", false);
 }
 
 async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response {
