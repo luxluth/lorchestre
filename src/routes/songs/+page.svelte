@@ -29,8 +29,13 @@
 		let songs = applyFilters(media.getSongs());
 		let song = songs.shift() as Track;
 		await manager.play(song);
-		await manager.clearQueue();
-		await manager.addManyToQueue(songs);
+		manager.clearQueue();
+		manager.addManyToQueue(songs);
+	}
+
+	async function playAllShuffle() {
+		let songs = applyFilters(media.getSongs());
+		await manager.shufflePlay(songs);
 	}
 
 	function applySearchFilter(tracks: Track[], q: string): Track[] {
@@ -120,7 +125,11 @@
 		</div>
 		{$_('songs_page.listen')}
 	</button>
-	<button>
+	<button
+		onclick={async () => {
+			await playAllShuffle();
+		}}
+	>
 		<div class="icon">
 			<Shuffle size={'1em'} />
 		</div>
@@ -186,7 +195,10 @@
 	<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
 </div>
 
-<div class="songlist">
+<div
+	class="songlist"
+	style="--tracklist-index-column-width: {(media.getSongsCount().toString().length * 16) / 2}px"
+>
 	{#each applyFilters(media.getSongs()) as song, i}
 		<Song {song} {i} {ctx} {manager} />
 	{/each}

@@ -165,3 +165,14 @@ export enum QueueAddMode {
 	Top,
 	Bottom
 }
+
+export enum PlayingMode {
+	Normal,
+	Shuffle
+}
+
+export enum QueueMode {
+	Continue,
+	Repeat,
+	RepeatAll
+}

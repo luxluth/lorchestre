@@ -13,24 +13,26 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
-	import type MediaState from '$lib/media.svelte';
 	import type AlbumPageData from '$lib/album.svelte';
-	import { browser } from '$app/environment';
 	import { setTitle } from '$lib/utils';
 
 	let list = getContext<List>('list');
 	let manager = getContext<Manager>('manager');
 	let ctx = getContext<Ctx>('ctx');
 	let filterquery = list.filters;
-	let media = getContext<MediaState>('media');
 	let adp = getContext<AlbumPageData>('apd');
 
 	async function playAll() {
 		let songs = applyFilters(list.activeList?.tracks ?? []);
 		let song = songs.shift() as Track;
-		await manager.play(song);
-		await manager.clearQueue();
-		await manager.addManyToQueue(songs);
+		manager.play(song);
+		manager.clearQueue();
+		manager.addManyToQueue(songs);
+	}
+
+	async function playAllShuffle() {
+		let songs = applyFilters(list.activeList?.tracks ?? []);
+		await manager.shufflePlay(songs);
 	}
 
 	function applySearchFilter(tracks: Track[], q: string): Track[] {
@@ -129,7 +131,11 @@
 				</div>
 				{$_('songs_page.listen')}
 			</button>
-			<button>
+			<button
+				onclick={async () => {
+					await playAllShuffle();
+				}}
+			>
 				<div class="icon">
 					<Shuffle size={'1em'} />
 				</div>
@@ -195,7 +201,12 @@
 			<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
 		</div>
 
-		<div class="songlist">
+		<div
+			class="songlist"
+			style="--tracklist-index-column-width: {(list.activeList.tracks.length.toString().length *
+				16) /
+				2}px"
+		>
 			{#each applyFilters(list.activeList.tracks) as song, i}
 				<Song {song} {i} {ctx} {manager} />
 			{/each}

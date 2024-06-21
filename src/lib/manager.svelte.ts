@@ -1,16 +1,5 @@
-import { type Track, type QueueTrack, QueueAddMode } from './type';
+import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
 import { toQueueTrack } from './utils';
-
-enum PlayingMode {
-	Normal,
-	Shuffle
-}
-
-enum QueueMode {
-	Continue,
-	Repeat,
-	RepeatAll
-}
 
 /**
  * The player Manager
@@ -19,6 +8,7 @@ enum QueueMode {
 export default class Manager {
 	queue: QueueTrack[] = $state([]);
 	currentTrack?: QueueTrack = $state();
+	private lastQueueOrder: QueueTrack[] = [];
 	currentTime = $state(0);
 	history: QueueTrack[] = $state([]);
 	volume: number = $state(1);
@@ -66,6 +56,41 @@ export default class Manager {
 		}
 	}
 
+	async toggleShuffle() {
+		switch (this.pmode) {
+			case PlayingMode.Normal:
+				this.pmode = PlayingMode.Shuffle;
+				this.lastQueueOrder = this.queue;
+				this.queue = this.shuffle(this.queue);
+				break;
+			case PlayingMode.Shuffle:
+				this.pmode = PlayingMode.Normal;
+				this.queue = this.lastQueueOrder;
+				if (this.currentTrack) await this.shiftTo(this.currentTrack, false);
+				break;
+		}
+	}
+
+	// Fisher-Yates shuffle function
+	private shuffle(queue: QueueTrack[]): QueueTrack[] {
+		for (let i = queue.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[queue[i], queue[j]] = [queue[j], queue[i]];
+		}
+		return queue;
+	}
+
+	async shufflePlay(tracks: Track[]) {
+		this.clearQueue();
+		this.pmode = PlayingMode.Normal;
+		this.addManyToQueue(tracks);
+		this.toggleShuffle();
+		let track = this.queue.shift();
+		if (track) {
+			await this.play(track as Track);
+		}
+	}
+
 	async prev() {
 		let track = this.history.pop();
 		if (track) {
@@ -76,11 +101,11 @@ export default class Manager {
 		}
 	}
 
-	async clearQueue() {
+	clearQueue() {
 		this.queue = [];
 	}
 
-	async shiftTo(t: QueueTrack) {
+	async shiftTo(t: QueueTrack, play = true) {
 		let new_queue = [];
 		let push = false;
 		for (let i = 0; i < this.queue.length; i++) {
@@ -89,7 +114,7 @@ export default class Manager {
 			}
 
 			if (this.queue[i].id === t.id && this.queue[i].uuid === t.uuid) {
-				await this.play(t as Track);
+				if (play) await this.play(t as Track);
 				push = true;
 			}
 		}
@@ -101,7 +126,7 @@ export default class Manager {
 		this.queue = this.queue.filter((t) => t.id !== track.id && t.uuid !== track.uuid);
 	}
 
-	async addToQueue(track: Track, mode = QueueAddMode.Bottom) {
+	addToQueue(track: Track, mode = QueueAddMode.Bottom) {
 		switch (mode) {
 			case QueueAddMode.Top:
 				this.queue = [toQueueTrack(track), ...this.queue];
@@ -112,7 +137,7 @@ export default class Manager {
 		}
 	}
 
-	async addManyToQueue(tracks: Track[], mode = QueueAddMode.Bottom) {
+	addManyToQueue(tracks: Track[], mode = QueueAddMode.Bottom) {
 		switch (mode) {
 			case QueueAddMode.Top:
 				tracks.reverse().forEach((track) => {
