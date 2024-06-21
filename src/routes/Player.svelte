@@ -34,13 +34,7 @@
 
 	let active = $state<boolean>(false);
 	let playing = $state<boolean>(false);
-	// let srcUrl = $state<string>('');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
-	let frameHandle: number = $state(0);
-
-	$effect(() => {
-		lrcMngr.update(manager.currentTime);
-	});
 
 	lrcMngr.oncuechange = () => {
 		const activeLines = lrcMngr.activeLines;
@@ -104,6 +98,10 @@
 	};
 
 	manager.onplay = async (track: QueueTrack) => {
+		// FIXME: weird volume bug
+		// console.log('first', sound.volume, manager.volume);
+		// sound.volume = manager.volume;
+		// console.log(sound.volume, manager.volume);
 		manager.currentTrack = track;
 		lrcMngr.reset(track.duration, track.lyrics);
 
@@ -132,10 +130,11 @@
 		};
 
 		sound.ontimeupdate = () => {
+			lrcMngr.update(sound.currentTime);
 			manager.currentTime = sound.currentTime;
 		};
 
-		sound.volume = manager.volume;
+		// sound.volume = manager.volume;
 		sound.play();
 	};
 
@@ -313,6 +312,7 @@
 					role="button"
 					tabindex="0"
 					class:instrumental={text == '♪'}
+					class:empty={text == ''}
 				>
 					{#if text == '♪'}
 						<div class="dot"></div>
@@ -533,11 +533,11 @@
 
 	@keyframes activeLineAnimation {
 		0% {
-			opacity: 0.7;
+			opacity: 0.8;
 			/* text-shadow: none; */
 		}
 		50% {
-			opacity: 0.8;
+			opacity: 0.9;
 			/* text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); */
 		}
 		100% {
@@ -559,7 +559,7 @@
 	}
 
 	.__player .lrc .line.active {
-		animation: activeLineAnimation 0.4s ease-in forwards;
+		animation: activeLineAnimation 0.1s ease-in-out forwards;
 	}
 
 	.__player .lrc .line:active {
@@ -571,9 +571,10 @@
 		background: rgba(255, 255, 255, 0.2);
 	}
 
-	.__player .lrc .line.active:hover {
+	.__player .lrc .line.active:hover,
+	.__player .lrc .line.empty {
 		opacity: 1;
-		background: rgba(255, 255, 255, 0.2);
+		background: rgba(255, 255, 255, 0);
 	}
 
 	.line.instrumental {
@@ -635,18 +636,6 @@
 		flex-direction: column;
 		gap: 1em;
 	}
-
-	/* .bitrate { */
-	/* 	position: absolute; */
-	/* 	bottom: 1em; */
-	/* 	right: 1em; */
-	/* 	color: rgb(var(--r), var(--g), var(--b)); */
-	/* 	background: var(--text); */
-	/* 	width: fit-content; */
-	/* 	padding: 0.2em; */
-	/* 	font-weight: bold; */
-	/* 	border-radius: 4px; */
-	/* } */
 
 	.__player .infos h2 {
 		font-size: 2em;

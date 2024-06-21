@@ -19,6 +19,17 @@ export default class MediaState {
 		this.loaded = true;
 	}
 
+	getSongsCount() {
+		let count = 0;
+		this.albums.forEach((album) => {
+			album.tracks.forEach((_song) => {
+				count++;
+			});
+		});
+
+		return count;
+	}
+
 	getSongs() {
 		let songs: Track[] = [];
 		this.albums.forEach((album) => {

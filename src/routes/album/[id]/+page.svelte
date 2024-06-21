@@ -169,6 +169,7 @@
 		height: 2.5em;
 		gap: 1em;
 		padding-inline: 1em;
+		border-radius: 4px;
 	}
 
 	.track:nth-child(odd) {
