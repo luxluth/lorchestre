@@ -25,6 +25,27 @@ fn locale(app: tauri::AppHandle) -> String {
 }
 
 #[tauri::command]
+fn mud_endpoint(app: tauri::AppHandle) -> String {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let config = Config::get(&path);
+    let default_net = muconf::Network::default();
+    let mut port = default_net.port.unwrap();
+    let mut host = default_net.host.unwrap();
+
+    if let Some(net) = config.network {
+        if let Some(h) = net.host {
+            host = h;
+        }
+
+        if let Some(p) = net.port {
+            port = p;
+        }
+    }
+
+    format!("{host}:{port}")
+}
+
+#[tauri::command]
 fn config(app: tauri::AppHandle) -> Config {
     let path = app.path().app_config_dir().unwrap().join("config.toml");
     Config::get(&path)
@@ -57,7 +78,6 @@ fn set_theme(app: tauri::AppHandle, theme: String) -> Config {
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             platform,
@@ -65,7 +85,8 @@ fn main() {
             set_locale,
             config,
             default_config,
-            set_theme
+            set_theme,
+            mud_endpoint
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
