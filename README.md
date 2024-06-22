@@ -1,7 +1,5 @@
 ![banner](./assets/banner.svg)
 
-# L'orchestre
-
 The only music player you'll ever need
 
 ## TODO
