@@ -82,10 +82,6 @@
 		}
 	};
 
-	manager.ontimeupdate = (time: number) => {
-		if (sound) sound.currentTime = time;
-	};
-
 	manager.onPlayerActivate = () => {
 		active = true;
 	};
@@ -107,12 +103,6 @@
 		manager.currentTrack = track;
 		lrcMngr.reset(track.duration, track.lyrics);
 
-		if (track.lyrics.length > 0) {
-			if (lyricsParent) {
-				lyricsParent.scrollTop = 0;
-			}
-		}
-
 		sound.src = getAudioUri(track.id, config);
 
 		sound.onended = () => {
@@ -133,12 +123,29 @@
 
 		sound.ontimeupdate = () => {
 			lrcMngr.update(sound.currentTime);
-			manager.currentTime = sound.currentTime;
 		};
 
 		// sound.volume = manager.volume;
-		sound.play();
+		await sound.play();
 	};
+
+	manager.afterplay = () => {
+		if (lyricsParent) {
+			setTimeout(() => {
+				lyricsParent.scrollTo({ behavior: 'smooth', top: 0 });
+			}, 70);
+		}
+	};
+
+	function afterSeek() {
+		setTimeout(() => {
+			const activeLines = lrcMngr.activeLines;
+			if (activeLines.length > 0) {
+				let child = lyricsParent.children[activeLines[0].id];
+				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}, 70);
+	}
 
 	async function toggleMediaPlayState() {
 		if (sound) {
@@ -148,18 +155,6 @@
 				sound.pause();
 			}
 		}
-	}
-
-	async function playAt(time: number) {
-		await manager.seekTo(time);
-
-		setTimeout(() => {
-			const activeLines = lrcMngr.activeLines;
-			if (activeLines.length > 0) {
-				let child = lyricsParent.children[activeLines[0].id];
-				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}
-		}, 70);
 	}
 
 	let layers = [0, 0, 0];
@@ -237,14 +232,11 @@
 						{/if}
 					</div>
 					<Slider
-						value={manager.volume}
+						bind:value={manager.volume}
 						style="classic"
 						color={'var(--text)'}
 						thumbColor={'var(--text)'}
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-						oninput={async (data) => {
-							manager.volumeTo(data);
-						}}
 					/>
 				</div>
 			</div>
@@ -291,14 +283,12 @@
 			<div class="progress-area">
 				<div class="progressbar">
 					<Slider
-						value={percentage / 100}
+						max={manager.duration}
+						bind:value={manager.currentTime}
 						color={'var(--text)'}
 						thumbColor={'var(--text)'}
 						style="thick"
 						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-						oninput={async (data) => {
-							await playAt(data * manager.duration);
-						}}
 					/>
 				</div>
 			</div>
@@ -311,7 +301,7 @@
 					class="line ns"
 					data-time={startTime}
 					class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-					onclick={async () => await playAt(startTime)}
+					onclick={() => manager.seekTo(startTime)}
 					onkeydown={() => {}}
 					role="button"
 					tabindex="0"
@@ -328,7 +318,13 @@
 		</section>
 	{/if}
 </div>
-<audio bind:this={sound} hidden></audio>
+<audio
+	bind:this={sound}
+	bind:currentTime={manager.currentTime}
+	bind:volume={manager.volume}
+	onseeked={afterSeek}
+	hidden
+></audio>
 
 <style>
 	.__player .controls {

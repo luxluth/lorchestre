@@ -9,26 +9,34 @@ export default class Manager {
 	queue: QueueTrack[] = $state([]);
 	currentTrack?: QueueTrack = $state();
 	private lastQueueOrder: QueueTrack[] = [];
-	currentTime = $state(0);
 	history: QueueTrack[] = $state([]);
-	volume: number = $state(1);
+	#innerVolume: number = $state(1);
 	paused: boolean = $state(true);
+	#realCurrentTime = $state(0);
 	duration: number = $derived(this.currentTrack ? this.currentTrack.duration : 0);
 	qmode = $state(QueueMode.Continue);
 	pmode = $state(PlayingMode.Normal);
-	onseekto?: (time: number) => void;
 	ontogglepp?: () => Promise<void>;
 	onvolumechange?: (vol: number) => void;
-	ontimeupdate?: (time: number) => void;
 	onplay?: (track: QueueTrack) => Promise<void>;
 	onPlayerActivate?: () => void;
 	onPlayerDeactivate?: () => void;
 	onstop?: () => void;
+	onseektofuncs = new Set<(time: number) => void>();
+	afterplayfuncs = new Set<() => void>();
 
 	activatePlayer() {
 		if (this.onPlayerActivate) {
 			this.onPlayerActivate();
 		}
+	}
+
+	set afterplay(f: () => void) {
+		this.afterplayfuncs.add(f);
+	}
+
+	set onseekto(f: (time: number) => void) {
+		this.onseektofuncs.add(f);
 	}
 
 	async play(track: Track | QueueTrack) {
@@ -39,16 +47,37 @@ export default class Manager {
 			await this.onplay?.(toQueueTrack(track));
 		}
 		this.paused = false;
+
+		this.afterplayfuncs.forEach((func) => {
+			func();
+		});
 	}
 
-	async volumeTo(vol: number) {
-		this.volume = vol;
-		this.onvolumechange?.(vol);
-	}
+	// private volumeTo(vol: number) {
+	// 	this.onvolumechange?.(vol);
+	// }
 
-	async seekTo(time: number) {
+	seekTo(time: number) {
 		this.currentTime = time;
-		this.ontimeupdate?.(time);
+		this.onseektofuncs.forEach((func) => {
+			func(time);
+		});
+	}
+
+	set currentTime(v: number) {
+		this.#realCurrentTime = v;
+	}
+
+	get currentTime() {
+		return this.#realCurrentTime;
+	}
+
+	set volume(v: number) {
+		this.#innerVolume = v;
+	}
+
+	get volume() {
+		return this.#innerVolume;
 	}
 
 	async togglepp() {
@@ -124,7 +153,7 @@ export default class Manager {
 			if (this.currentTrack) {
 				this.queue = [this.currentTrack, ...this.queue];
 			}
-			if (this.onplay) await this.onplay(track);
+			this.play(track);
 		}
 	}
 
@@ -177,7 +206,7 @@ export default class Manager {
 		const track = this.queue.shift();
 		if (track) {
 			if (this.currentTrack) this.history.push(this.currentTrack);
-			if (this.onplay) await this.onplay(track);
+			this.play(track);
 		} else {
 			if (this.onPlayerDeactivate) {
 				console.log('here');

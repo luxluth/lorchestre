@@ -1,18 +1,20 @@
 <script lang="ts">
 	let {
-		value,
+		min = 0,
+		max = 1,
+		value = $bindable(),
 		color = 'var(--fg)',
 		thumbColor = 'var(--fg)',
 		backgroundColor = 'rgba(100, 100, 100, 0.18)',
-		style = 'classic',
-		oninput = async (_data: number) => {}
+		style = 'classic'
 	}: {
+		min?: number;
+		max?: number;
 		value: number;
 		color?: string;
 		thumbColor?: string;
 		backgroundColor?: string;
 		style?: 'classic' | 'minimal' | 'thick';
-		oninput?: (data: number) => Promise<void>;
 	} = $props();
 
 	let sliderElement: HTMLDivElement;
@@ -27,7 +29,7 @@
 		const rect = sliderElement.getBoundingClientRect();
 		const newValue = (clientX - rect.left) / sliderWidth;
 		const clampedValue = Math.min(Math.max(newValue, 0), 1);
-		await oninput(clampedValue);
+		value = clampedValue * max;
 	}
 
 	/////// Event Handlers
@@ -91,8 +93,8 @@
 	});
 
 	function clamp(value: number) {
-		if (value < 0) return 0.0;
-		if (value > 1) return 1.0;
+		if (value < min) return min;
+		if (value > max) return max;
 		return value;
 	}
 </script>
@@ -101,7 +103,7 @@
 	class="slider"
 	class:isDragging
 	data-style={style}
-	style="--pos: {(clamp(value) * 100).toFixed(
+	style="--pos: {((clamp(value) * 100) / max).toFixed(
 		2
 	)}%; --v-color: {color}; --t-color: {thumbColor}; --bg-clr: {backgroundColor};"
 	bind:this={sliderElement}

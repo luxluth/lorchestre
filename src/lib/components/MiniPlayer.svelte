@@ -38,10 +38,6 @@
 			return new Date(time * 1000).toISOString().substring(14, 19);
 		}
 	}
-
-	async function playAt(pos: number) {
-		await manager.seekTo(pos * manager.duration);
-	}
 </script>
 
 <div class="mp" class:dead={typeof manager.currentTrack === 'undefined'}>
@@ -138,13 +134,7 @@
 				</div>
 				<time class="currtime ns">{formatTime(manager.currentTime)}</time>
 				<div class="progressbar" style="--percent: {percentage.toFixed(0)}%;">
-					<Slider
-						value={percentage / 100}
-						style="minimal"
-						oninput={async (data) => {
-							await playAt(data);
-						}}
-					/>
+					<Slider max={manager.duration} bind:value={manager.currentTime} style="minimal" />
 				</div>
 				<time class="remaintime ns">-{formatTime(manager.duration - manager.currentTime)}</time>
 			</div>
@@ -159,13 +149,7 @@
 					<Volume1 size={'20px'} />
 				{/if}
 			</div>
-			<Slider
-				value={manager.volume}
-				style="classic"
-				oninput={async (data) => {
-					await manager.volumeTo(data);
-				}}
-			/>
+			<Slider bind:value={manager.volume} style="classic" />
 		</section>
 	{:else}
 		<section class="controls">

@@ -22,6 +22,14 @@
 			}
 		}
 	};
+
+	manager.afterplay = () => {
+		if (lrcParent) {
+			setTimeout(() => {
+				lrcParent.scrollTo({ behavior: 'smooth', top: 0 });
+			}, 70);
+		}
+	};
 </script>
 
 <div class="__lrc glass" class:active={cmds.lrc}>
@@ -33,8 +41,8 @@
 						role="button"
 						tabindex="0"
 						onkeydown={() => {}}
-						onclick={async () => {
-							await manager.seekTo(startTime);
+						onclick={() => {
+							manager.currentTime = startTime;
 						}}
 						class="line ns"
 						id={id.toString()}
