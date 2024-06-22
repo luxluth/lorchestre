@@ -1,9 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use muconf::Config;
+use lorconf::Config;
 use std::env::consts::OS;
 use tauri::Manager;
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[tauri::command]
 fn platform() -> String {
@@ -24,9 +26,9 @@ fn locale(app: tauri::AppHandle) -> String {
     "en-GB".to_string()
 }
 
-fn daemon_endpoint(path: std::path::PathBuf) -> String {
+fn daemon_(path: std::path::PathBuf) -> String {
     let config = Config::get(&path);
-    let default_net = muconf::Network::default();
+    let default_net = lorconf::Network::default();
     let mut port = default_net.port.unwrap();
     let mut host = default_net.host.unwrap();
 
@@ -44,15 +46,20 @@ fn daemon_endpoint(path: std::path::PathBuf) -> String {
 }
 
 #[tauri::command]
-fn mud_endpoint(app: tauri::AppHandle) -> String {
+fn daemon_endpoint(app: tauri::AppHandle) -> String {
     let path = app.path().app_config_dir().unwrap().join("config.toml");
-    daemon_endpoint(path)
+    daemon_(path)
+}
+
+#[tauri::command]
+fn version() -> String {
+    VERSION.to_string()
 }
 
 #[tauri::command]
 async fn sync_music(app: tauri::AppHandle, window: tauri::Window) {
     let path = app.path().app_config_dir().unwrap().join("config.toml");
-    let endpoint = format!("http://{}/updatemusic", daemon_endpoint(path));
+    let endpoint = format!("http://{}/updatemusic", daemon_(path));
     let _ = window.emit("startsync", "");
     let client = reqwest::Client::new();
     let _ = client.put(endpoint).send().await;
@@ -74,7 +81,7 @@ fn default_config() -> Config {
 fn set_locale(app: tauri::AppHandle, locale: String) -> Config {
     let path = app.path().app_config_dir().unwrap().join("config.toml");
     let mut config = Config::get(&path);
-    muconf::update_conf!(config, global, lang, Some(locale));
+    lorconf::update_conf!(config, global, lang, Some(locale));
     Config::dump(&path, config.clone());
 
     config
@@ -84,7 +91,7 @@ fn set_locale(app: tauri::AppHandle, locale: String) -> Config {
 fn set_theme(app: tauri::AppHandle, theme: String) -> Config {
     let path = app.path().app_config_dir().unwrap().join("config.toml");
     let mut config = Config::get(&path);
-    muconf::update_conf!(config, global, theme, Some(theme));
+    lorconf::update_conf!(config, global, theme, Some(theme));
     Config::dump(&path, config.clone());
 
     config
@@ -100,8 +107,9 @@ fn main() {
             config,
             default_config,
             set_theme,
-            mud_endpoint,
-            sync_music
+            daemon_endpoint,
+            sync_music,
+            version
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

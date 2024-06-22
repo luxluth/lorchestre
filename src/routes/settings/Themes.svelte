@@ -29,7 +29,7 @@
 		>
 			<img src={autoTheme} alt="" />
 			<div class="selected">
-				<Check color="var(--fg)" size="1em" />
+				<Check color="var(--bg)" size="1em" />
 			</div>
 		</div>
 		<div
@@ -49,7 +49,7 @@
 		>
 			<img src={darkTheme} alt="" />
 			<div class="selected">
-				<Check color="var(--fg)" size="1em" />
+				<Check color="var(--bg)" size="1em" />
 			</div>
 		</div>
 		<div
@@ -68,7 +68,7 @@
 			}}
 		>
 			<div class="selected">
-				<Check color="var(--fg)" size="1em" />
+				<Check color="var(--bg)" size="1em" />
 			</div>
 			<img src={lightTheme} alt="" />
 		</div>
@@ -84,7 +84,7 @@
 	}
 
 	#theme.active {
-		border-color: var(--fg);
+		border-color: var(--brand-color);
 	}
 
 	#theme:active {
@@ -100,8 +100,8 @@
 		position: absolute;
 		width: 1.5em;
 		height: 1.5em;
-		border: 2px solid var(--fg);
-		background-color: var(--bg);
+		border: 2px solid var(--brand-color);
+		background-color: var(--brand-color);
 		right: 0.5em;
 		top: 0.5em;
 		border-radius: 50%;

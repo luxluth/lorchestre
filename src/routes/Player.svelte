@@ -2,7 +2,7 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import LrcManager from '$lib/lrc.svelte';
 	import type Manager from '$lib/manager.svelte';
-	import { type QueueTrack, type Track } from '$lib/type';
+	import { type QueueTrack } from '$lib/type';
 
 	import X from 'lucide-svelte/icons/x';
 	import Play from 'lucide-svelte/icons/play';
@@ -14,11 +14,13 @@
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
 	import { getContext } from 'svelte';
-	import { getCoverUri } from '$lib/utils';
+	import { getAudioUri, getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
+	import type AppConfig from '$lib/config.svelte';
 
 	let manager = getContext<Manager>('manager');
 	let lrcMngr = getContext<LrcManager>('lm');
+	let config = getContext<AppConfig>('appconf');
 
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
@@ -111,7 +113,7 @@
 			}
 		}
 
-		sound.src = `http://localhost:7700/audio/${track.id}`;
+		sound.src = getAudioUri(track.id, config);
 
 		sound.onended = () => {
 			playing = false;
@@ -200,7 +202,8 @@
 				style="
           background-image: url({getCoverUri(
 					manager.currentTrack?.album_id as string,
-					manager.currentTrack?.cover_ext as string
+					manager.currentTrack?.cover_ext as string,
+					config
 				)});"
 			></div>
 		{/each}
@@ -210,7 +213,8 @@
 			class="cover"
 			style="background-image: url({getCoverUri(
 				manager.currentTrack?.album_id as string,
-				manager.currentTrack?.cover_ext as string
+				manager.currentTrack?.cover_ext as string,
+				config
 			)});"
 		>
 			<div class="actions">

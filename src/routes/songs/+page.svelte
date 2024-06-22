@@ -108,7 +108,7 @@
 
 	let searchInput = $state('');
 	$effect(() => {
-		setTitle(`mu -- ${$_('songs').toLowerCase()}`);
+		setTitle(`L'orchestre -- ${$_('songs').toLowerCase()}`);
 	});
 </script>
 

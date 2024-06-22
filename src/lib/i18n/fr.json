@@ -42,6 +42,13 @@
 			"theme": {
 				"title": "Apparence de l'application"
 			}
+		},
+		"section_mlib": {
+			"title": "Gestion de la librarie",
+			"sync": {
+				"title": "Synchroniser la librarie avec les fichiers locaux",
+				"sync_btn": "Commencer la synchronisation"
+			}
 		}
 	},
 	"songs_page": {

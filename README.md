@@ -1,16 +1,8 @@
-<img src="./assets/logo.svg" width="80" style="margin-right:10px" align="left" alt="nwg-shell logo">
+![banner](./assets/banner.svg)
 
-# ム (mu)
+# L'orchestre
 
-A music player
-
-![preview](./assets/preview.png)
-
-![songs view](./assets/songs-view.png)
-
-![stats view](./assets/stats-view.png)
-
-![playlist view](./assets/playlist-view.png)
+The only music player you'll ever need
 
 ## TODO
 

@@ -20,6 +20,7 @@
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
 	import { browser } from '$app/environment';
+	import type AppConfig from '$lib/config.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -27,6 +28,7 @@
 	const album = data.album;
 	const tracks = album ? sortTracks(album.tracks) : [];
 	let ctx = getContext<Ctx>('ctx');
+	let config = getContext<AppConfig>('appconf');
 
 	function sortTracks(t: Track[]) {
 		return t.sort((a, b) => a.track - b.track);
@@ -56,7 +58,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					await manager.addToQueue(track, QueueAddMode.Top);
+					manager.addToQueue(track, QueueAddMode.Top);
 				},
 				label: $_('ctx.top_of_q'),
 				icon: ListStart
@@ -64,7 +66,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					await manager.addToQueue(track);
+					manager.addToQueue(track);
 				},
 				label: $_('album.page.ctx.add_queue'),
 				icon: ListEnd
@@ -82,11 +84,11 @@
 		await manager.play(track);
 		let toAddToTheQue = [...tracks];
 		toAddToTheQue.shift();
-		await manager.addManyToQueue(toAddToTheQue);
+		manager.addManyToQueue(toAddToTheQue);
 	}
 
 	if (browser) {
-		setTitle(`mu -- ${album ? album.name : 'Album not found'}`);
+		setTitle(`L'orchestre -- ${album ? album.name : 'Album not found'}`);
 	}
 </script>
 
@@ -102,7 +104,8 @@
 				? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
 				: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
 				album.id,
-				album.tracks[0].cover_ext
+				album.tracks[0].cover_ext,
+				config
 			)}');"
 		>
 			<button

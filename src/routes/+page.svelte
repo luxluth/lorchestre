@@ -16,8 +16,8 @@
 	import type MediaState from '$lib/media.svelte';
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri, setTitle } from '$lib/utils';
-	import type AlbumPageData from '$lib/album.svelte';
 	import ListStart from 'lucide-svelte/icons/list-start';
+	import type AppConfig from '$lib/config.svelte';
 
 	let media = getContext<MediaState>('media');
 
@@ -31,6 +31,7 @@
 
 	let manager = getContext<Manager>('manager');
 	let ctx = getContext<Ctx>('ctx');
+	let config = getContext<AppConfig>('appconf');
 
 	function showContext(e: ContextMenuEvent, tracks: Track[]) {
 		let sortedTracks = sortTracks(tracks);
@@ -49,7 +50,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					await manager.addManyToQueue(sortedTracks, QueueAddMode.Top);
+					manager.addManyToQueue(sortedTracks, QueueAddMode.Top);
 				},
 				label: $_('ctx.top_of_q'),
 				icon: ListStart
@@ -57,7 +58,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					await manager.addManyToQueue(sortedTracks);
+					manager.addManyToQueue(sortedTracks);
 				},
 				label: $_('ctx.inqueue'),
 				icon: ListEnd
@@ -70,7 +71,7 @@
 	}
 
 	$effect(() => {
-		setTitle(`mu -- ${$_('albums').toLowerCase()}`);
+		setTitle(`L'orchestre -- ${$_('albums').toLowerCase()}`);
 	});
 </script>
 
@@ -96,7 +97,7 @@
 				>
 					<img
 						class="ns"
-						src={getCoverUri(album.id, album.tracks[0].cover_ext)}
+						src={getCoverUri(album.id, album.tracks[0].cover_ext, config)}
 						alt=""
 						loading="lazy"
 					/>

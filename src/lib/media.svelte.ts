@@ -18,7 +18,7 @@ export default class MediaState {
 
 	async load() {
 		let config = getContext<AppConfig>('appconf');
-		const endpoint = config.getMUDEndpoint();
+		const endpoint = config.getDaemonEndpoint();
 		let media = (await (await fetch(`http://${endpoint}/media`)).json()) as Media;
 		this.albums = media.albums;
 		this.playlists = media.playlists;

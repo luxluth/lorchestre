@@ -1,8 +1,8 @@
 {
 	"$schema": "../node_modules/@tauri-apps/cli/schema.json",
-	"productName": "mu",
+	"productName": "lorchestre",
 	"version": "0.0.0",
-	"identifier": "com.mu.dev",
+	"identifier": "lorchestre",
 	"build": {
 		"beforeDevCommand": "pnpm dev",
 		"devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "macOSPrivateApi": true,
 		"windows": [
 			{
-				"title": "mu",
+				"title": "L'orchestre",
 				"width": 1470,
 				"height": 880,
         "titleBarStyle": "Visible",

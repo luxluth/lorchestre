@@ -94,6 +94,7 @@
 	.search a.active {
 		background: var(--highlight);
 		opacity: 1;
+		color: var(--brand-color);
 	}
 
 	/* .dragzone { */
@@ -165,6 +166,7 @@
 
 	section div.links a.active {
 		background: var(--highlight);
+		color: var(--brand-color);
 		opacity: 1;
 	}
 </style>

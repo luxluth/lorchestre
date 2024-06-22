@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-pub const APP_ID: &str = "com.mu.dev";
+pub const APP_ID: &str = "lorchestre";
 
 #[derive(Debug, Clone)]
 pub struct Dir {

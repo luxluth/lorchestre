@@ -20,11 +20,13 @@
 	import type AlbumPageData from '$lib/album.svelte';
 	import type MediaState from '$lib/media.svelte';
 	import { PlayingMode } from '$lib/type';
+	import type AppConfig from '$lib/config.svelte';
 
 	let manager = getContext<Manager>('manager');
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 	let adp = getContext<AlbumPageData>('apd');
 	let media = getContext<MediaState>('media');
+	let config = getContext<AppConfig>('appconf');
 
 	function formatTime(time: number) {
 		if (isNaN(time)) {
@@ -99,7 +101,8 @@
 				class="cover"
 				style="background-image: url({getCoverUri(
 					manager.currentTrack.album_id,
-					manager.currentTrack.cover_ext
+					manager.currentTrack.cover_ext,
+					config
 				)});"
 			>
 				<div
@@ -261,6 +264,7 @@
 
 	.controls button.active {
 		opacity: 1;
+		color: var(--brand-color);
 	}
 
 	.controls button.active::after {
@@ -268,7 +272,7 @@
 		position: absolute;
 		width: 3px;
 		height: 3px;
-		background: var(--fg);
+		background: var(--brand-color);
 		border-radius: 50%;
 		bottom: 1px;
 		left: 50%;

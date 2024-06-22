@@ -107,7 +107,7 @@
 
 	$effect(() => {
 		setTitle(
-			`mu -- ${$_('playlist').toLowerCase()} -- ${list.activeList ? list.activeList.name : ''}`
+			`L'orchestre -- ${$_('playlist').toLowerCase()} -- ${list.activeList ? list.activeList.name : ''}`
 		);
 	});
 </script>

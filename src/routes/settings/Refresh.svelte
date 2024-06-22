@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { _, locale } from 'svelte-i18n';
-	import type AppConfig from '$lib/config.svelte';
+	import { _ } from 'svelte-i18n';
 	import { getContext } from 'svelte';
 	import type MediaState from '$lib/media.svelte';
 	import FolderSync from 'lucide-svelte/icons/folder-sync';
@@ -11,7 +10,7 @@
 </script>
 
 <section class="lang ns">
-	<h4>Sync the music library with local files</h4>
+	<h4>{$_('settings_page.section_mlib.sync.title')}</h4>
 	<button
 		class="btn"
 		class:inactive={media.updatingmedia}
@@ -27,7 +26,7 @@
 				<FolderSync size={'1em'} />
 			{/if}
 		</div>
-		Start the sync
+		{$_('settings_page.section_mlib.sync.sync_btn')}
 	</button>
 </section>
 

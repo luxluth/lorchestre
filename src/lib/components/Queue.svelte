@@ -10,9 +10,11 @@
 	import { getCoverUri } from '$lib/utils';
 	import type { QueueTrack } from '$lib/type';
 	import X from 'lucide-svelte/icons/x';
+	import type AppConfig from '$lib/config.svelte';
 
 	let cmds = getContext<Cmds>('cmds');
 	let manager = getContext<Manager>('manager');
+	let config = getContext<AppConfig>('appconf');
 
 	const flipDurationMs = 200;
 
@@ -32,6 +34,10 @@
 		} else {
 			return new Date(time * 1000).toISOString().substring(14, 19);
 		}
+	}
+
+	function trim(text: string, len = 20) {
+		return text.slice(0, len) + (text.length > len ? '...' : '');
 	}
 </script>
 
@@ -80,11 +86,11 @@
 				>
 					<div
 						class="cover"
-						style="background-image: url({getCoverUri(track.album_id, track.cover_ext)});"
+						style="background-image: url({getCoverUri(track.album_id, track.cover_ext, config)});"
 					></div>
 					<div class="infos">
 						<div class="details">
-							<h4>{track.title}</h4>
+							<h4>{trim(track.title)}</h4>
 							<p>{track.artists[0]}</p>
 						</div>
 						<div class="duration">

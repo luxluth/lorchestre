@@ -42,6 +42,13 @@
 			"theme": {
 				"title": "Application Appearance"
 			}
+		},
+		"section_mlib": {
+			"title": "Music Library",
+			"sync": {
+				"title": "Sync the music library with local files",
+				"sync_btn": "Start the sync"
+			}
 		}
 	},
 	"songs_page": {

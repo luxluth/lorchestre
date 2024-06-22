@@ -1235,6 +1235,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "lorchestrectl"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "axum-extra",
+ "axum-range",
+ "chrono",
+ "clap",
+ "color-thief",
+ "dirs",
+ "glob",
+ "image",
+ "lofty",
+ "lorconf",
+ "lrc",
+ "md5",
+ "mime_guess",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "socketioxide",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "lorconf"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "sys-locale",
+ "toml",
+]
+
+[[package]]
 name = "lrc"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1324,45 +1363,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "muconf"
-version = "0.1.0"
-dependencies = [
- "serde",
- "sys-locale",
- "toml",
-]
-
-[[package]]
-name = "mud"
-version = "0.0.0"
-dependencies = [
- "axum",
- "axum-extra",
- "axum-range",
- "chrono",
- "clap",
- "color-thief",
- "dirs",
- "glob",
- "image",
- "lofty",
- "lrc",
- "md5",
- "mime_guess",
- "muconf",
- "rusqlite",
- "serde",
- "serde_json",
- "socketioxide",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]

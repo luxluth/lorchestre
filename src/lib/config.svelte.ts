@@ -21,7 +21,7 @@ export default class AppConfig {
 		document.body.setAttribute('data-theme', theme);
 	}
 
-	getMUDEndpoint() {
+	getDaemonEndpoint() {
 		return (
 			`${this.config.network?.host ?? this.defaults.network.host}` +
 			':' +

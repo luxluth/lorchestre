@@ -53,15 +53,13 @@ export function formatTime(seconds: number) {
 		return new Date(seconds * 1000).toISOString().substring(14, 19);
 	}
 }
-export function getCoverUri(album_id: string, ext: String) {
-	let config = getContext<AppConfig>('appconf');
-	const endpoint = config.getMUDEndpoint();
+export function getCoverUri(album_id: string, ext: String, config: AppConfig) {
+	const endpoint = config.getDaemonEndpoint();
 	return `http://${endpoint}/cover/${album_id}${ext}`;
 }
 
-export function getAudioUri(id: string) {
-	let config = getContext<AppConfig>('appconf');
-	const endpoint = config.getMUDEndpoint();
+export function getAudioUri(id: string, config: AppConfig) {
+	const endpoint = config.getDaemonEndpoint();
 	return `http://${endpoint}/audio/${id}`;
 }
 

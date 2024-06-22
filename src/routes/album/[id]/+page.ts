@@ -6,7 +6,7 @@ export const csr = true;
 export const prerender = false;
 
 export const load: PageLoad = async ({ params, fetch }) => {
-	let endpoint = await invoke('mud_endpoint');
+	let endpoint = await invoke('daemon_endpoint');
 	let req = await fetch(`http://${endpoint}/album/${params.id}`);
 	if (req.ok) {
 		return {

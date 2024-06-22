@@ -9,9 +9,11 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
+	import type AppConfig from '$lib/config.svelte';
 
 	let manager = getContext<Manager>('manager');
 	let media = getContext<MediaState>('media');
+	let config = getContext<AppConfig>('appconf');
 	let songLenght = tweened(0, {
 		duration: 700,
 		easing: quartInOut
@@ -40,7 +42,7 @@
 	}
 
 	$effect(() => {
-		setTitle('mu');
+		setTitle("L'orchestre");
 	});
 </script>
 
@@ -59,7 +61,7 @@
 	>
 		<div
 			class="cover"
-			style="background-image: url({getCoverUri(song.album_id, song.cover_ext)});"
+			style="background-image: url({getCoverUri(song.album_id, song.cover_ext, config)});"
 		></div>
 		<div class="infos ns">
 			<div class="bitrate ns">{song.bitrate - 1}Kb/s</div>

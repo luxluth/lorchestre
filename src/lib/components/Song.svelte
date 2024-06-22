@@ -184,7 +184,7 @@
 		width: 2px;
 		height: 2px;
 		border-radius: 1px;
-		background-color: var(--fg);
+		background-color: var(--brand-color);
 	}
 	.bar:first-child {
 		animation-delay: 300ms;

@@ -9,6 +9,12 @@ html {
 
 	--font-fantasy: 'Calistoga', 'Noto Serif JP Variable', serif;
 	--font-mono: 'IBM Plex Mono', monospace;
+
+	--brand-color: #df632e;
+}
+
+code {
+	font-family: var(--font-mono);
 }
 
 body[data-theme='dark'] {

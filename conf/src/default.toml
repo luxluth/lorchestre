@@ -9,5 +9,5 @@ theme = "auto"     # Either auto | dark | light
 # Network configuration
 
 [network]
-port = 7700        # The port that use mud
-host = "localhost" # The host to lauch mud on
+port = 7700        # The port that use L'orchestre daemon
+host = "localhost" # The host to lauch the daemon on

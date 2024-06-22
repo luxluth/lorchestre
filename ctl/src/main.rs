@@ -12,7 +12,7 @@ use axum::{
 use axum_extra::{headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
 use config::Dir;
-use mud::Media;
+use lorchestrectl::Media;
 use socketioxide::{extract::SocketRef, SocketIo};
 use std::io::Read;
 use std::sync::Arc;
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dirs = config::get_dirs();
     let m = utils::cache_resolve(&dirs.cache).await;
     let config_path = dirs.config.join("config.toml");
-    let config = muconf::Config::get(&config_path);
+    let config = lorconf::Config::get(&config_path);
     if let Some(network) = config.network {
         if let Some(p) = network.port {
             port = p;
@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
     let listener = tokio::net::TcpListener::bind(format!("{host}:{port}")).await?;
-    info!("MUD started on http://{host}:{port}");
+    info!("lorchestre daemon started on http://{host}:{port}");
     axum::serve(listener, app).await?;
 
     Ok(())
@@ -153,7 +153,7 @@ async fn audio(
 }
 
 async fn ping() -> String {
-    format!("OK mud v{}", config::VERSION)
+    format!("OK lorchestrectl v{}", config::VERSION)
 }
 
 async fn media(State(state): State<AppData>) -> Json<Media> {
