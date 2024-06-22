@@ -1,6 +1,6 @@
 ![banner](./assets/banner.svg)
 
-The only music player you'll ever need
+*The only music player you'll ever need*
 
 ## TODO
 
