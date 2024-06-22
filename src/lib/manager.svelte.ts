@@ -1,6 +1,11 @@
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
 import { toQueueTrack } from './utils';
 
+type Func<Out> = () => Out;
+type VoidFunc = Func<void>;
+type OneArgFunc<In, Out> = (arg: In) => Out;
+type TimeFunction = OneArgFunc<number, void>;
+
 /**
  * The player Manager
  * That big man
@@ -16,14 +21,14 @@ export default class Manager {
 	duration: number = $derived(this.currentTrack ? this.currentTrack.duration : 0);
 	qmode = $state(QueueMode.Continue);
 	pmode = $state(PlayingMode.Normal);
-	ontogglepp?: () => Promise<void>;
-	onvolumechange?: (vol: number) => void;
-	onplay?: (track: QueueTrack) => Promise<void>;
-	onPlayerActivate?: () => void;
-	onPlayerDeactivate?: () => void;
-	onstop?: () => void;
-	onseektofuncs = new Set<(time: number) => void>();
-	afterplayfuncs = new Set<() => void>();
+	ontogglepp?: Func<Promise<void>>;
+	onplay?: OneArgFunc<QueueTrack, Promise<void>>;
+	onPlayerActivate?: VoidFunction;
+	onPlayerDeactivate?: VoidFunc;
+	onstop?: VoidFunc;
+	private onseektofuncs = new Set<TimeFunction>();
+	private ontimeupdatefuncs = new Set<TimeFunction>();
+	private afterplayfuncs = new Set<VoidFunc>();
 
 	activatePlayer() {
 		if (this.onPlayerActivate) {
@@ -31,11 +36,15 @@ export default class Manager {
 		}
 	}
 
-	set afterplay(f: () => void) {
+	set ontimeupdate(f: TimeFunction) {
+		this.ontimeupdatefuncs.add(f);
+	}
+
+	set afterplay(f: VoidFunc) {
 		this.afterplayfuncs.add(f);
 	}
 
-	set onseekto(f: (time: number) => void) {
+	set onseekto(f: TimeFunction) {
 		this.onseektofuncs.add(f);
 	}
 
@@ -52,10 +61,6 @@ export default class Manager {
 			func();
 		});
 	}
-
-	// private volumeTo(vol: number) {
-	// 	this.onvolumechange?.(vol);
-	// }
 
 	seekTo(time: number) {
 		this.currentTime = time;

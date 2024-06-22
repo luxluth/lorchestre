@@ -3,6 +3,7 @@
 	import Themes from './Themes.svelte';
 	import Lang from './Lang.svelte';
 	import Refresh from './Refresh.svelte';
+	import Blur from './Blur.svelte';
 	import { getContext } from 'svelte';
 	import type AppConfig from '$lib/config.svelte';
 	import { setTitle } from '$lib/utils';
@@ -10,6 +11,8 @@
 	import banner from '$lib/assets/banner-bw.svg?raw';
 	import { browser } from '$app/environment';
 	import { invoke } from '@tauri-apps/api/core';
+
+	// import Github from 'lucide-svelte/icons/git-branch';
 
 	let appConf = getContext<AppConfig>('appconf');
 	let version = $state('vx.x.x');
@@ -35,6 +38,7 @@
 		<h2>{$_('settings_page.section_ui_ux.title')}</h2>
 		<Lang {appConf} />
 		<Themes {appConf} />
+		<Blur {appConf} />
 	</section>
 	<hr />
 	<section id="block" class="mlib">
@@ -44,6 +48,7 @@
 	<div class="banner">
 		{@html banner}
 		<code>{version}</code>
+		<!-- <a target="_blank" href="https://github.com/luxluth/lorchestre" class=""><Github /></a> -->
 	</div>
 </div>
 

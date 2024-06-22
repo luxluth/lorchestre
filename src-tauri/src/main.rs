@@ -97,6 +97,16 @@ fn set_theme(app: tauri::AppHandle, theme: String) -> Config {
     config
 }
 
+#[tauri::command]
+fn set_blur(app: tauri::AppHandle, state: bool) -> Config {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let mut config = Config::get(&path);
+    lorconf::update_conf!(config, global, enable_blur, Some(state));
+    Config::dump(&path, config.clone());
+
+    config
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -104,9 +114,10 @@ fn main() {
             platform,
             locale,
             set_locale,
+            set_theme,
+            set_blur,
             config,
             default_config,
-            set_theme,
             daemon_endpoint,
             sync_music,
             version

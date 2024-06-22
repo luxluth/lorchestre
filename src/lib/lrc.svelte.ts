@@ -7,7 +7,7 @@ const eq = (a: Line[], b: Line[]) => {
 export default class LrcManager {
 	lines: Line[] = $state([]);
 	private currentActiveLines: Line[] = $state([]);
-	private chs = new Set<() => void>();
+	private chs = new Set<(lines: Line[]) => void>();
 
 	constructor(duration: number, raw_lines: LyricLine[]) {
 		let lines: Line[] = [];
@@ -68,15 +68,26 @@ export default class LrcManager {
 		if (!eq(val, this.currentActiveLines)) {
 			this.currentActiveLines = val;
 			this.chs.forEach((f) => {
-				f();
+				f(val);
 			});
 		}
 	}
 
 	update(time: number) {
-		this.als = this.lines.filter((line) => {
-			return line.startTime <= time && line.endTime >= time;
-		});
+		let activeLines = [];
+		let i = 0,
+			len = this.lines.length;
+		while (i < len) {
+			const line = this.lines[i];
+			if (line.startTime > time) {
+				break;
+			}
+			if (line.startTime <= time && line.endTime >= time) {
+				activeLines.push(line);
+			}
+			i++;
+		}
+		this.als = activeLines;
 	}
 
 	get activeLines(): Line[] {

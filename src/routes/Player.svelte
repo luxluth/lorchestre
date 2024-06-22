@@ -22,6 +22,10 @@
 	let lrcMngr = getContext<LrcManager>('lm');
 	let config = getContext<AppConfig>('appconf');
 
+	let blurActive = $derived(
+		config.config.global?.enable_blur ?? config.defaults.global.enable_blur
+	);
+
 	//@ts-ignore
 	let lyricsParent: HTMLElement = $state<HTMLElement>();
 
@@ -76,11 +80,6 @@
 	manager.ontogglepp = async () => {
 		await toggleMediaPlayState();
 	};
-	manager.onvolumechange = (vol: number) => {
-		if (sound) {
-			sound.volume = vol;
-		}
-	};
 
 	manager.onPlayerActivate = () => {
 		active = true;
@@ -96,10 +95,6 @@
 	};
 
 	manager.onplay = async (track: QueueTrack) => {
-		// FIXME: weird volume bug
-		// console.log('first', sound.volume, manager.volume);
-		// sound.volume = manager.volume;
-		// console.log(sound.volume, manager.volume);
 		manager.currentTrack = track;
 		lrcMngr.reset(track.duration, track.lyrics);
 
@@ -125,7 +120,6 @@
 			lrcMngr.update(sound.currentTime);
 		};
 
-		// sound.volume = manager.volume;
 		await sound.play();
 	};
 
@@ -162,20 +156,44 @@
 		return Math.floor(Math.random() * 360);
 	}
 
+	function getColor() {
+		if (manager.currentTrack?.color) {
+			if (manager.currentTrack?.is_light) {
+				return '#181818';
+			} else {
+				return '#ffffff';
+			}
+		} else {
+			return 'var(--fg)';
+		}
+	}
+
+	function getColorParts() {
+		if (manager.currentTrack?.color) {
+			if (manager.currentTrack?.is_light) {
+				return '24';
+			} else {
+				return '255';
+			}
+		}
+
+		return '255';
+	}
+
 	let randdeg = $state(getRandomAngle());
 
 	let styles = $derived({
 		clr: manager.currentTrack?.color
 			? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
 			: 'var(--bg)',
-		text: '#ffffff',
+		text: blurActive ? '#ffffff' : `${getColor()}`,
 		r: manager.currentTrack?.color?.r,
 		g: manager.currentTrack?.color?.g,
 		b: manager.currentTrack?.color?.b,
 		percent: `${percentage.toFixed(0)}%`,
-		rd: '255',
-		gd: '255',
-		bd: '255',
+		rd: blurActive ? '255' : getColorParts(),
+		gd: blurActive ? '255' : getColorParts(),
+		bd: blurActive ? '255' : getColorParts(),
 		'random-degree': `${randdeg}deg`,
 		brightness: manager.currentTrack?.is_light ? '70%' : '1'
 	});
@@ -187,22 +205,32 @@
 	);
 </script>
 
-<div class:active class:playing class:no_lyrics={!hasLyrics} class="__player" style={styleString}>
-	<div class="background-images">
-		{#each layers as _, index}
-			<div
-				class:front={index === 0}
-				class:back={index === 1}
-				class:back_center={index === 2}
-				style="
-          background-image: url({getCoverUri(
-					manager.currentTrack?.album_id as string,
-					manager.currentTrack?.cover_ext as string,
-					config
-				)});"
-			></div>
-		{/each}
-	</div>
+<div
+	class:active
+	class:playing
+	class:no_lyrics={!hasLyrics}
+	class="__player"
+	style={styleString}
+	class:blurActive
+>
+	<!-- WARN: Can slow the application down  -->
+	{#if blurActive}
+		<div class="background-images">
+			{#each layers as _, index}
+				<div
+					class:front={index === 0}
+					class:back={index === 1}
+					class:back_center={index === 2}
+					style="
+	         background-image: url({getCoverUri(
+						manager.currentTrack?.album_id as string,
+						manager.currentTrack?.cover_ext as string,
+						config
+					)});"
+				></div>
+			{/each}
+		</div>
+	{/if}
 	<section class="player">
 		<div
 			class="cover"
@@ -408,7 +436,6 @@
 
 	.__player {
 		background-size: cover;
-		/* background: var(--clr); */
 		color: var(--text);
 		width: 100vw;
 		height: 100vh;
@@ -484,7 +511,7 @@
 		}
 	}
 
-	.__player::before {
+	.__player.blurActive::before {
 		content: '';
 		position: absolute;
 		top: 0;
@@ -496,6 +523,10 @@
 		backdrop-filter: blur(14px);
 		-webkit-backdrop-filter: blur(14px);
 		z-index: -1;
+	}
+
+	.__player:not(.blurActive) {
+		background: var(--clr);
 	}
 
 	.__player .player {
@@ -517,8 +548,8 @@
 		mask: linear-gradient(
 			180deg,
 			transparent 0,
-			black 4em,
-			black calc(100% - 4em),
+			black 6em,
+			black calc(100% - 6em),
 			transparent 100%
 		);
 	}
@@ -566,9 +597,14 @@
 		transform: scale(0.98);
 	}
 
-	.__player .lrc .line:hover {
+	.__player.blurActive .lrc .line:hover {
 		opacity: 0.5;
 		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.__player:not(.blurActive) .lrc .line:hover {
+		opacity: 0.5;
+		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
 	}
 
 	.__player .lrc .line.active:hover,
@@ -612,13 +648,20 @@
 		overflow: hidden;
 	}
 
+	.__player.blurActive .cover .actions {
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.__player:not(.blurActive) .cover .actions {
+		background: rgba(var(--r), var(--g), var(--b), 0.7);
+	}
+
 	.__player .cover .actions {
 		top: 0;
 		left: 0;
 		width: 100%;
 		height: 100%;
 		position: absolute;
-		background: rgba(0, 0, 0, 0.2);
 		opacity: 0;
 		transition: opacity 0.3s ease-in-out;
 	}

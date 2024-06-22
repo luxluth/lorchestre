@@ -21,6 +21,10 @@ export default class AppConfig {
 		document.body.setAttribute('data-theme', theme);
 	}
 
+	async setBlurTo(state: boolean) {
+		this.config = await invoke<Config>('set_blur', { state });
+	}
+
 	getDaemonEndpoint() {
 		return (
 			`${this.config.network?.host ?? this.defaults.network.host}` +
