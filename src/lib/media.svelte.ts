@@ -1,5 +1,8 @@
 import type { Album, Media, Playlist, Track } from './type';
-import { MUD_ENDPOINT } from './config';
+import { io } from 'socket.io-client';
+import { getContext } from 'svelte';
+import type AppConfig from './config.svelte';
+import { listen } from '@tauri-apps/api/event';
 
 export default class MediaState {
 	albums: Album[] = $state([]);
@@ -9,14 +12,35 @@ export default class MediaState {
 	loading_data = $state('');
 	files_count = $state(100);
 	treatedFilesCount = $state(0);
+	updatingmedia = $state(false);
 
 	constructor() {}
 
 	async load() {
-		let media = (await (await fetch(`${MUD_ENDPOINT}/media`)).json()) as Media;
+		let config = getContext<AppConfig>('appconf');
+		const endpoint = config.getMUDEndpoint();
+		let media = (await (await fetch(`http://${endpoint}/media`)).json()) as Media;
 		this.albums = media.albums;
 		this.playlists = media.playlists;
 		this.loaded = true;
+
+		await listen('startsync', () => {
+			this.updatingmedia = true;
+		});
+
+		await listen('endsync', () => {
+			this.updatingmedia = false;
+		});
+
+		try {
+			const socket = io(`ws://${endpoint}`);
+			socket.on('newmedia', (media: Media) => {
+				this.albums = media.albums;
+				this.playlists = media.playlists;
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
 	getSongsCount() {

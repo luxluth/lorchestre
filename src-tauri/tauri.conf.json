@@ -23,15 +23,7 @@
 				"minWidth": 1200,
         "minHeight": 800
 			}
-		],
-		"security": {
-      "csp": "asset: mu: ",
-			"capabilities": [],
-			"assetProtocol": {
-				"enable": true,
-				"scope": ["$APPCACHE/*", "$APPCACHE/**/*", "$AUDIO", "$AUDIO/*", "$AUDIO/**/*"]
-			}
-		}
+		]
 	},
 	"bundle": {
 		"active": true,

@@ -294,6 +294,11 @@ impl Media {
         }
     }
 
+    pub fn swap_with(&mut self, media: Media) {
+        self.albums = media.albums;
+        self.playlists = media.playlists;
+    }
+
     pub fn add_song(&mut self, song: Track) {
         let mut inserted = false;
         for album in &mut self.albums {

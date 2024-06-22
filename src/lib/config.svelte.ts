@@ -20,4 +20,12 @@ export default class AppConfig {
 		this.config = await invoke<Config>('set_theme', { theme });
 		document.body.setAttribute('data-theme', theme);
 	}
+
+	getMUDEndpoint() {
+		return (
+			`${this.config.network?.host ?? this.defaults.network.host}` +
+			':' +
+			`${this.config.network?.port ?? this.defaults.network.port}`
+		);
+	}
 }

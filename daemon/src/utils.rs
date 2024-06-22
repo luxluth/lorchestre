@@ -114,11 +114,11 @@ pub fn compare_caches(
 
     (
         vec![
-            CacheCompareDiff::ToAdd {
-                files: files_to_add,
-            },
             CacheCompareDiff::ToRemove {
                 files: files_to_remove,
+            },
+            CacheCompareDiff::ToAdd {
+                files: files_to_add,
             },
         ],
         to_add_len,

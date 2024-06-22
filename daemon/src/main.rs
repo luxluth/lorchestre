@@ -6,15 +6,18 @@ use axum::{
     extract::{Path, State},
     http::{header::CACHE_CONTROL, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, put},
     Json, Router,
 };
 use axum_extra::{headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
 use config::Dir;
 use mud::Media;
+use socketioxide::{extract::SocketRef, SocketIo};
 use std::io::Read;
+use std::sync::Arc;
 use tokio::fs::File;
+use tokio::sync::RwLock;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tracing::{info, warn};
@@ -22,8 +25,13 @@ use tracing_subscriber::FmtSubscriber;
 
 #[derive(Debug, Clone)]
 struct AppData {
-    media: Media,
+    media: Arc<RwLock<Media>>,
     dirs: Dir,
+    io: SocketIo,
+}
+
+async fn on_connect(socket: SocketRef) {
+    info!("socket connected: {}", socket.id);
 }
 
 #[tokio::main]
@@ -47,14 +55,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let (layer, io) = SocketIo::new_layer();
+    io.ns("/", on_connect);
+
     let app = Router::new()
         .route("/", get(ping))
         .route("/media", get(media))
         .route("/audio/:id", get(audio))
         .route("/album/:id", get(album))
         .route("/cover/:handle", get(cover))
-        .with_state(AppData { media: m, dirs })
-        .layer(ServiceBuilder::new().layer(CorsLayer::permissive()));
+        .route("/updatemusic", put(updatemusic))
+        .with_state(AppData {
+            media: Arc::new(RwLock::new(m)),
+            dirs: dirs.clone(),
+            io,
+        })
+        .layer(
+            ServiceBuilder::new()
+                .layer(CorsLayer::permissive())
+                .layer(layer),
+        );
 
     let listener = tokio::net::TcpListener::bind(format!("{host}:{port}")).await?;
     info!("MUD started on http://{host}:{port}");
@@ -88,8 +108,15 @@ async fn cover(State(state): State<AppData>, Path(handle): Path<String>) -> Resp
     }
 }
 
+async fn updatemusic(State(state): State<AppData>) {
+    let m = utils::cache_resolve(&state.dirs.cache).await;
+    let mut binding = state.media.write().await;
+    binding.swap_with(m.clone());
+    let _ = state.io.emit("newmedia", m);
+}
+
 async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response {
-    if let Some(album) = state.media.get_album(&id) {
+    if let Some(album) = state.media.read().await.get_album(&id) {
         Json(album).into_response()
     } else {
         let mut response = format!("no album found with the id of {id}").into_response();
@@ -104,7 +131,7 @@ async fn audio(
     Path(id): Path<String>,
 ) -> Response {
     info!("{id}");
-    if let Some(track) = state.media.get_song(&id) {
+    if let Some(track) = state.media.read().await.get_song(&id) {
         let file = File::open(&track.file_path).await.unwrap();
         let body = KnownSize::file(file).await.unwrap();
         let r = range.clone().map(|TypedHeader(range)| range);
@@ -130,5 +157,5 @@ async fn ping() -> String {
 }
 
 async fn media(State(state): State<AppData>) -> Json<Media> {
-    Json(state.media)
+    Json(state.media.read().await.clone())
 }

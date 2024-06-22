@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Themes from './Themes.svelte';
 	import Lang from './Lang.svelte';
+	import Refresh from './Refresh.svelte';
 	import { getContext } from 'svelte';
 	import type AppConfig from '$lib/config.svelte';
 	import { setTitle } from '$lib/utils';
@@ -21,6 +22,10 @@
 	<h2>{$_('settings_page.section_ui_ux.title')}</h2>
 	<Lang {appConf} />
 	<Themes {appConf} />
+</section>
+<section id="block" class="ui-ux">
+	<h2>Music Library</h2>
+	<Refresh />
 </section>
 
 <style>
