@@ -15,7 +15,9 @@ use config::Dir;
 use mud::Media;
 use socketioxide::{extract::SocketRef, SocketIo};
 use std::io::Read;
+use std::sync::Arc;
 use tokio::fs::File;
+use tokio::sync::RwLock;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tracing::{info, warn};
@@ -23,7 +25,7 @@ use tracing_subscriber::FmtSubscriber;
 
 #[derive(Debug, Clone)]
 struct AppData {
-    media: Media,
+    media: Arc<RwLock<Media>>,
     dirs: Dir,
     io: SocketIo,
 }
@@ -64,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
         .with_state(AppData {
-            media: m,
+            media: Arc::new(RwLock::new(m)),
             dirs: dirs.clone(),
             io,
         })
@@ -107,14 +109,14 @@ async fn cover(State(state): State<AppData>, Path(handle): Path<String>) -> Resp
 }
 
 async fn updatemusic(State(state): State<AppData>) {
-    let _ = state.io.emit("updatingmedia", true);
     let m = utils::cache_resolve(&state.dirs.cache).await;
+    let mut binding = state.media.write().await;
+    binding.swap_with(m.clone());
     let _ = state.io.emit("newmedia", m);
-    let _ = state.io.emit("updatingmedia", false);
 }
 
 async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response {
-    if let Some(album) = state.media.get_album(&id) {
+    if let Some(album) = state.media.read().await.get_album(&id) {
         Json(album).into_response()
     } else {
         let mut response = format!("no album found with the id of {id}").into_response();
@@ -129,7 +131,7 @@ async fn audio(
     Path(id): Path<String>,
 ) -> Response {
     info!("{id}");
-    if let Some(track) = state.media.get_song(&id) {
+    if let Some(track) = state.media.read().await.get_song(&id) {
         let file = File::open(&track.file_path).await.unwrap();
         let body = KnownSize::file(file).await.unwrap();
         let r = range.clone().map(|TypedHeader(range)| range);
@@ -155,5 +157,5 @@ async fn ping() -> String {
 }
 
 async fn media(State(state): State<AppData>) -> Json<Media> {
-    Json(state.media)
+    Json(state.media.read().await.clone())
 }
