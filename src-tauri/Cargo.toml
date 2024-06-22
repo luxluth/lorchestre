@@ -20,3 +20,4 @@ tauri = { version = "2.0.0-beta", features = [
   "macos-private-api",
   "linux-ipc-protocol",
 ] }
+reqwest = "0.12.5"

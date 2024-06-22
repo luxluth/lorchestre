@@ -24,9 +24,7 @@ fn locale(app: tauri::AppHandle) -> String {
     "en-GB".to_string()
 }
 
-#[tauri::command]
-fn mud_endpoint(app: tauri::AppHandle) -> String {
-    let path = app.path().app_config_dir().unwrap().join("config.toml");
+fn daemon_endpoint(path: std::path::PathBuf) -> String {
     let config = Config::get(&path);
     let default_net = muconf::Network::default();
     let mut port = default_net.port.unwrap();
@@ -43,6 +41,22 @@ fn mud_endpoint(app: tauri::AppHandle) -> String {
     }
 
     format!("{host}:{port}")
+}
+
+#[tauri::command]
+fn mud_endpoint(app: tauri::AppHandle) -> String {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    daemon_endpoint(path)
+}
+
+#[tauri::command]
+async fn sync_music(app: tauri::AppHandle, window: tauri::Window) {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let endpoint = format!("http://{}/updatemusic", daemon_endpoint(path));
+    let _ = window.emit("startsync", "");
+    let client = reqwest::Client::new();
+    let _ = client.put(endpoint).send().await;
+    let _ = window.emit("endsync", "");
 }
 
 #[tauri::command]
@@ -86,7 +100,8 @@ fn main() {
             config,
             default_config,
             set_theme,
-            mud_endpoint
+            mud_endpoint,
+            sync_music
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

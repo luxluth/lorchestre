@@ -25,7 +25,7 @@
 </section>
 <section id="block" class="ui-ux">
 	<h2>Music Library</h2>
-	<Refresh {appConf} />
+	<Refresh />
 </section>
 
 <style>

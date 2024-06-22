@@ -2,6 +2,7 @@ import type { Album, Media, Playlist, Track } from './type';
 import { io } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type AppConfig from './config.svelte';
+import { listen } from '@tauri-apps/api/event';
 
 export default class MediaState {
 	albums: Album[] = $state([]);
@@ -22,15 +23,17 @@ export default class MediaState {
 		this.albums = media.albums;
 		this.playlists = media.playlists;
 		this.loaded = true;
+
+		await listen('startsync', () => {
+			this.updatingmedia = true;
+		});
+
+		await listen('endsync', () => {
+			this.updatingmedia = false;
+		});
+
 		try {
-			console.log(`ws://${endpoint}`);
 			const socket = io(`ws://${endpoint}`);
-
-			socket.on('updatingmedia', (state: boolean) => {
-				this.updatingmedia = state;
-				console.log(this.updatingmedia);
-			});
-
 			socket.on('newmedia', (media: Media) => {
 				this.albums = media.albums;
 				this.playlists = media.playlists;

@@ -5,8 +5,8 @@
 	import type MediaState from '$lib/media.svelte';
 	import FolderSync from 'lucide-svelte/icons/folder-sync';
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+	import { invoke } from '@tauri-apps/api/core';
 
-	let { appConf }: { appConf: AppConfig } = $props();
 	let media = getContext<MediaState>('media');
 </script>
 
@@ -16,13 +16,8 @@
 		class="btn"
 		class:inactive={media.updatingmedia}
 		class:syncing={media.updatingmedia}
-		onclick={() => {
-			(() => {
-				let endpoint = appConf.getMUDEndpoint();
-				fetch(`http://${endpoint}/updatemusic`, { method: 'PUT' }).catch((error) => {
-					console.error('Fetch error:', error);
-				});
-			})();
+		onclick={async () => {
+			await invoke('sync_music');
 		}}
 	>
 		<div class="icon">
