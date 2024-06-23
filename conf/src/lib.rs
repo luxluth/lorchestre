@@ -42,7 +42,7 @@ impl Default for Global {
     fn default() -> Self {
         let l = sys_locale::get_locale().unwrap_or("en-GB".to_string());
         Self {
-            enable_blur: Some(true),
+            enable_blur: Some(false),
             lang: Some(l),
             theme: Some("auto".to_string()),
         }
