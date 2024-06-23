@@ -97,6 +97,22 @@
 		if (value > max) return max;
 		return value;
 	}
+
+	function handleKeypress(
+		e: KeyboardEvent & {
+			currentTarget: EventTarget & HTMLDivElement;
+		}
+	) {
+		const key = e.key.toLowerCase();
+		const diff = 0.01 * max;
+
+		if (key === 'arrowleft') {
+			value = clamp(value - diff);
+		}
+		if (key === 'arrowright') {
+			value = clamp(value + diff);
+		}
+	}
 </script>
 
 <div
@@ -110,11 +126,11 @@
 	onmousedown={async (e) => await handleMouseDown(e)}
 	ontouchstart={async (e) => await handleTouchStart(e)}
 	role="slider"
+	tabindex="-1"
 	aria-valuenow={Number(value.toFixed(2))}
-	tabindex="0"
 >
-	<div class="hitbox"></div>
-	<div class="handle"></div>
+	<div role="progressbar" class="hitbox"></div>
+	<div class="handle" role="button" onkeydown={handleKeypress} tabindex="0"></div>
 </div>
 
 <style>
@@ -160,6 +176,10 @@
 		position: absolute;
 		top: calc(100% - 0.4em * 1.3);
 		left: calc(var(--pos) - 0.4em);
+	}
+
+	.handle:focus {
+		opacity: 1;
 	}
 
 	.slider[data-style='thick'] .handle {
