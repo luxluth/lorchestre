@@ -203,6 +203,10 @@
 			.map(([key, value]) => `--${key}: ${value}`)
 			.join(';')
 	);
+
+	function mediaNotifictionApi() {
+		// TODO: Move this logic to ctrl side using mpris
+	}
 </script>
 
 <div
@@ -351,6 +355,7 @@
 	bind:currentTime={manager.currentTime}
 	bind:volume={manager.volume}
 	onseeked={afterSeek}
+	onloadedmetadata={mediaNotifictionApi}
 	hidden
 ></audio>
 

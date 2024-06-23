@@ -98,7 +98,8 @@
 				style="background-image: url({getCoverUri(
 					manager.currentTrack.album_id,
 					manager.currentTrack.cover_ext,
-					config
+					config,
+					50
 				)});"
 			>
 				<div

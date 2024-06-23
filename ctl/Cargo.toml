@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["json"] }
-axum-extra = "0.9.3"
+axum-extra = { version = "0.9.3", features = ["query"]}
 axum-range = "0.4.0"
 chrono = { version = "0.4.38", features = ["serde"] }
 clap = { version = "4.5.7", features = ["derive"] }

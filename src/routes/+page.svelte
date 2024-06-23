@@ -41,7 +41,7 @@
 				action: async (_data: any) => {
 					let firstTrack = sortedTracks.shift() as Track;
 					manager.queue = [];
-					await manager.addManyToQueue(sortedTracks);
+					manager.addManyToQueue(sortedTracks);
 					await manager.play(firstTrack);
 				},
 				label: $_('ctx.play'),
@@ -97,7 +97,7 @@
 				>
 					<img
 						class="ns"
-						src={getCoverUri(album.id, album.tracks[0].cover_ext, config)}
+						src={getCoverUri(album.id, album.tracks[0].cover_ext, config, 300)}
 						alt=""
 						loading="lazy"
 					/>

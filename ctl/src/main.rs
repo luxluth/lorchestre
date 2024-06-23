@@ -9,12 +9,13 @@ use axum::{
     routing::{get, put},
     Json, Router,
 };
-use axum_extra::{headers::Range, TypedHeader};
+use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
 use config::Dir;
+use image::io::Reader as ImageReader;
 use lorchestrectl::Media;
 use socketioxide::{extract::SocketRef, SocketIo};
-use std::io::Read;
+use std::io::{BufWriter, Cursor, Read};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::RwLock;
@@ -83,16 +84,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn cover(State(state): State<AppData>, Path(handle): Path<String>) -> Response {
+#[derive(serde::Deserialize, Debug)]
+struct ImageSize {
+    size: String,
+}
+
+impl ImageSize {
+    pub fn parse(self) -> Option<(u32, u32)> {
+        self.size
+            .split_once('x')
+            .map(|(x, y)| (x.parse().unwrap(), y.parse().unwrap()))
+    }
+}
+
+async fn cover(
+    State(state): State<AppData>,
+    Path(handle): Path<String>,
+    OptionalQuery(size): OptionalQuery<ImageSize>,
+) -> Response {
     let path = state.dirs.cache.join("covers").join(handle);
 
-    let mut buf = vec![];
+    if let Some(image_size) = size {
+        if let Some((w, h)) = image_size.parse() {
+            if let Ok(mut image) = ImageReader::open(&path).unwrap().decode() {
+                image = image.resize(w, h, image::imageops::FilterType::Gaussian);
+
+                let mut buffer = BufWriter::new(Cursor::new(Vec::new()));
+                let _ = image.write_to(&mut buffer, image::ImageFormat::Png);
+
+                let bytes = buffer.into_inner().unwrap().into_inner();
+
+                let body = Body::from(bytes);
+                let resp = Response::new(body);
+                return resp;
+            }
+        }
+    }
+
     if let Ok(mut file) = std::fs::File::open(&path) {
+        let mut buf = vec![];
         let _ = file.read_to_end(&mut buf);
 
         let body = Body::from(buf);
         let resp = Response::new(body);
-        resp
+        return resp;
     } else {
         warn!("Fail to retrieve the cover file `{}`", path.display());
         let buf = include_bytes!("./assets/default-cover.png");
