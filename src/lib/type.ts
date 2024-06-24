@@ -67,7 +67,6 @@ export type Track = {
 	file_path: string;
 	duration: u64;
 	bitrate: u32;
-	id: string;
 };
 
 export type QueueTrack = Track & {

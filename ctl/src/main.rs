@@ -3,7 +3,7 @@ mod utils;
 
 use axum::{
     body::Body,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::{header::CACHE_CONTROL, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, put},
@@ -62,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/", get(ping))
         .route("/media", get(media))
-        .route("/audio/:id", get(audio))
+        .route("/audio", get(audio))
         .route("/album/:id", get(album))
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
@@ -87,6 +87,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[derive(serde::Deserialize, Debug)]
 struct ImageSize {
     size: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+struct MusicPath {
+    path: String,
 }
 
 impl ImageSize {
@@ -163,10 +168,10 @@ async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response
 async fn audio(
     range: Option<TypedHeader<Range>>,
     State(state): State<AppData>,
-    Path(id): Path<String>,
+    Query(music_path): Query<MusicPath>,
 ) -> Response {
-    info!("{id}");
-    if let Some(track) = state.media.read().await.get_song(&id) {
+    let path = music_path.path;
+    if let Some(track) = state.media.read().await.get_song(&path) {
         let file = File::open(&track.file_path).await.unwrap();
         let body = KnownSize::file(file).await.unwrap();
         let r = range.clone().map(|TypedHeader(range)| range);
@@ -175,13 +180,14 @@ async fn audio(
             return response.into_response();
         } else {
             let mut response =
-                format!("An error occured while satisfying the request for {id}").into_response();
+                format!("An error occured while satisfying the request for path `{path}`")
+                    .into_response();
             *response.status_mut() = StatusCode::NOT_FOUND;
             response
         }
     } else {
-        warn!("{id} not founded");
-        let mut response = format!("no song found with the id of {id}").into_response();
+        warn!("{path} not founded");
+        let mut response = format!("no song found with the id of {path}").into_response();
         *response.status_mut() = StatusCode::NOT_FOUND;
         response
     }

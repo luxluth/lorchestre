@@ -16,9 +16,9 @@ pub struct Playlist {
 }
 
 impl Playlist {
-    pub fn get_song(&self, id: &String) -> Option<Track> {
+    pub fn get_song(&self, path: &String) -> Option<Track> {
         for track in &self.tracks {
-            if track.id == id.clone() {
+            if track.file_path == path.clone() {
                 return Some(track.clone());
             }
         }

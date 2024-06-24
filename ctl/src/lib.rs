@@ -13,7 +13,6 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::time::SystemTime;
-use uuid::Uuid;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
@@ -58,9 +57,9 @@ impl Album {
         self.tracks.retain(|x| x.file_path != path);
     }
 
-    pub fn get_song(&self, id: &String) -> Option<Track> {
+    pub fn get_song(&self, path: &String) -> Option<Track> {
         for track in &self.tracks {
-            if track.id == id.clone() {
+            if track.file_path == path.clone() {
                 return Some(track.clone());
             }
         }
@@ -86,7 +85,6 @@ pub struct Track {
     pub file_path: String,
     pub duration: u64,
     pub bitrate: u32,
-    pub id: String,
     pub created_at: SystemTime,
 }
 
@@ -269,7 +267,6 @@ impl Default for Track {
             file_path: String::new(),
             bitrate: 0,
             duration: 0,
-            id: format!("{:x}", Uuid::new_v4().as_u128()),
             created_at: SystemTime::UNIX_EPOCH,
         }
     }
@@ -368,16 +365,16 @@ impl Media {
         None
     }
 
-    pub fn get_song(&self, id: &String) -> Option<Track> {
+    pub fn get_song(&self, path: &String) -> Option<Track> {
         for album in &self.albums {
-            let res = album.get_song(id);
+            let res = album.get_song(path);
             if res.is_some() {
                 return res;
             }
         }
 
         for playlist in &self.playlists {
-            let res = playlist.get_song(id);
+            let res = playlist.get_song(path);
             if res.is_some() {
                 return res;
             }

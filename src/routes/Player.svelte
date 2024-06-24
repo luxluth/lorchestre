@@ -98,7 +98,7 @@
 		manager.currentTrack = track;
 		lrcMngr.reset(track.duration, track.lyrics);
 
-		sound.src = getAudioUri(track.id, config);
+		sound.src = getAudioUri(track.file_path, config);
 
 		sound.onended = () => {
 			playing = false;
