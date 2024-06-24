@@ -1,5 +1,4 @@
 import type { QueueTrack, Track } from '$lib/type';
-import { v4 as uuidv4 } from 'uuid';
 import { getCurrent } from '@tauri-apps/api/window';
 import { getContext } from 'svelte';
 import type AppConfig from '$lib/config.svelte';
@@ -70,7 +69,7 @@ export function getAudioUri(id: string, config: AppConfig) {
 export function toQueueTrack(track: Track): QueueTrack {
 	return {
 		...track,
-		uuid: uuidv4()
+		uuid: crypto.randomUUID()
 	};
 }
 
