@@ -72,7 +72,6 @@
 
 <div
 	class="track ns"
-	data-id={song.id}
 	role="presentation"
 	draggable
 	oncontextmenu={(e) => {
@@ -85,11 +84,11 @@
 >
 	<div
 		class="count"
-		class:iscurrent={manager.currentTrack?.id === song.id}
+		class:iscurrent={manager.currentTrack?.file_path === song.file_path}
 		aria-colindex="1"
 		role="gridcell"
 	>
-		{#if manager.currentTrack?.id === song.id}
+		{#if manager.currentTrack?.file_path === song.file_path}
 			<div class="playing" class:paused={manager.paused}>
 				<div class="bar"></div>
 				<div class="bar"></div>
