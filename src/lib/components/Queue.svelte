@@ -113,13 +113,13 @@
 <style>
 	.__queue {
 		position: fixed;
-		z-index: 50;
+		z-index: var(--overlay-z-index);
 		margin-top: 5em;
 		height: 85%;
 		width: 25.3em;
 		padding: 1em;
 		right: 2em;
-		top: 2em;
+		top: 0.5em;
 		border: 2px solid rgba(100, 100, 100, 0.18);
 		transform: translateX(200%);
 		transition: transform 0.3s ease-in-out;

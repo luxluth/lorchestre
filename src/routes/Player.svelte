@@ -444,7 +444,7 @@
 		width: 100vw;
 		height: 100vh;
 		position: fixed;
-		z-index: 100;
+		z-index: var(--player-z-index);
 		top: 0;
 		left: 0;
 		display: grid;

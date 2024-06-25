@@ -11,6 +11,11 @@ html {
 	--font-mono: 'IBM Plex Mono', monospace;
 
 	--brand-color: #df632e;
+
+	--player-z-index: 100;
+	--search-z-index: 40;
+	--header-z-index: 50;
+	--overlay-z-index: 30;
 }
 
 code {

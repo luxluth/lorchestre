@@ -13,6 +13,15 @@
 	import '@fontsource/poppins/700.css';
 	import '@fontsource/poppins/800.css';
 	import '@fontsource/poppins/900.css';
+	// import '@fontsource/poppins/100-italic.css';
+	// import '@fontsource/poppins/200-italic.css';
+	// import '@fontsource/poppins/300-italic.css';
+	// import '@fontsource/poppins/400-italic.css';
+	// import '@fontsource/poppins/500-italic.css';
+	// import '@fontsource/poppins/600-italic.css';
+	// import '@fontsource/poppins/700-italic.css';
+	// import '@fontsource/poppins/800-italic.css';
+	// import '@fontsource/poppins/900-italic.css';
 
 	import '@fontsource-variable/inter';
 
@@ -39,9 +48,11 @@
 	import List from '$lib/playlist.svelte';
 	import AlbumPageData from '$lib/album.svelte';
 	import AppConfig from '$lib/config.svelte';
+	import SearchSupervisor from '$lib/search.svelte';
 	import { browser, dev } from '$app/environment';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
+
 	setContext<AppConfig>('appconf', new AppConfig(data.config, data.default_config));
 	setContext<Manager>('manager', new Manager());
 	setContext<Ctx>('ctx', new Ctx());
@@ -51,6 +62,7 @@
 	setContext<FilterQuery>('filterq', new FilterQuery());
 	setContext<List>('list', new List());
 	setContext<AlbumPageData>('apd', new AlbumPageData());
+	setContext<SearchSupervisor>('ss', new SearchSupervisor());
 
 	if (browser) {
 		if (!dev) {
@@ -104,6 +116,7 @@
 		flex-shrink: 0; /* Prevents shrinking of the navigation section */
 		border-right: 1px solid rgba(100, 100, 100, 0.18);
 		background: var(--bg);
+		z-index: var(--header-z-index);
 	}
 
 	.__content {
@@ -121,12 +134,13 @@
 
 	header {
 		position: fixed;
-		z-index: 10;
+		z-index: var(--header-z-index);
 		width: calc(100% - 270px);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		gap: 1em;
+		height: fit-content;
 		border-bottom: 1px solid rgba(100, 100, 100, 0.18);
 	}
 

@@ -148,10 +148,6 @@
 		height: 0.5em;
 	}
 
-	.slider[data-style='minimal'] {
-		border-radius: 0px;
-	}
-
 	.hitbox {
 		height: 100%;
 		width: var(--pos);
@@ -160,10 +156,6 @@
 		left: 0;
 		background-color: var(--v-color);
 		border-radius: 1em;
-	}
-
-	.slider[data-style='minimal'] .hitbox {
-		border-radius: 0px;
 	}
 
 	.handle {
@@ -191,15 +183,12 @@
 
 	.slider[data-style='minimal'] .handle {
 		opacity: 0;
-		top: -200%;
 		width: 5px;
+		height: 0.2em;
+		bottom: 0;
 		border-radius: 1px;
 		left: calc(var(--pos) - 2.5px);
 		transition: opacity 0.1s ease-in-out;
-	}
-
-	.slider[data-style='minimal']:hover .handle {
-		opacity: 1;
 	}
 
 	.slider[data-style='minimal'].isDragging:hover .handle {

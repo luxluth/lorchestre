@@ -9,9 +9,12 @@
 	import { getContext } from 'svelte';
 	import type MediaState from '$lib/media.svelte';
 	import List from 'lucide-svelte/icons/list';
+	import type SearchSupervisor from '$lib/search.svelte';
+	import { goto } from '$app/navigation';
 
 	let media = getContext<MediaState>('media');
 	let list = getContext<List>('list');
+	let search = getContext<SearchSupervisor>('ss');
 </script>
 
 <div class="nav ns" style="--top-by: {platform === 'macos' ? '1em' : '1em'}">
@@ -19,7 +22,17 @@
 	<!-- 	<div class="dragzone" data-tauri-drag-region></div> -->
 	<!-- {/if} -->
 	<section class="search">
-		<input type="search" name="search" placeholder={$_('search')} />
+		<input
+			type="search"
+			name="search"
+			placeholder={$_('search')}
+			bind:value={search.query}
+			onkeydown={(e) => {
+				if (e.key.toLowerCase() === 'enter') {
+					goto('/search');
+				}
+			}}
+		/>
 		<a href="/stats" class:active={pathId == '/stats'}>
 			<Flame size={'1em'} />
 		</a>

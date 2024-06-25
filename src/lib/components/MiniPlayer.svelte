@@ -99,7 +99,7 @@
 					manager.currentTrack.album_id,
 					manager.currentTrack.cover_ext,
 					config,
-					50
+					70
 				)});"
 			>
 				<div
@@ -200,7 +200,6 @@
 <style>
 	.mp {
 		width: 100%;
-		height: 5em;
 		padding: 0.3em;
 		display: flex;
 		gap: 1em;
@@ -275,10 +274,13 @@
 	.player,
 	.player_shell {
 		width: 27vw;
-		border-radius: 3px;
+		height: 3.5em;
+		padding: 0.2em;
+		border-radius: 6px;
 		overflow: hidden;
 		border: 1px solid rgba(100, 100, 100, 0.18);
 		display: flex;
+		gap: 1em;
 		align-items: center;
 	}
 
@@ -294,6 +296,8 @@
 
 	.cover,
 	.fakecover {
+		border-radius: 4px;
+		overflow: hidden;
 		position: relative;
 	}
 
