@@ -73,7 +73,7 @@
 		onfinalize={handleDndFinalizeColumns}
 	>
 		{#if manager.queue.length > 0}
-			{#each manager.queue as track (track.uuid + track.id)}
+			{#each manager.queue as track (track.id)}
 				<div
 					class="track ns"
 					role="button"

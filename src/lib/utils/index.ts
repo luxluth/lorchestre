@@ -69,7 +69,7 @@ export function getAudioUri(path: string, config: AppConfig) {
 export function toQueueTrack(track: Track): QueueTrack {
 	return {
 		...track,
-		uuid: crypto.randomUUID()
+		id: crypto.randomUUID()
 	};
 }
 

@@ -49,7 +49,7 @@ export default class Manager {
 	}
 
 	async play(track: Track | QueueTrack) {
-		if (typeof (track as QueueTrack)['uuid'] !== 'undefined') {
+		if (typeof (track as QueueTrack)['id'] !== 'undefined') {
 			await this.onplay?.(track as QueueTrack);
 		} else {
 			this.clearQueue();
@@ -117,8 +117,7 @@ export default class Manager {
 						file_path: t.file_path,
 						duration: t.duration,
 						bitrate: t.bitrate,
-						id: t.id,
-						uuid: t.uuid
+						id: t.id
 					} as const;
 				});
 				this.queue = this.shuffle(this.queue);
@@ -167,7 +166,7 @@ export default class Manager {
 	}
 
 	async shiftTo(t: QueueTrack, play = true) {
-		let id = this.queue.findIndex((tr) => tr.id == t.id && tr.uuid == t.uuid);
+		let id = this.queue.findIndex((tr) => tr.id == t.id);
 		// console.log('shift-to', id, this.queue.length, t);
 		if (id >= 0) {
 			const track = this.queue[id];
@@ -178,7 +177,7 @@ export default class Manager {
 	}
 
 	remove(track: QueueTrack) {
-		this.queue = this.queue.filter((t) => t.id !== track.id && t.uuid !== track.uuid);
+		this.queue = this.queue.filter((t) => t.id !== track.id);
 	}
 
 	addToQueue(track: Track, mode = QueueAddMode.Bottom) {

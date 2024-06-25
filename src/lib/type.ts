@@ -70,7 +70,7 @@ export type Track = {
 };
 
 export type QueueTrack = Track & {
-	uuid: string;
+	id: string;
 };
 
 export type Playlist = {
