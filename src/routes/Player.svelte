@@ -221,17 +221,16 @@
 	{#if blurActive}
 		<div class="background-images">
 			{#each layers as _, index}
-				<div
-					class:front={index === 0}
-					class:back={index === 1}
-					class:back_center={index === 2}
-					style="
-	         background-image: url({getCoverUri(
-						manager.currentTrack?.album_id as string,
-						manager.currentTrack?.cover_ext as string,
-						config
-					)});"
-				></div>
+				<div class:front={index === 0} class:back={index === 1} class:back_center={index === 2}>
+					<img
+						src={getCoverUri(
+							manager.currentTrack?.album_id as string,
+							manager.currentTrack?.cover_ext as string,
+							config
+						)}
+						alt=""
+					/>
+				</div>
 			{/each}
 		</div>
 	{/if}
@@ -472,6 +471,7 @@
 		left: 0;
 		z-index: -2;
 		overflow: hidden;
+		filter: brightness(var(--brightness)) blur(64px);
 	}
 
 	div.front {
@@ -499,12 +499,16 @@
 	.__player .background-images > div {
 		animation: rot 35s linear infinite;
 		border-radius: 100em;
-		filter: blur(64px) brightness(var(--brightness));
 		position: absolute;
 		width: 200%;
 		height: 200%;
 		object-fit: cover;
 		background-size: cover;
+	}
+
+	.__player .background-images > div img {
+		width: 100%;
+		height: 100%;
 	}
 
 	@keyframes rot {
