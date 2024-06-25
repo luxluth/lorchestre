@@ -1,6 +1,8 @@
 ![banner](./assets/banner.svg)
 
-*The only music player you'll ever need*
+_The only music player you'll ever need_
+
+![Grande Vue](./assets/grande-vue.png)
 
 ## TODO
 
