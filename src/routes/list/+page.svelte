@@ -208,7 +208,7 @@
 				2}px"
 		>
 			{#each applyFilters(list.activeList.tracks) as song, i}
-				<Song {song} {i} {ctx} {manager} />
+				<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} />
 			{/each}
 		</div>
 	{/if}

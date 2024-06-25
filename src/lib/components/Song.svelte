@@ -67,7 +67,19 @@
 		ctx.items = items;
 		ctx.visible = true;
 	}
-	let { song, i, ctx, manager }: { song: Track; i: number; ctx: Ctx; manager: Manager } = $props();
+
+	let {
+		song,
+		i,
+		ctx,
+		manager,
+		searchq = $bindable()
+	}: { song: Track; i: number; ctx: Ctx; manager: Manager; searchq: string } = $props();
+
+	function replaceTextWithMarker(text: string) {
+		const regex = new RegExp(searchq, 'gi');
+		return text.replaceAll(regex, (match) => `<mark>${match}</mark>`);
+	}
 </script>
 
 <div
@@ -109,16 +121,24 @@
 		</button>
 	</div>
 	<div class="title-part" aria-colindex="2" role="gridcell">
-		<h4 class="title">{trim(song.title, 30)}</h4>
+		<h4 class="title">{@html replaceTextWithMarker(trim(song.title, 30))}</h4>
 	</div>
-	<div class="artist" aria-colindex="3" role="gridcell">{trim(song.artists.join(', '))}</div>
+	<div class="artist" aria-colindex="3" role="gridcell">
+		{@html replaceTextWithMarker(trim(song.artists.join(', ')))}
+	</div>
 	<div class="album" aria-colindex="4" role="gridcell">
-		<a href="/album/{song.album_id}">{trim(song.album)}</a>
+		<a href="/album/{song.album_id}">{@html replaceTextWithMarker(trim(song.album))}</a>
 	</div>
 	<div class="duration" aria-colindex="5" role="gridcell">{formatTime(song.duration)}</div>
 </div>
 
 <style>
+	:global(mark) {
+		background-color: #1e90ff;
+		color: var(--bg);
+		border-radius: 3px;
+	}
+
 	.track {
 		display: grid;
 		grid-template-columns:
