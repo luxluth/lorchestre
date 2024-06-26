@@ -78,3 +78,14 @@ export function setTitle(text: string) {
 		await getCurrent().setTitle(text);
 	})();
 }
+
+export function recordToMap<V>(record: Record<string, V>): Map<string, V> {
+	const map = new Map<string, V>();
+
+	for (const [key, value] of Object.entries(record)) {
+		// Step 4: Add entries to the Map
+		map.set(key, value);
+	}
+
+	return map;
+}

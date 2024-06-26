@@ -21,12 +21,25 @@
 	import ListStart from 'lucide-svelte/icons/list-start';
 	import { browser } from '$app/environment';
 	import type AppConfig from '$lib/config.svelte';
+	import type MediaState from '$lib/media.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	let manager = getContext<Manager>('manager');
+	let media = getContext<MediaState>('media');
+
+	function getTracks(album: Album) {
+		let tracks = [];
+		for (const path of album.tracks) {
+			let track = media.getTrack(path);
+			if (track) tracks.push(track);
+		}
+
+		return tracks;
+	}
+
 	const album = data.album;
-	const tracks = album ? sortTracks(album.tracks) : [];
+	const tracks = album ? sortTracks(getTracks(album)) : [];
 	let ctx = getContext<Ctx>('ctx');
 	let config = getContext<AppConfig>('appconf');
 
@@ -78,11 +91,16 @@
 		ctx.visible = true;
 	}
 
+	function getTrack(path: string) {
+		return media.getTrack(path) as Track;
+	}
+
 	async function playAlbum() {
 		manager.queue = [];
-		let track = (album as Album).tracks[0];
+		let track = tracks[0];
 		await manager.play(track);
 		let toAddToTheQue = [...tracks];
+		console.log(toAddToTheQue);
 		toAddToTheQue.shift();
 		manager.addManyToQueue(toAddToTheQue);
 	}
@@ -100,11 +118,11 @@
 	<section class="head ns">
 		<div
 			class="cover"
-			style="--clr: {album.tracks[0].color
-				? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
+			style="--clr: {getTrack(album.tracks[0])
+				? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
 				: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
 				album.id,
-				album.tracks[0].cover_ext,
+				getTrack(album.tracks[0]).cover_ext,
 				config
 			)}');"
 		>

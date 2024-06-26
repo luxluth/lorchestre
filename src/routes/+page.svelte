@@ -2,6 +2,7 @@
 	import {
 		ContextMenuItemType,
 		QueueAddMode,
+		type Album,
 		type ContextMenuEvent,
 		type ContextMenuItem,
 		type Track
@@ -41,6 +42,7 @@
 				action: async (_data: any) => {
 					let firstTrack = sortedTracks.shift() as Track;
 					manager.queue = [];
+					// TODO: sort by track no
 					manager.addManyToQueue(sortedTracks);
 					await manager.play(firstTrack);
 				},
@@ -50,6 +52,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
+					// TODO: sort by track no
 					manager.addManyToQueue(sortedTracks, QueueAddMode.Top);
 				},
 				label: $_('ctx.top_of_q'),
@@ -58,6 +61,7 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
+					// TODO: sort by track no
 					manager.addManyToQueue(sortedTracks);
 				},
 				label: $_('ctx.inqueue'),
@@ -73,6 +77,20 @@
 	$effect(() => {
 		setTitle(`L'orchestre -- ${$_('albums').toLowerCase()}`);
 	});
+
+	function getTrack(path: string) {
+		return media.getTrack(path) as Track;
+	}
+
+	function getTracks(album: Album) {
+		let tracks = [];
+		for (const path of album.tracks) {
+			let track = media.getTrack(path);
+			if (track) tracks.push(track);
+		}
+
+		return tracks;
+	}
 </script>
 
 <h1 class="__page_title ns">{$_('albums')}</h1>
@@ -86,18 +104,18 @@
 				href="/album/{album.id}"
 				oncontextmenu={(e) => {
 					e.preventDefault();
-					showContext(e, album.tracks);
+					showContext(e, getTracks(album));
 				}}
 			>
 				<div
 					class="cover"
-					style="--clr: {album.tracks[0].color
-						? `rgb(${album.tracks[0].color.r}, ${album.tracks[0].color.g}, ${album.tracks[0].color.b})`
+					style="--clr: {getTrack(album.tracks[0])
+						? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
 						: 'rgb(255, 255, 255)'};"
 				>
 					<img
 						class="ns"
-						src={getCoverUri(album.id, album.tracks[0].cover_ext, config, 300)}
+						src={getCoverUri(album.id, getTrack(album.tracks[0]).cover_ext, config, 300)}
 						alt=""
 						loading="lazy"
 					/>

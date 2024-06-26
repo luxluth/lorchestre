@@ -1,4 +1,3 @@
-use crate::Track;
 use std::{
     fs::File,
     io::Read,
@@ -10,25 +9,13 @@ pub struct M3U8;
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Playlist {
     pub name: String,
-    pub tracks: Vec<Track>,
+    pub tracks: Vec<PathBuf>,
     pub path: String,
     pub id: String,
 }
 
-impl Playlist {
-    pub fn get_song(&self, path: &String) -> Option<Track> {
-        for track in &self.tracks {
-            if track.file_path == path.clone() {
-                return Some(track.clone());
-            }
-        }
-
-        None
-    }
-}
-
 impl M3U8 {
-    pub fn parse(covers_dir: &PathBuf, path: PathBuf) -> Playlist {
+    pub fn parse(path: PathBuf) -> Playlist {
         let p = path.clone();
         let name = p.file_stem().unwrap().to_str().unwrap_or("@UNKNOWN@");
         let mut text = String::new();
@@ -43,7 +30,6 @@ impl M3U8 {
                 .filter(|x| !x.is_empty() && !x.starts_with('#'))
                 .map(|x| Path::new(x).to_path_buf())
                 .filter(|p| p.exists())
-                .map(|inode| Track::from_file(covers_dir, inode))
                 .collect(),
             id: String::new(),
         };

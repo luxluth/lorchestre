@@ -23,7 +23,7 @@
 	let adp = getContext<AlbumPageData>('apd');
 
 	async function playAll() {
-		let songs = applyFilters(list.activeList?.tracks ?? []);
+		let songs = applyFilters(list.tracks);
 		let song = songs.shift() as Track;
 		manager.play(song);
 		manager.clearQueue();
@@ -31,7 +31,7 @@
 	}
 
 	async function playAllShuffle() {
-		let songs = applyFilters(list.activeList?.tracks ?? []);
+		let songs = applyFilters(list.tracks);
 		await manager.shufflePlay(songs);
 	}
 
@@ -207,7 +207,7 @@
 				16) /
 				2}px"
 		>
-			{#each applyFilters(list.activeList.tracks) as song, i}
+			{#each applyFilters(list.tracks) as song, i}
 				<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} />
 			{/each}
 		</div>

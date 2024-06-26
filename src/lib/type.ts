@@ -40,7 +40,7 @@ type u64 = number;
 export type Album = {
 	name: string;
 	artist: string;
-	tracks: Track[];
+	tracks: string[];
 	year?: u32;
 	id: string;
 };
@@ -75,12 +75,13 @@ export type QueueTrack = Track & {
 
 export type Playlist = {
 	name: string;
-	tracks: Track[];
+	tracks: string[];
 	path: string;
 	id: string;
 };
 
 export type Media = {
+	tracks: Record<string, Track>;
 	albums: Album[];
 	playlists: Playlist[];
 };
