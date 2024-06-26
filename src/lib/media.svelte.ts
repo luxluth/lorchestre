@@ -3,10 +3,12 @@ import { io } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type AppConfig from './config.svelte';
 import { listen } from '@tauri-apps/api/event';
+import { recordToMap } from './utils';
 
 export default class MediaState {
 	albums: Album[] = $state([]);
 	playlists: Playlist[] = $state([]);
+	tracks: Map<string, Track> = $state(new Map());
 	loaded = $state(false);
 	loading = $state(false);
 	loading_data = $state('');
@@ -22,6 +24,7 @@ export default class MediaState {
 		let media = (await (await fetch(`http://${endpoint}/media`)).json()) as Media;
 		this.albums = media.albums;
 		this.playlists = media.playlists;
+		this.tracks = recordToMap(media.tracks);
 		this.loaded = true;
 
 		await listen('startsync', () => {
@@ -37,6 +40,7 @@ export default class MediaState {
 			socket.on('newmedia', (media: Media) => {
 				this.albums = media.albums;
 				this.playlists = media.playlists;
+				this.tracks = recordToMap(media.tracks);
 			});
 		} catch (e) {
 			console.log(e);
@@ -56,13 +60,15 @@ export default class MediaState {
 
 	getSongs() {
 		let songs: Track[] = [];
-		this.albums.forEach((album) => {
-			album.tracks.forEach((song) => {
-				songs.push(song);
-			});
-		});
+		for (const [_, t] of this.tracks) {
+			songs.push(t);
+		}
 
 		return songs;
+	}
+
+	getTrack(path: string) {
+		return this.tracks.get(path);
 	}
 
 	getAlbum(id: string) {

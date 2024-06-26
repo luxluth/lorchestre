@@ -53,14 +53,16 @@
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
+	const media = new MediaState();
+
 	setContext<AppConfig>('appconf', new AppConfig(data.config, data.default_config));
 	setContext<Manager>('manager', new Manager());
 	setContext<Ctx>('ctx', new Ctx());
 	setContext<Cmds>('cmds', new Cmds());
 	setContext<LrcManager>('lm', new LrcManager(0, []));
-	setContext<MediaState>('media', new MediaState());
 	setContext<FilterQuery>('filterq', new FilterQuery());
-	setContext<List>('list', new List());
+	setContext<List>('list', new List(media));
+	setContext<MediaState>('media', media);
 	setContext<AlbumPageData>('apd', new AlbumPageData());
 	setContext<SearchSupervisor>('ss', new SearchSupervisor());
 

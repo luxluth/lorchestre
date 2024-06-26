@@ -1,5 +1,4 @@
 pub mod m3u8;
-
 use color_thief::ColorFormat;
 use glob::glob;
 use lofty::picture::{MimeType, PictureType};
@@ -47,24 +46,14 @@ impl Color {
 pub struct Album {
     pub name: String,
     pub artist: String,
-    pub tracks: Vec<Track>,
+    pub tracks: Vec<PathBuf>,
     pub year: Option<u32>,
     pub id: String,
 }
 
 impl Album {
-    pub fn remove_track(&mut self, path: String) {
-        self.tracks.retain(|x| x.file_path != path);
-    }
-
-    pub fn get_song(&self, path: &String) -> Option<Track> {
-        for track in &self.tracks {
-            if track.file_path == path.clone() {
-                return Some(track.clone());
-            }
-        }
-
-        None
+    pub fn remove_track(&mut self, path: PathBuf) {
+        self.tracks.retain(|x| *x != path);
     }
 }
 
@@ -277,8 +266,11 @@ pub struct Songs {
     pub audios: Vec<Track>,
 }
 
+pub type TrackCollection = HashMap<PathBuf, Track>;
+
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Media {
+    pub tracks: TrackCollection,
     pub albums: Vec<Album>,
     pub playlists: Vec<Playlist>,
 }
@@ -286,6 +278,7 @@ pub struct Media {
 impl Media {
     pub fn new(songs: Songs) -> Self {
         Self {
+            tracks: songs.into_collection(),
             albums: songs.get_albums(),
             playlists: vec![],
         }
@@ -300,12 +293,16 @@ impl Media {
         let mut inserted = false;
         for album in &mut self.albums {
             if song.album_id == album.id {
-                album.tracks.push(song.clone());
+                album.tracks.push(PathBuf::from(&song.file_path));
+                self.tracks
+                    .insert(PathBuf::from(song.file_path.clone()), song.clone());
                 inserted = true;
                 break;
             }
         }
         if !inserted {
+            self.tracks
+                .insert(PathBuf::from(song.file_path.clone()), song.clone());
             let albums = Songs { audios: vec![song] }.get_albums();
             self.albums.extend(albums);
         }
@@ -314,7 +311,7 @@ impl Media {
     pub fn add_media(&mut self, path: PathBuf, covers_dir: &PathBuf) {
         let ext = path.extension().unwrap().to_str().unwrap();
         if ext == "m3u8" {
-            self.add_playlist(m3u8::M3U8::parse(covers_dir, path));
+            self.add_playlist(m3u8::M3U8::parse(path));
         } else {
             self.add_song(Track::from_file(covers_dir, path));
         }
@@ -341,11 +338,11 @@ impl Media {
     }
 
     pub fn remove_song(&mut self, path: PathBuf) {
-        let string_path = format!("{}", path.display());
         for album in &mut self.albums {
-            album.remove_track(string_path.clone());
+            album.remove_track(path.clone());
         }
 
+        self.tracks.remove_entry(&path);
         self.albums.retain(|x| !x.tracks.is_empty());
     }
 
@@ -366,22 +363,15 @@ impl Media {
     }
 
     pub fn get_song(&self, path: &String) -> Option<Track> {
-        for album in &self.albums {
-            let res = album.get_song(path);
-            if res.is_some() {
-                return res;
-            }
-        }
-
-        for playlist in &self.playlists {
-            let res = playlist.get_song(path);
-            if res.is_some() {
-                return res;
-            }
-        }
-
-        None
+        self.tracks.get(&PathBuf::from(path)).cloned()
     }
+}
+
+// Struct to hold search results
+pub struct SearchResults {
+    pub albums: Vec<Album>,
+    pub playlists: Vec<Playlist>,
+    pub tracks: Vec<Track>,
 }
 
 impl Songs {
@@ -405,12 +395,21 @@ impl Songs {
                         .unwrap_or(&"@UNKNOWN@".to_string()),
                 )),
                 year: v[0].album_year,
-                tracks: v,
+                tracks: v.into_iter().map(|x| PathBuf::from(x.file_path)).collect(),
                 id: k,
             });
         }
 
         albums
+    }
+
+    pub fn into_collection(&self) -> TrackCollection {
+        let mut map = TrackCollection::new();
+        for audio in &self.audios {
+            map.insert(PathBuf::from(audio.file_path.clone()), audio.clone());
+        }
+
+        map
     }
 }
 

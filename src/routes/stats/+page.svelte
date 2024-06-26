@@ -3,7 +3,7 @@
 	import type MediaState from '$lib/media.svelte';
 	import type { Track } from '$lib/type';
 	import { tweened } from 'svelte/motion';
-	import { cubicOut, quartInOut } from 'svelte/easing';
+	import { quartInOut } from 'svelte/easing';
 
 	import { formatTime, getCoverUri, setTitle } from '$lib/utils';
 	import { getContext } from 'svelte';
