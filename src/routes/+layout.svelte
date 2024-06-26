@@ -53,7 +53,8 @@
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
-	const media = new MediaState();
+	const search = new SearchSupervisor();
+	const media = new MediaState(search);
 
 	setContext<AppConfig>('appconf', new AppConfig(data.config, data.default_config));
 	setContext<Manager>('manager', new Manager());
@@ -64,7 +65,7 @@
 	setContext<List>('list', new List(media));
 	setContext<MediaState>('media', media);
 	setContext<AlbumPageData>('apd', new AlbumPageData());
-	setContext<SearchSupervisor>('ss', new SearchSupervisor());
+	setContext<SearchSupervisor>('ss', search);
 
 	if (browser) {
 		if (!dev) {

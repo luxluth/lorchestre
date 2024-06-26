@@ -27,8 +27,12 @@
 			name="search"
 			placeholder={$_('search')}
 			bind:value={search.query}
+			onkeyup={() => {
+				search.search();
+			}}
 			onkeydown={(e) => {
 				if (e.key.toLowerCase() === 'enter') {
+					search.search();
 					goto('/search');
 				}
 			}}

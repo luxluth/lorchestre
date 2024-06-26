@@ -86,6 +86,12 @@ export type Media = {
 	playlists: Playlist[];
 };
 
+export type SearchResults = {
+	albums: Array<Album>;
+	playlists: Array<Playlist>;
+	tracks: Array<Track>;
+};
+
 export type Line = {
 	startTime: number;
 	endTime: number;

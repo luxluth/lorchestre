@@ -42,7 +42,6 @@
 				action: async (_data: any) => {
 					let firstTrack = sortedTracks.shift() as Track;
 					manager.queue = [];
-					// TODO: sort by track no
 					manager.addManyToQueue(sortedTracks);
 					await manager.play(firstTrack);
 				},
@@ -52,7 +51,6 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					// TODO: sort by track no
 					manager.addManyToQueue(sortedTracks, QueueAddMode.Top);
 				},
 				label: $_('ctx.top_of_q'),
@@ -61,7 +59,6 @@
 			{
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
-					// TODO: sort by track no
 					manager.addManyToQueue(sortedTracks);
 				},
 				label: $_('ctx.inqueue'),

@@ -30,7 +30,7 @@
 		</Checkbox.Root>
 
 		<Label.Root id="setting-desc" for="blur" class="label">
-			Activer ou désactiver l'effet de flou sur la grande vue
+			{$_('settings_page.section_ui_ux.blur')}
 		</Label.Root>
 	</div>
 </section>

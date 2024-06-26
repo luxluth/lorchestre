@@ -8,9 +8,15 @@
 	"no_media": "No song currently playing",
 	"indexing_msg": "Indexing local files...",
 	"playlist": "Playlist",
+	"playlists": "Playlists",
 	"no_playlist_found": "No playlist found",
+	"search_page": {
+		"res_msg": "Result for the term",
+		"no_ipt": "Start typing to search...",
+		"no_res": "No results"
+	},
 	"ctx": {
-		"play": "Start playing",
+		"play": "Play",
 		"inqueue": "Add to queue",
 		"top_of_q": "Add to top of queue"
 	},
@@ -37,17 +43,18 @@
 		"section_ui_ux": {
 			"title": "Interface",
 			"language": {
-				"title": "Interface Language"
+				"title": "Interface language"
 			},
 			"theme": {
-				"title": "Application Appearance"
-			}
+				"title": "Application appearance"
+			},
+			"blur": "Enable or disable blur effect on large view"
 		},
 		"section_mlib": {
-			"title": "Music Library",
+			"title": "Library management",
 			"sync": {
-				"title": "Sync the music library with local files",
-				"sync_btn": "Start the sync"
+				"title": "Synchronize library with local files",
+				"sync_btn": "Start synchronization"
 			}
 		}
 	},

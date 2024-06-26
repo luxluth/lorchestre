@@ -8,7 +8,13 @@
 	"no_media": "Aucune chanson en cours de lecture",
 	"indexing_msg": "Indexation des fichiers locaux...",
 	"playlist": "Liste de lecture",
+	"playlists": "Listes de lecture",
 	"no_playlist_found": "Aucune liste de lecture trouvée",
+	"search_page": {
+		"res_msg": "Résultat pour le terme",
+		"no_ipt": "Commencer à écrire pour chercher...",
+		"no_res": "Aucun résultat"
+	},
 	"ctx": {
 		"play": "Lancer la lecture",
 		"inqueue": "Ajouter la file d'attente",
@@ -41,7 +47,8 @@
 			},
 			"theme": {
 				"title": "Apparence de l'application"
-			}
+			},
+			"blur": "Activer ou désactiver l'effet de flou sur la grande vue"
 		},
 		"section_mlib": {
 			"title": "Gestion de la librarie",

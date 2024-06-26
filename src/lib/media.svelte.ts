@@ -4,6 +4,7 @@ import { getContext } from 'svelte';
 import type AppConfig from './config.svelte';
 import { listen } from '@tauri-apps/api/event';
 import { recordToMap } from './utils';
+import type SearchSupervisor from './search.svelte';
 
 export default class MediaState {
 	albums: Album[] = $state([]);
@@ -15,8 +16,11 @@ export default class MediaState {
 	files_count = $state(100);
 	treatedFilesCount = $state(0);
 	updatingmedia = $state(false);
+	search: SearchSupervisor;
 
-	constructor() {}
+	constructor(search: SearchSupervisor) {
+		this.search = search;
+	}
 
 	async load() {
 		let config = getContext<AppConfig>('appconf');
@@ -37,13 +41,16 @@ export default class MediaState {
 
 		try {
 			const socket = io(`ws://${endpoint}`);
+			if (!this.search.initialized) {
+				this.search.init(socket);
+			}
 			socket.on('newmedia', (media: Media) => {
 				this.albums = media.albums;
 				this.playlists = media.playlists;
 				this.tracks = recordToMap(media.tracks);
 			});
 		} catch (e) {
-			console.log(e);
+			console.warn(e);
 		}
 	}
 

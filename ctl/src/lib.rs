@@ -284,6 +284,55 @@ impl Media {
         }
     }
 
+    pub fn search(&self, query: &str) -> SearchResults {
+        let query_lower = query.to_lowercase();
+
+        let tracks: Vec<Track> = self
+            .tracks
+            .values()
+            .filter(|track| {
+                track.title.to_lowercase().contains(&query_lower)
+                    || track
+                        .artists
+                        .iter()
+                        .any(|artist| artist.to_lowercase().contains(&query_lower))
+                    || track.album.to_lowercase().contains(&query_lower)
+                    || track
+                        .album_artist
+                        .as_ref()
+                        .map_or(false, |artist| artist.to_lowercase().contains(&query_lower))
+                    || track
+                        .lyrics
+                        .iter()
+                        .any(|lyric| lyric.text.to_lowercase().contains(&query_lower))
+            })
+            .cloned()
+            .collect();
+
+        let albums: Vec<Album> = self
+            .albums
+            .iter()
+            .filter(|album| {
+                album.name.to_lowercase().contains(&query_lower)
+                    || album.artist.to_lowercase().contains(&query_lower)
+            })
+            .cloned()
+            .collect();
+
+        let playlists: Vec<Playlist> = self
+            .playlists
+            .iter()
+            .filter(|playlist| playlist.name.to_lowercase().contains(&query_lower))
+            .cloned()
+            .collect();
+
+        SearchResults {
+            albums,
+            playlists,
+            tracks,
+        }
+    }
+
     pub fn swap_with(&mut self, media: Media) {
         self.albums = media.albums;
         self.tracks = media.tracks;
@@ -368,7 +417,7 @@ impl Media {
     }
 }
 
-// Struct to hold search results
+#[derive(serde::Serialize, Debug)]
 pub struct SearchResults {
     pub albums: Vec<Album>,
     pub playlists: Vec<Playlist>,

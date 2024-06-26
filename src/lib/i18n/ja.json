@@ -1,53 +1,60 @@
 {
-	"bib": "図書館",
+	"bib": "ライブラリ",
 	"search": "検索",
 	"recent-added": "最近追加されたもの",
 	"albums": "アルバム",
 	"settings": "設定",
 	"songs": "曲",
-	"no_media": "再生中の曲がありません",
-	"indexing_msg": "ローカルファイルをインデックスしています...",
+	"no_media": "再生中の曲はありません",
+	"indexing_msg": "ローカルファイルをインデックス中...",
 	"playlist": "プレイリスト",
+	"playlists": "プレイリスト",
 	"no_playlist_found": "プレイリストが見つかりません",
+	"search_page": {
+		"res_msg": "検索結果",
+		"no_ipt": "検索を開始するには入力してください...",
+		"no_res": "結果がありません"
+	},
 	"ctx": {
-		"play": "再生を開始",
+		"play": "再生する",
 		"inqueue": "キューに追加",
-		"top_of_q": "キューの先頭に追加"
+		"top_of_q": "キューのトップに追加"
 	},
 	"cmds": {
 		"lrc": {
 			"empty": "表示する歌詞がありません"
 		},
 		"waitlist": {
-			"title": "待機リスト",
-			"empty": "待機リストに曲がありません",
+			"title": "キュー",
+			"empty": "キューに曲がありません",
 			"clear_queue": "クリア"
 		}
 	},
 	"album": {
 		"page": {
-			"songs": "曲",
+			"songs": "トラック",
 			"ctx": {
 				"add_queue": "キューに追加"
 			}
 		}
 	},
 	"settings_page": {
-		"tip_top": "アプリの設定を管理",
+		"tip_top": "アプリケーションの設定を管理する",
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
 				"title": "インターフェースの言語"
 			},
 			"theme": {
-				"title": "アプリの外観"
-			}
+				"title": "アプリケーションの外観"
+			},
+			"blur": "大きなビューのぼかし効果を有効または無効にする"
 		},
 		"section_mlib": {
 			"title": "ライブラリ管理",
 			"sync": {
-				"title": "ローカルファイルとライブラリを同期",
-				"sync_btn": "同期開始"
+				"title": "ローカルファイルとライブラリを同期する",
+				"sync_btn": "同期を開始"
 			}
 		}
 	},
@@ -56,8 +63,8 @@
 		"shuffle": "シャッフル",
 
 		"filter": {
-			"filter_to_apply": "適用するフィルター",
-			"sort_order": "並び順",
+			"filter_to_apply": "適用するフィルタ",
+			"sort_order": "並び替え順序",
 			"type": {
 				"alpha": "アルファベット順",
 				"date": "追加日"
@@ -70,13 +77,13 @@
 	},
 
 	"misc": {
-		"goto_album_page": "アルバムページに移動"
+		"goto_album_page": "アルバムに移動"
 	},
 
 	"stats_page": {
-		"total": "合計",
-		"song": "曲",
-		"songs": "曲",
+		"total": "合計で",
+		"song": "トラック",
+		"songs": "トラック",
 		"latest_add": "最新の追加は"
 	}
 }

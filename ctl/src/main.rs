@@ -14,7 +14,10 @@ use axum_range::{KnownSize, Ranged};
 use config::Dir;
 use image::io::Reader as ImageReader;
 use lorchestrectl::Media;
-use socketioxide::{extract::SocketRef, SocketIo};
+use socketioxide::{
+    extract::{Data, SocketRef},
+    SocketIo,
+};
 use std::io::{BufWriter, Cursor, Read};
 use std::sync::Arc;
 use tokio::fs::File;
@@ -31,8 +34,24 @@ struct AppData {
     io: SocketIo,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct SearchQuery {
+    q: String,
+}
+
 async fn on_connect(socket: SocketRef) {
     info!("socket connected: {}", socket.id);
+
+    socket.on(
+        "search",
+        |sock: SocketRef,
+         Data::<String>(q),
+         media: socketioxide::extract::State<Arc<RwLock<Media>>>| async move {
+            let m = media.read().await;
+            let res = m.search(&q);
+            let _ = sock.emit("searchresponse", res);
+        },
+    )
 }
 
 #[tokio::main]
@@ -56,7 +75,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let (layer, io) = SocketIo::new_layer();
+    let media_data = Arc::new(RwLock::new(m));
+
+    let (layer, io) = SocketIo::builder()
+        .with_state(Arc::clone(&media_data))
+        .build_layer();
     io.ns("/", on_connect);
 
     let app = Router::new()
@@ -67,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
         .with_state(AppData {
-            media: Arc::new(RwLock::new(m)),
+            media: media_data,
             dirs: dirs.clone(),
             io,
         })
