@@ -29,7 +29,7 @@ export default class SearchSupervisor {
 	}
 	search() {
 		if (this.socket) {
-			if (this.query.length >= 3) {
+			if (this.query.length >= 2) {
 				this.socket.emit('search', this.query);
 			} else {
 				this.results = {
