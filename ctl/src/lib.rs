@@ -286,6 +286,7 @@ impl Media {
 
     pub fn swap_with(&mut self, media: Media) {
         self.albums = media.albums;
+        self.tracks = media.tracks;
         self.playlists = media.playlists;
     }
 
