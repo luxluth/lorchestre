@@ -3,6 +3,9 @@ name = "lorchestrectl"
 version = "0.0.0"
 edition = "2021"
 
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
 [dependencies]
 axum = { version = "0.7.5", features = ["json"] }
 axum-extra = { version = "0.9.3", features = ["query"]}
