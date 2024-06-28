@@ -6,6 +6,8 @@ authors = ["luxluth"]
 edition = "2021"
 license = "GPL-3.0"
 
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
 
 [build-dependencies]
 tauri-build = { version = "2.0.0-beta", features = [] }
