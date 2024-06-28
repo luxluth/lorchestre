@@ -1,11 +1,7 @@
 <script lang="ts">
-	import type Ctx from '$lib/ctx.svelte';
-	import type Manager from '$lib/manager.svelte';
-	import type List from '$lib/playlist.svelte';
 	import { FilterOrder, FilterType, type Track } from '$lib/type';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
-	import { getContext } from 'svelte';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
 	import { Select } from 'bits-ui';
 	import Filter from 'lucide-svelte/icons/filter';
@@ -13,14 +9,15 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
-	import type AlbumPageData from '$lib/album.svelte';
 	import { setTitle } from '$lib/utils';
+	import { getManager } from '$lib/manager.svelte';
+	import { getList } from '$lib/playlist.svelte';
+	import { getCtx } from '$lib/ctx.svelte';
 
-	let list = getContext<List>('list');
-	let manager = getContext<Manager>('manager');
-	let ctx = getContext<Ctx>('ctx');
+	let list = getList();
+	let manager = getManager();
+	let ctx = getCtx();
 	let filterquery = list.filters;
-	let adp = getContext<AlbumPageData>('apd');
 
 	async function playAll() {
 		let songs = applyFilters(list.tracks);

@@ -1,5 +1,7 @@
 import { ToastKind, type ToastEvent } from './type';
 
+// FIXME: Convert this to a store
+
 export namespace toast {
 	export const SHOW_EV = '__toast::show';
 	export const CLOSE_EV = '__toast::close';

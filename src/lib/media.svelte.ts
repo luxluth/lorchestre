@@ -1,10 +1,10 @@
 import type { Album, Media, Playlist, Track } from './type';
 import { io } from 'socket.io-client';
-import { getContext } from 'svelte';
-import type AppConfig from './config.svelte';
+import { getContext, setContext } from 'svelte';
 import { listen } from '@tauri-apps/api/event';
 import { recordToMap } from './utils';
 import type SearchSupervisor from './search.svelte';
+import { getAppConfig } from './config.svelte';
 
 export default class MediaState {
 	albums: Album[] = $state([]);
@@ -23,7 +23,7 @@ export default class MediaState {
 	}
 
 	async load() {
-		let config = getContext<AppConfig>('appconf');
+		let config = getAppConfig();
 		const endpoint = config.getDaemonEndpoint();
 		let media = (await (await fetch(`http://${endpoint}/media`)).json()) as Media;
 		this.albums = media.albums;
@@ -81,4 +81,14 @@ export default class MediaState {
 	getAlbum(id: string) {
 		return this.albums.find((v) => v.id === id);
 	}
+}
+
+export const MEDIA_SYMBOL = Symbol('MEDIA');
+
+export function setMedia(s: SearchSupervisor) {
+	return setContext<MediaState>(MEDIA_SYMBOL, new MediaState(s));
+}
+
+export function getMedia() {
+	return getContext<ReturnType<typeof setMedia>>(MEDIA_SYMBOL);
 }

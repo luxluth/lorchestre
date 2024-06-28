@@ -1,19 +1,17 @@
 <script lang="ts">
-	import type Manager from '$lib/manager.svelte';
-	import type MediaState from '$lib/media.svelte';
 	import type { Track } from '$lib/type';
 	import { tweened } from 'svelte/motion';
 	import { quartInOut } from 'svelte/easing';
-
 	import { formatTime, getCoverUri, setTitle } from '$lib/utils';
-	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
-	import type AppConfig from '$lib/config.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
+	import { getMedia } from '$lib/media.svelte';
 
-	let manager = getContext<Manager>('manager');
-	let media = getContext<MediaState>('media');
-	let config = getContext<AppConfig>('appconf');
+	let manager = getManager();
+	let media = getMedia();
+	let config = getAppConfig();
 	let songLenght = tweened(0, {
 		duration: 700,
 		easing: quartInOut

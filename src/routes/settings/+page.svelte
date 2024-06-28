@@ -4,17 +4,16 @@
 	import Lang from './Lang.svelte';
 	import Refresh from './Refresh.svelte';
 	import Blur from './Blur.svelte';
-	import { getContext } from 'svelte';
-	import type AppConfig from '$lib/config.svelte';
 	import { setTitle } from '$lib/utils';
 
 	import banner from '$lib/assets/banner-bw.svg?raw';
 	import { browser } from '$app/environment';
 	import { invoke } from '@tauri-apps/api/core';
+	import { getAppConfig } from '$lib/config.svelte';
 
 	// import Github from 'lucide-svelte/icons/git-branch';
 
-	let appConf = getContext<AppConfig>('appconf');
+	let appConf = getAppConfig();
 	let version = $state('vx.x.x');
 
 	if (browser) {

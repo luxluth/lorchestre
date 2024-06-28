@@ -1,5 +1,6 @@
 import type { Socket } from 'socket.io-client';
 import type { SearchResults } from './type';
+import { getContext, setContext } from 'svelte';
 
 export default class SearchSupervisor {
 	query: string = $state('');
@@ -40,4 +41,14 @@ export default class SearchSupervisor {
 			}
 		}
 	}
+}
+
+export const SEARCH_SYMBOL = Symbol('SEARCH');
+
+export function setSearch() {
+	return setContext<SearchSupervisor>(SEARCH_SYMBOL, new SearchSupervisor());
+}
+
+export function getSearch() {
+	return getContext<ReturnType<typeof setSearch>>(SEARCH_SYMBOL);
 }

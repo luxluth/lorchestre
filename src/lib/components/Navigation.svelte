@@ -6,15 +6,15 @@
 
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 	import { _ } from 'svelte-i18n';
-	import { getContext } from 'svelte';
-	import type MediaState from '$lib/media.svelte';
 	import List from 'lucide-svelte/icons/list';
-	import type SearchSupervisor from '$lib/search.svelte';
 	import { goto } from '$app/navigation';
+	import { getMedia } from '$lib/media.svelte';
+	import { getList } from '$lib/playlist.svelte';
+	import { getSearch } from '$lib/search.svelte';
 
-	let media = getContext<MediaState>('media');
-	let list = getContext<List>('list');
-	let search = getContext<SearchSupervisor>('ss');
+	let media = getMedia();
+	let list = getList();
+	let search = getSearch();
 </script>
 
 <div class="nav ns" style="--top-by: {platform === 'macos' ? '1em' : '1em'}">

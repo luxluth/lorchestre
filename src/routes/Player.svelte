@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Slider from '$lib/components/Slider.svelte';
-	import LrcManager from '$lib/lrc.svelte';
+	import LrcManager, { getLrc } from '$lib/lrc.svelte';
 	import type Manager from '$lib/manager.svelte';
 	import { type QueueTrack } from '$lib/type';
 
@@ -17,10 +17,12 @@
 	import { getAudioUri, getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
 	import type AppConfig from '$lib/config.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
 
-	let manager = getContext<Manager>('manager');
-	let lrcMngr = getContext<LrcManager>('lm');
-	let config = getContext<AppConfig>('appconf');
+	let manager = getManager();
+	let lrcMngr = getLrc();
+	let config = getAppConfig();
 
 	let blurActive = $derived(
 		config.config.global?.enable_blur ?? config.defaults.global.enable_blur

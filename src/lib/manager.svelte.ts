@@ -1,3 +1,4 @@
+import { getContext, setContext } from 'svelte';
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
 import { toQueueTrack } from './utils';
 
@@ -235,4 +236,14 @@ export default class Manager {
 			}
 		}
 	}
+}
+
+export const MANAGER_SYMBOL = Symbol('MANAGER');
+
+export function setManager() {
+	return setContext<Manager>(MANAGER_SYMBOL, new Manager());
+}
+
+export function getManager() {
+	return getContext<ReturnType<typeof setManager>>(MANAGER_SYMBOL);
 }

@@ -1,12 +1,11 @@
 <script lang="ts">
 	import List from 'lucide-svelte/icons/list';
 	import MicVocal from 'lucide-svelte/icons/mic-vocal';
+	import { getManager } from '$lib/manager.svelte';
+	import { getCmds } from '$lib/commands.svelte';
 
-	import type Cmds from '$lib/commands.svelte';
-	import { getContext } from 'svelte';
-	import type Manager from '$lib/manager.svelte';
-	let cmds = getContext<Cmds>('cmds');
-	let manager = getContext<Manager>('manager');
+	let cmds = getCmds();
+	let manager = getManager();
 
 	type ToActivate = 'lrc' | 'queue';
 

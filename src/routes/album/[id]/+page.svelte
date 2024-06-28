@@ -14,19 +14,18 @@
 		type Album,
 		QueueAddMode
 	} from '$lib/type';
-	import type Ctx from '$lib/ctx.svelte';
-	import { getContext } from 'svelte';
-	import type Manager from '$lib/manager.svelte';
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
 	import { browser } from '$app/environment';
-	import type AppConfig from '$lib/config.svelte';
-	import type MediaState from '$lib/media.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getMedia } from '$lib/media.svelte';
+	import { getCtx } from '$lib/ctx.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
 
 	const { data }: { data: PageData } = $props();
 
-	let manager = getContext<Manager>('manager');
-	let media = getContext<MediaState>('media');
+	let manager = getManager();
+	let media = getMedia();
 
 	function getTracks(album: Album) {
 		let tracks = [];
@@ -40,8 +39,8 @@
 
 	const album = data.album;
 	const tracks = album ? sortTracks(getTracks(album)) : [];
-	let ctx = getContext<Ctx>('ctx');
-	let config = getContext<AppConfig>('appconf');
+	let ctx = getCtx();
+	let config = getAppConfig();
 
 	function sortTracks(t: Track[]) {
 		return t.sort((a, b) => a.track - b.track);

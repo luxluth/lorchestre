@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { getContext } from 'svelte';
-	import type MediaState from '$lib/media.svelte';
 	import FolderSync from 'lucide-svelte/icons/folder-sync';
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import { invoke } from '@tauri-apps/api/core';
+	import { getMedia } from '$lib/media.svelte';
 
-	let media = getContext<MediaState>('media');
+	let media = getMedia();
 </script>
 
 <section class="lang ns">

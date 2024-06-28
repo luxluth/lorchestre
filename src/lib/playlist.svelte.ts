@@ -1,3 +1,4 @@
+import { getContext, setContext } from 'svelte';
 import FilterQuery from './filterq.svelte';
 import type MediaState from './media.svelte';
 import { type Playlist, type Track } from './type';
@@ -17,4 +18,14 @@ export default class List {
 			this.tracks = tracks;
 		});
 	}
+}
+
+export const LIST_SYMBOL = Symbol('LIST');
+
+export function setList(m: MediaState) {
+	return setContext<List>(LIST_SYMBOL, new List(m));
+}
+
+export function getList() {
+	return getContext<ReturnType<typeof setList>>(LIST_SYMBOL);
 }

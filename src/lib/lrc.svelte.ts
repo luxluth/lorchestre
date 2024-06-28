@@ -1,3 +1,4 @@
+import { getContext, setContext } from 'svelte';
 import type { LyricLine, Line } from './type';
 
 const eq = (a: Line[], b: Line[]) => {
@@ -97,4 +98,18 @@ export default class LrcManager {
 	set oncuechange(fn: () => void) {
 		this.chs.add(fn);
 	}
+}
+
+export function base() {
+	return new LrcManager(0, []);
+}
+
+export const LRC_SYMBOL = Symbol('LRCMANAGER');
+
+export function setLrc() {
+	return setContext<LrcManager>(LRC_SYMBOL, base());
+}
+
+export function getLrc() {
+	return getContext<ReturnType<typeof setLrc>>(LRC_SYMBOL);
 }

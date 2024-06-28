@@ -1,10 +1,6 @@
 <script lang="ts">
-	import type Ctx from '$lib/ctx.svelte';
-	import type Manager from '$lib/manager.svelte';
-	import type MediaState from '$lib/media.svelte';
 	import { FilterOrder, FilterType, type Track } from '$lib/type';
 	import Play from 'lucide-svelte/icons/play';
-	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
 
@@ -14,16 +10,17 @@
 	import Check from 'lucide-svelte/icons/check';
 	import Filter from 'lucide-svelte/icons/filter';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
-	import type FilterQuery from '$lib/filterq.svelte';
 	import Song from '$lib/components/Song.svelte';
-	import type AlbumPageData from '$lib/album.svelte';
 	import { setTitle } from '$lib/utils';
+	import { getManager } from '$lib/manager.svelte';
+	import { getMedia } from '$lib/media.svelte';
+	import { getCtx } from '$lib/ctx.svelte';
+	import { getFilter } from '$lib/filterq.svelte';
 
-	let manager = getContext<Manager>('manager');
-	let media = getContext<MediaState>('media');
-	let ctx = getContext<Ctx>('ctx');
-	let adp = getContext<AlbumPageData>('apd');
-	let filterquery = getContext<FilterQuery>('filterq');
+	let manager = getManager();
+	let media = getMedia();
+	let ctx = getCtx();
+	let filterquery = getFilter();
 
 	async function playAll() {
 		let songs = applyFilters(media.getSongs());

@@ -34,44 +34,38 @@
 	import MiniPlayer from '$lib/components/MiniPlayer.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { LayoutData } from './$types';
-	import { getContext, setContext, type Snippet } from 'svelte';
-	import Manager from '$lib/manager.svelte';
-	import Ctx from '$lib/ctx.svelte';
+	import { getContext, type Snippet } from 'svelte';
+	import { setManager } from '$lib/manager.svelte';
+	import { setCtx } from '$lib/ctx.svelte';
 	import ContextMenu from './ContextMenu.svelte';
-	import Cmds from '$lib/commands.svelte';
+	import { setCmds } from '$lib/commands.svelte';
 	import Commands from '$lib/components/Commands.svelte';
 	import Queue from '$lib/components/Queue.svelte';
 	import Lrc from '$lib/components/Lrc.svelte';
-	import LrcManager from '$lib/lrc.svelte';
-	import MediaState from '$lib/media.svelte';
-	import FilterQuery from '$lib/filterq.svelte';
-	import List from '$lib/playlist.svelte';
-	import AlbumPageData from '$lib/album.svelte';
-	import AppConfig from '$lib/config.svelte';
-	import SearchSupervisor from '$lib/search.svelte';
+	import { setLrc } from '$lib/lrc.svelte';
+	import { setMedia } from '$lib/media.svelte';
+	import { setFilter } from '$lib/filterq.svelte';
+	import { setList } from '$lib/playlist.svelte';
+	import { setAppConfig } from '$lib/config.svelte';
+	import { setSearch } from '$lib/search.svelte';
 	import { browser, dev } from '$app/environment';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
-	const search = new SearchSupervisor();
-	const media = new MediaState(search);
-
-	setContext<AppConfig>('appconf', new AppConfig(data.config, data.default_config));
-	setContext<Manager>('manager', new Manager());
-	setContext<Ctx>('ctx', new Ctx());
-	setContext<Cmds>('cmds', new Cmds());
-	setContext<LrcManager>('lm', new LrcManager(0, []));
-	setContext<FilterQuery>('filterq', new FilterQuery());
-	setContext<List>('list', new List(media));
-	setContext<MediaState>('media', media);
-	setContext<AlbumPageData>('apd', new AlbumPageData());
-	setContext<SearchSupervisor>('ss', search);
+	let conf = setAppConfig(data.config, data.default_config);
+	setManager();
+	setCmds();
+	setCtx();
+	setLrc();
+	setFilter();
+	let search = setSearch();
+	let media = setMedia(search);
+	setList(media);
 
 	if (browser) {
 		if (!dev) {
 			window.addEventListener('contextmenu', (e) => e.preventDefault());
 		}
-		let conf = getContext<AppConfig>('appconf');
 		document.body.setAttribute(
 			'data-theme',
 			conf.config?.global?.theme ?? conf.defaults.global.theme
@@ -79,7 +73,6 @@
 	}
 
 	$effect(() => {
-		let media = getContext<MediaState>('media');
 		(async () => {
 			if (!media.loaded) {
 				await media.load();

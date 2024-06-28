@@ -1,17 +1,16 @@
 <script lang="ts">
-	import type Cmds from '$lib/commands.svelte';
-	import { getContext } from 'svelte';
-	import type Manager from '$lib/manager.svelte';
-	import LrcManager from '$lib/lrc.svelte';
+	import { getLrc } from '$lib/lrc.svelte';
 	import { isElementVisible } from '$lib/utils';
 
 	import { _ } from 'svelte-i18n';
+	import { getManager } from '$lib/manager.svelte';
+	import { getCmds } from '$lib/commands.svelte';
 
 	let lrcParent: HTMLDivElement;
 
-	let cmds = getContext<Cmds>('cmds');
-	let manager = getContext<Manager>('manager');
-	let lrcMngr = getContext<LrcManager>('lm');
+	let cmds = getCmds();
+	let manager = getManager();
+	let lrcMngr = getLrc();
 
 	lrcMngr.oncuechange = () => {
 		const activeLines = lrcMngr.activeLines;

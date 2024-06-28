@@ -1,6 +1,5 @@
 import type { QueueTrack, Track } from '$lib/type';
 import { getCurrent } from '@tauri-apps/api/window';
-import { getContext } from 'svelte';
 import type AppConfig from '$lib/config.svelte';
 
 export function clickOutside(element: Element, callbackFunction: () => void) {

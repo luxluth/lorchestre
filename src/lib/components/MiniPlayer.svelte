@@ -13,19 +13,15 @@
 
 	import Slider from './Slider.svelte';
 	import Marquee from './Marquee.svelte';
-	import type Manager from '$lib/manager.svelte';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri } from '$lib/utils';
-	import type AlbumPageData from '$lib/album.svelte';
-	import type MediaState from '$lib/media.svelte';
 	import { PlayingMode } from '$lib/type';
 	import type AppConfig from '$lib/config.svelte';
+	import { getManager } from '$lib/manager.svelte';
 
-	let manager = getContext<Manager>('manager');
+	let manager = getManager();
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
-	let adp = getContext<AlbumPageData>('apd');
-	let media = getContext<MediaState>('media');
 	let config = getContext<AppConfig>('appconf');
 
 	function formatTime(time: number) {
@@ -123,11 +119,7 @@
 						<p>
 							<span>{manager.currentTrack.artists.join(', ')}</span> <span>—</span>
 							<span
-								><a
-									href="/album/{manager.currentTrack.album_id}"
-									onclick={() => {
-										adp.activeAlbum = media.getAlbum(manager.currentTrack?.album_id as string);
-									}}>{manager.currentTrack.album}</a
+								><a href="/album/{manager.currentTrack.album_id}">{manager.currentTrack.album}</a
 								></span
 							>
 						</p>

@@ -1,7 +1,5 @@
 <script lang="ts">
-	import type Cmds from '$lib/commands.svelte';
 	import { getContext } from 'svelte';
-	import type Manager from '$lib/manager.svelte';
 	import { flip } from 'svelte/animate';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
@@ -11,9 +9,11 @@
 	import type { QueueTrack } from '$lib/type';
 	import X from 'lucide-svelte/icons/x';
 	import type AppConfig from '$lib/config.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getCmds } from '$lib/commands.svelte';
 
-	let cmds = getContext<Cmds>('cmds');
-	let manager = getContext<Manager>('manager');
+	let cmds = getCmds();
+	let manager = getManager();
 	let config = getContext<AppConfig>('appconf');
 
 	const flipDurationMs = 200;

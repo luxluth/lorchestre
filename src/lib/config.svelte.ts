@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { Config, DefinedConfig, Theme } from './type';
+import { getContext, setContext } from 'svelte';
 
 export default class AppConfig {
 	//@ts-ignore
@@ -32,4 +33,14 @@ export default class AppConfig {
 			`${this.config.network?.port ?? this.defaults.network.port}`
 		);
 	}
+}
+
+export const CONF_SYMBOL = Symbol('APPCONF');
+
+export function setAppConfig(config: Config, defaults: DefinedConfig) {
+	return setContext<AppConfig>(CONF_SYMBOL, new AppConfig(config, defaults));
+}
+
+export function getAppConfig() {
+	return getContext<ReturnType<typeof setAppConfig>>(CONF_SYMBOL);
 }

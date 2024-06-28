@@ -7,20 +7,20 @@
 		type ContextMenuItem,
 		type Track
 	} from '$lib/type';
-	import { getContext } from 'svelte';
-	import type Manager from '$lib/manager.svelte';
-	import type Ctx from '$lib/ctx.svelte';
 
 	import ListEnd from 'lucide-svelte/icons/list-end';
 	import Play from 'lucide-svelte/icons/play';
 
-	import type MediaState from '$lib/media.svelte';
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri, setTitle } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
-	import type AppConfig from '$lib/config.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getMedia } from '$lib/media.svelte';
+	import { getCtx } from '$lib/ctx.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
 
-	let media = getContext<MediaState>('media');
+	let manager = getManager();
+	let media = getMedia();
 
 	function sortTracks(t: Track[]) {
 		return t.sort((a, b) => a.track - b.track);
@@ -30,9 +30,8 @@
 		return text.slice(0, len) + (text.length > len ? '...' : '');
 	}
 
-	let manager = getContext<Manager>('manager');
-	let ctx = getContext<Ctx>('ctx');
-	let config = getContext<AppConfig>('appconf');
+	let ctx = getCtx();
+	let config = getAppConfig();
 
 	function showContext(e: ContextMenuEvent, tracks: Track[]) {
 		let sortedTracks = sortTracks(tracks);

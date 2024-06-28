@@ -2,22 +2,21 @@
 	import SearchAlbum from '$lib/components/SearchAlbum.svelte';
 	import SearchPlaylist from '$lib/components/SearchPlaylist.svelte';
 	import Track from '$lib/components/SearchTrack.svelte';
-	import type AppConfig from '$lib/config.svelte';
-	import type Ctx from '$lib/ctx.svelte';
-	import type Manager from '$lib/manager.svelte';
-	import type MediaState from '$lib/media.svelte';
-	import type List from '$lib/playlist.svelte';
-	import type SearchSupervisor from '$lib/search.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
+	import { getCtx } from '$lib/ctx.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getMedia } from '$lib/media.svelte';
+	import { getList } from '$lib/playlist.svelte';
+	import { getSearch } from '$lib/search.svelte';
 	import { setTitle } from '$lib/utils';
-	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
-	let search = getContext<SearchSupervisor>('ss');
-	let config = getContext<AppConfig>('appconf');
-	let media = getContext<MediaState>('media');
-	let list = getContext<List>('list');
-	let manager = getContext<Manager>('manager');
-	let ctx = getContext<Ctx>('ctx');
+	let search = getSearch();
+	let config = getAppConfig();
+	let media = getMedia();
+	let list = getList();
+	let manager = getManager();
+	let ctx = getCtx();
 
 	$effect(() => {
 		setTitle(

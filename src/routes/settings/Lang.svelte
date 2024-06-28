@@ -21,7 +21,7 @@
 		onSelectedChange={(e) => {
 			locale.set(e?.value);
 			(async () => {
-        await appConf.setLocale(e?.value as string);
+				await appConf.setLocale(e?.value as string);
 			})();
 		}}
 	>
