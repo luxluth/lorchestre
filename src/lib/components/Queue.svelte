@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
@@ -8,13 +7,13 @@
 	import { getCoverUri } from '$lib/utils';
 	import type { QueueTrack } from '$lib/type';
 	import X from 'lucide-svelte/icons/x';
-	import type AppConfig from '$lib/config.svelte';
 	import { getManager } from '$lib/manager.svelte';
 	import { getCmds } from '$lib/commands.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
 
 	let cmds = getCmds();
 	let manager = getManager();
-	let config = getContext<AppConfig>('appconf');
+	let config = getAppConfig();
 
 	const flipDurationMs = 200;
 

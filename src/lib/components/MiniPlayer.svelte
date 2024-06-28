@@ -13,16 +13,15 @@
 
 	import Slider from './Slider.svelte';
 	import Marquee from './Marquee.svelte';
-	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { getCoverUri } from '$lib/utils';
 	import { PlayingMode } from '$lib/type';
-	import type AppConfig from '$lib/config.svelte';
 	import { getManager } from '$lib/manager.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
 
 	let manager = getManager();
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
-	let config = getContext<AppConfig>('appconf');
+	let config = getAppConfig();
 
 	function formatTime(time: number) {
 		if (isNaN(time)) {

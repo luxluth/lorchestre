@@ -1,12 +1,11 @@
 <script lang="ts">
-	import type Ctx from '$lib/ctx.svelte';
 	import { ContextMenuItemType } from '$lib/type';
 	import { clickOutside } from '$lib/utils';
-	import { getContext } from 'svelte';
 
 	import { flyAndScale } from '$lib/utils/transitions';
+	import { getCtx } from '$lib/ctx.svelte';
 
-	let ctx = getContext<Ctx>('ctx');
+	let ctx = getCtx();
 </script>
 
 {#if ctx.visible}
