@@ -6,7 +6,7 @@ build:
   just _build-{{os()}}
 
 _build-linux:
-  NO_STRIP=true pnpm tauri build -v
+  NO_STRIP=true pnpm tauri build -v --no-bundle
 
 _build-macos:
   pnpm tauri build -v

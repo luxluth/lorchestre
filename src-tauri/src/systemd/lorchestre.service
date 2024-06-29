@@ -1,10 +1,10 @@
 [Unit]
-Description=L'Orchestre Music Daemon
+Description=L'orchestre Music Daemon
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/lorchestre daemon
+ExecStart={{BIN_PATH}} daemon
 
 [Install]
 WantedBy=default.target

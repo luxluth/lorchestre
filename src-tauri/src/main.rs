@@ -6,10 +6,95 @@ mod args;
 mod daemon;
 use crate::daemon::entry::start;
 use clap::Parser;
-use std::env::consts::OS;
+use std::{env::consts::OS, io::Write};
 use tauri::Manager;
+use tracing::info;
+use tracing_subscriber::FmtSubscriber;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const LINUX_SYSTEMD: &str = include_str!("./systemd/lorchestre.service");
+#[cfg(target_os = "macos")]
+const MACOS_LAUNCHD: &str = include_str!("./launchd/dev.luxluth.lorchestre.plist");
+
+#[cfg(target_os = "linux")]
+fn init_service(bin_path: String) -> std::io::Result<()> {
+    let service_dir = dirs::config_dir().unwrap().join("systemd/user");
+
+    if !service_dir.exists() {
+        std::fs::DirBuilder::new()
+            .recursive(true)
+            .create(&service_dir)
+            .unwrap();
+    }
+
+    let service_path = service_dir.join("lorchestre.service");
+    let mut file = std::fs::File::create(&service_path)?;
+    let service_content = LINUX_SYSTEMD.replace("{{BIN_PATH}}", &bin_path);
+    file.write_all(service_content.as_bytes())?;
+    info!(
+        "Systemd service file created at: {}",
+        service_path.display()
+    );
+
+    // Reload systemd and start the service
+    std::process::Command::new("systemctl")
+        .arg("--user")
+        .arg("daemon-reload")
+        .output()?;
+    std::process::Command::new("systemctl")
+        .arg("--user")
+        .arg("enable")
+        .arg("lorchestre.service")
+        .output()?;
+    std::process::Command::new("systemctl")
+        .arg("--user")
+        .arg("start")
+        .arg("lorchestre.service")
+        .output()?;
+    info!("Systemd service enabled and started.");
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn init_service(bin_path: String) -> std::io::Result<()> {
+    let plist_dir = dirs::home_dir().unwrap().join("/Library/LaunchAgents/");
+
+    if !plist_dir.exists() {
+        std::fs::DirBuilder::new()
+            .recursive(true)
+            .create(&plist_dir)
+            .unwrap();
+    }
+
+    let plist_path = plist_dir.join("dev.luxluth.lorchestre.plist");
+    let mut file = std::fs::File::create(&plist_path)?;
+    let plist_content = MACOS_LAUNCHD.replace("{{BIN_PATH}}", &bin_path);
+    file.write_all(plist_content.as_bytes())?;
+    info!("Launchd service file created at: {}", plist_path.display());
+
+    // Load the launchd service
+    std::process::Command::new("launchctl")
+        .arg("load")
+        .arg(&plist_path)
+        .output()?;
+
+    // start the launchd service
+    std::process::Command::new("launchctl")
+        .arg("start")
+        .arg("dev.luxluth.lorchestre")
+        .output()?;
+    info!("Launchd service loaded.");
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn init_service(bin_path: String) -> Result<(), Box<dyn std::error::Error>> {
+    // TODO: Need investigation
+
+    std::process::Command::new(&bin_path)
+        .arg("daemon")
+        .spawn()?
+}
 
 #[tauri::command]
 fn platform() -> String {
@@ -111,15 +196,64 @@ fn set_blur(app: tauri::AppHandle, state: bool) -> Config {
     config
 }
 
+#[tauri::command]
+fn app_info(app: tauri::AppHandle) -> AppInfoExternal {
+    let path = app.path().app_cache_dir().unwrap().join("__runned");
+    AppInfoExternal {
+        first_run: !path.exists(),
+    }
+}
+
+#[tauri::command]
+fn runned(app: tauri::AppHandle) {
+    let path = app.path().app_cache_dir().unwrap().join("__runned");
+    let _ = std::fs::File::create(path);
+}
+
+#[tauri::command]
+fn start_service(
+    window: tauri::Window,
+    app_info: tauri::State<AppInfo>,
+) -> std::result::Result<(), ()> {
+    let clone_path = app_info.bin_path.clone();
+    std::thread::spawn(move || {
+        let bin_path = clone_path;
+        info!("BIN_PATH: {bin_path}");
+        if init_service(bin_path.clone()).is_ok() {
+            let _ = window.emit("daemon-ok", ());
+        } else {
+            let _ = window.emit("daemon-error", ());
+        }
+    });
+
+    Ok(())
+}
+
+#[derive(Debug, serde::Serialize)]
+struct AppInfoExternal {
+    first_run: bool,
+}
+
+struct AppInfo {
+    bin_path: String,
+}
+
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    let program = std::env::args().next().expect("You're os is weird");
+    let args_vec: Vec<String> = std::env::args().collect();
     let args = args::LorArgs::parse();
-    if let Some(launch_daemon) = args.entity {
-        let _ = start().await;
-        println!("{launch_daemon:?}");
+    info!("args: {:?}", args_vec);
+    if args.entity.is_some() {
+        start().await?;
+        Ok(())
     } else {
         tauri::Builder::default()
             .plugin(tauri_plugin_shell::init())
+            .manage(AppInfo {
+                bin_path: program.clone(),
+            })
             .invoke_handler(tauri::generate_handler![
                 platform,
                 locale,
@@ -130,9 +264,21 @@ async fn main() {
                 default_config,
                 daemon_endpoint,
                 sync_music,
-                version
+                version,
+                app_info,
+                runned,
+                start_service
             ])
+            .setup(move |_| {
+                #[cfg(target_os = "windows")]
+                {
+                    init_service(program.clone());
+                }
+
+                Ok(())
+            })
             .run(tauri::generate_context!())
             .expect("error while running tauri application");
+        Ok(())
     }
 }

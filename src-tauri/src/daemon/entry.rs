@@ -24,7 +24,6 @@ use tokio::sync::RwLock;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tracing::{info, warn};
-use tracing_subscriber::FmtSubscriber;
 
 #[derive(Debug, Clone)]
 struct AppData {
@@ -54,13 +53,10 @@ async fn on_connect(socket: SocketRef) {
 }
 
 pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
-    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-
     let mut host = "localhost".to_string();
     let mut port: u32 = 7700;
 
     let dirs = config::get_dirs();
-    let m = utils::cache_resolve(&dirs.cache).await;
     let config_path = dirs.config.join("config.toml");
     let config = lorconf::Config::get(&config_path);
     if let Some(network) = config.network {
@@ -73,6 +69,17 @@ pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let req_client = reqwest::Client::new();
+    let response = req_client.get(format!("http://{host}:{port}")).send().await;
+    if let Ok(_) = response {
+        tracing::error!("Daemon already running");
+        return Ok(());
+    } else {
+        drop(req_client);
+        drop(response);
+    }
+
+    let m = utils::cache_resolve(&dirs.cache).await;
     let media_data = Arc::new(RwLock::new(m));
 
     let (layer, io) = SocketIo::builder()

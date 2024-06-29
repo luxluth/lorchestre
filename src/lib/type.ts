@@ -166,6 +166,9 @@ type DeepRequired<T> = {
 };
 
 export type DefinedConfig = DeepRequired<Config>;
+export type AppInfoExternal = {
+	first_run: boolean;
+};
 
 export enum QueueAddMode {
 	Top,

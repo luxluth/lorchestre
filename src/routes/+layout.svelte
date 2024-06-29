@@ -34,7 +34,7 @@
 	import MiniPlayer from '$lib/components/MiniPlayer.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { LayoutData } from './$types';
-	import { type Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { setManager } from '$lib/manager.svelte';
 	import { setCtx } from '$lib/ctx.svelte';
 	import ContextMenu from './ContextMenu.svelte';
@@ -50,19 +50,21 @@
 	import { setSearch } from '$lib/search.svelte';
 	import { browser, dev } from '$app/environment';
 	import { setPage } from '$lib/page.svelte';
-	import { page, navigating } from '$app/stores';
+	import { page } from '$app/stores';
+	import FirstRun from './FirstRun.svelte';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
+	let first_run = $state(data.app_info.first_run);
 	let p = setPage();
 	let conf = setAppConfig(data.config, data.default_config);
+	let search = setSearch();
+	let media = setMedia(search);
 	setManager();
 	setCmds();
 	setCtx();
 	setLrc();
 	setFilter();
-	let search = setSearch();
-	let media = setMedia(search);
 	setList(media);
 
 	if (browser) {
@@ -75,7 +77,7 @@
 		);
 	}
 
-	$effect(() => {
+	onMount(() => {
 		(async () => {
 			if (!media.loaded) {
 				await media.load();
@@ -88,30 +90,46 @@
 	});
 </script>
 
-<div class="layout">
-	<section class="__navigation">
-		<Navigation pathId={data.route as string} platform={data.platform} />
-	</section>
-	<section class="__content">
-		<header class="glass">
-			<MiniPlayer />
-			<Commands />
-		</header>
-		<main>
-			{@render children()}
-			<Queue />
-			<Lrc />
-		</main>
-	</section>
+<div class="layout" class:first_run>
+	{#if !first_run}
+		<section class="__navigation">
+			<Navigation pathId={data.route as string} platform={data.platform} />
+		</section>
+		<section class="__content">
+			<header class="glass">
+				<MiniPlayer />
+				<Commands />
+			</header>
+			<main>
+				{@render children()}
+				<Queue />
+				<Lrc />
+			</main>
+		</section>
+	{:else}
+		<FirstRun bind:first_run />
+	{/if}
 </div>
-<Toast />
-<Player />
-<ContextMenu />
+{#if !first_run}
+	<Toast />
+	<Player />
+	<ContextMenu />
+{/if}
 
 <style>
 	.layout {
 		display: flex;
 		height: 100vh;
+	}
+
+	.layout.first_run {
+		flex-direction: column;
+		overflow: hidden;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		gap: 1em;
+		background-color: var(--brand-color);
 	}
 
 	.__navigation {

@@ -17,6 +17,7 @@ export default class MediaState {
 	treatedFilesCount = $state(0);
 	updatingmedia = $state(false);
 	search: SearchSupervisor;
+	loadIntervalPingId: number = -1;
 
 	constructor(search: SearchSupervisor) {
 		this.search = search;
@@ -25,32 +26,79 @@ export default class MediaState {
 	async load() {
 		let config = getAppConfig();
 		const endpoint = config.getDaemonEndpoint();
-		let media = (await (await fetch(`http://${endpoint}/media`)).json()) as Media;
-		this.albums = media.albums;
-		this.playlists = media.playlists;
-		this.tracks = recordToMap(media.tracks);
-		this.loaded = true;
 
-		await listen('startsync', () => {
-			this.updatingmedia = true;
-		});
-
-		await listen('endsync', () => {
-			this.updatingmedia = false;
-		});
-
+		let response = null;
 		try {
-			const socket = io(`ws://${endpoint}`);
-			if (!this.search.initialized) {
-				this.search.init(socket);
-			}
-			socket.on('newmedia', (media: Media) => {
-				this.albums = media.albums;
-				this.playlists = media.playlists;
-				this.tracks = recordToMap(media.tracks);
+			response = await fetch(`http://${endpoint}/media`);
+		} catch (e) {}
+		if (response) {
+			console.log('First response');
+			let media = (await response.json()) as Media;
+			this.albums = media.albums;
+			this.playlists = media.playlists;
+			this.tracks = recordToMap(media.tracks);
+			this.loaded = true;
+
+			await listen('startsync', () => {
+				this.updatingmedia = true;
 			});
-		} catch (e) {
-			console.warn(e);
+
+			await listen('endsync', () => {
+				this.updatingmedia = false;
+			});
+
+			try {
+				const socket = io(`ws://${endpoint}`);
+				if (!this.search.initialized) {
+					this.search.init(socket);
+				}
+				socket.on('newmedia', (media: Media) => {
+					this.albums = media.albums;
+					this.playlists = media.playlists;
+					this.tracks = recordToMap(media.tracks);
+				});
+			} catch (e) {
+				console.warn(e);
+			}
+		} else {
+			this.loadIntervalPingId = window.setInterval(() => {
+				(async () => {
+					try {
+						let response = await fetch(`http://${endpoint}/media`);
+						if (response.status === 200) {
+							let media = (await response.json()) as Media;
+							this.albums = media.albums;
+							this.playlists = media.playlists;
+							this.tracks = recordToMap(media.tracks);
+							this.loaded = true;
+
+							await listen('startsync', () => {
+								this.updatingmedia = true;
+							});
+
+							await listen('endsync', () => {
+								this.updatingmedia = false;
+							});
+
+							try {
+								const socket = io(`ws://${endpoint}`);
+								if (!this.search.initialized) {
+									this.search.init(socket);
+								}
+								socket.on('newmedia', (media: Media) => {
+									this.albums = media.albums;
+									this.playlists = media.playlists;
+									this.tracks = recordToMap(media.tracks);
+								});
+							} catch (e) {
+								console.warn(e);
+							}
+
+							clearInterval(this.loadIntervalPingId);
+						}
+					} catch (e) {}
+				})();
+			}, 1500);
 		}
 	}
 
