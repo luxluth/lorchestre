@@ -105,7 +105,7 @@
 	}
 
 	if (browser) {
-		setTitle(`L'orchestre -- ${album ? album.name : 'Album not found'}`);
+		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);
 	}
 </script>
 

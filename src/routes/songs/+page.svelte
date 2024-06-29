@@ -105,7 +105,7 @@
 
 	let searchInput = $state('');
 	$effect(() => {
-		setTitle(`L'orchestre -- ${$_('songs').toLowerCase()}`);
+		setTitle(`${$_('songs').toLowerCase()} — L'orchestre`);
 	});
 </script>
 

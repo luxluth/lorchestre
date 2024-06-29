@@ -24,7 +24,7 @@
 	}
 
 	$effect(() => {
-		setTitle(`L'orchestre -- ${$_('settings').toLowerCase()}`);
+		setTitle(`${$_('settings').toLowerCase()} — L'orchestre`);
 	});
 </script>
 

@@ -19,9 +19,7 @@
 	let ctx = getCtx();
 
 	$effect(() => {
-		setTitle(
-			`L'orchestre -- ${$_('search')} ${search.query.length > 0 ? '-- ' + search.query : ''}`
-		);
+		setTitle(`${$_('search')} ${search.query.length > 0 ? '— ' + search.query : ''} — L'orchestre`);
 	});
 </script>
 

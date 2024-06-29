@@ -71,7 +71,7 @@
 	}
 
 	$effect(() => {
-		setTitle(`L'orchestre -- ${$_('albums').toLowerCase()}`);
+		setTitle(`${$_('albums').toLowerCase()} — L'orchestre`);
 	});
 
 	function getTrack(path: string) {
