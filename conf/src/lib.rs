@@ -66,6 +66,13 @@ impl Default for Config {
 
 impl Config {
     pub fn dump(path: &PathBuf, new_config: Config) {
+        let conf_dir = path.parent().unwrap();
+        if !conf_dir.exists() {
+            std::fs::DirBuilder::new()
+                .recursive(true)
+                .create(conf_dir)
+                .unwrap();
+        }
         let mut f = std::fs::File::create(path).unwrap();
         let _ = f.write_all(toml::to_string(&new_config).unwrap().as_bytes());
     }
