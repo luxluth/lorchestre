@@ -122,7 +122,7 @@
 		border: 2px solid rgba(100, 100, 100, 0.18);
 		transform: translateX(200%);
 		transition: transform 0.3s ease-in-out;
-		overflow: scroll;
+		overflow-y: scroll;
 		border-radius: 8px;
 	}
 
