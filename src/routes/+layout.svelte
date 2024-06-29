@@ -34,7 +34,7 @@
 	import MiniPlayer from '$lib/components/MiniPlayer.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { LayoutData } from './$types';
-	import { getContext, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { setManager } from '$lib/manager.svelte';
 	import { setCtx } from '$lib/ctx.svelte';
 	import ContextMenu from './ContextMenu.svelte';
@@ -49,9 +49,12 @@
 	import { setAppConfig } from '$lib/config.svelte';
 	import { setSearch } from '$lib/search.svelte';
 	import { browser, dev } from '$app/environment';
+	import { setPage } from '$lib/page.svelte';
+	import { page, navigating } from '$app/stores';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
+	let p = setPage();
 	let conf = setAppConfig(data.config, data.default_config);
 	setManager();
 	setCmds();
@@ -78,6 +81,10 @@
 				await media.load();
 			}
 		})();
+	});
+
+	$effect(() => {
+		p.currentAddr = $page.url.pathname;
 	});
 </script>
 

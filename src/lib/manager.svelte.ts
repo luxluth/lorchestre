@@ -1,4 +1,4 @@
-import { getContext, setContext } from 'svelte';
+import { getContext, onMount, setContext } from 'svelte';
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
 import { toQueueTrack } from './utils';
 
@@ -13,12 +13,13 @@ type TimeFunction = OneArgFunc<number, void>;
  */
 export default class Manager {
 	queue: QueueTrack[] = $state([]);
-	currentTrack?: QueueTrack = $state();
+	currentTrack: QueueTrack | null = $state(null);
 	private lastQueueOrder: QueueTrack[] = [];
 	history: QueueTrack[] = $state([]);
 	#innerVolume: number = $state(1);
 	paused: boolean = $state(true);
 	#realCurrentTime = $state(0);
+	initialized = false;
 	duration: number = $derived(this.currentTrack ? this.currentTrack.duration : 0);
 	qmode = $state(QueueMode.Continue);
 	pmode = $state(PlayingMode.Normal);
@@ -49,18 +50,22 @@ export default class Manager {
 		this.onseektofuncs.add(f);
 	}
 
-	async play(track: Track | QueueTrack) {
-		if (typeof (track as QueueTrack)['id'] !== 'undefined') {
-			await this.onplay?.(track as QueueTrack);
-		} else {
-			this.clearQueue();
-			await this.onplay?.(toQueueTrack(track));
-		}
-		this.paused = false;
+	async play(track: Track | QueueTrack | null) {
+		if (track !== null) {
+			if (typeof (track as QueueTrack)['id'] !== 'undefined') {
+				await this.onplay?.(track as QueueTrack);
+			} else {
+				this.clearQueue();
+				await this.onplay?.(toQueueTrack(track));
+			}
+			// if (this.initialized) {
+			// 	this.paused = false;
+			// }
 
-		this.afterplayfuncs.forEach((func) => {
-			func();
-		});
+			this.afterplayfuncs.forEach((func) => {
+				func();
+			});
+		}
 	}
 
 	seekTo(time: number) {
@@ -217,26 +222,80 @@ export default class Manager {
 				console.log('here');
 				this.onPlayerDeactivate();
 				this.paused = true;
-				this.currentTrack = undefined;
+				this.currentTrack = null;
 				this.onstop?.();
 			}
 		}
 	}
 
-	constructor(options?: { queue?: Track[]; qmode?: QueueMode; pmode?: PlayingMode }) {
-		if (options) {
-			if (options.queue) {
-				this.queue = this.queue;
-			}
-			if (options.qmode) {
-				this.qmode = options.qmode;
-			}
-			if (options.pmode) {
-				this.pmode = options.pmode;
-			}
-		}
+	static getLocalStorageData(): DataFromLocalStorage {
+		return {
+			qmode: localStorage.getItem('qmode'),
+			pmode: localStorage.getItem('pmode'),
+			history: localStorage.getItem('history'),
+			queue: localStorage.getItem('queue'),
+			currentTrack: localStorage.getItem('currentTrack'),
+			currentTime: localStorage.getItem('currentTime'),
+			volume: localStorage.getItem('volume')
+		};
+	}
+
+	constructor() {
+		onMount(() => {
+			(async () => {
+				const data = Manager.getLocalStorageData();
+
+				if (data.currentTrack) await this.play(JSON.parse(data.currentTrack));
+				if (data.queue) this.queue = JSON.parse(data.queue);
+				if (data.history) this.history = JSON.parse(data.history);
+				if (data.qmode) this.qmode = JSON.parse(data.qmode);
+				if (data.pmode) this.pmode = JSON.parse(data.pmode);
+				if (data.volume) this.volume = JSON.parse(data.volume);
+				if (data.currentTime) this.currentTime = JSON.parse(data.currentTime);
+
+				this.initialized = true;
+			})();
+		});
+
+		$effect(() => {
+			localStorage.setItem('qmode', JSON.stringify(this.qmode));
+		});
+
+		$effect(() => {
+			localStorage.setItem('pmode', JSON.stringify(this.pmode));
+		});
+
+		$effect(() => {
+			localStorage.setItem('queue', JSON.stringify(this.queue));
+		});
+
+		$effect(() => {
+			localStorage.setItem('history', JSON.stringify(this.history));
+		});
+
+		$effect(() => {
+			localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
+		});
+
+		$effect(() => {
+			localStorage.setItem('volume', JSON.stringify(this.volume));
+		});
+
+		$effect(() => {
+			localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
+		});
 	}
 }
+
+type DataFromLocalStorage = {
+	qmode: string | null;
+	pmode: string | null;
+	history: string | null;
+	queue: string | null;
+	currentTrack: string | null;
+	currentTime: string | null;
+	volume: string | null;
+};
 
 export const MANAGER_SYMBOL = Symbol('MANAGER');
 

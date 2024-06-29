@@ -1,14 +1,21 @@
-import { getContext, setContext } from 'svelte';
+import { getContext, onMount, setContext } from 'svelte';
 import FilterQuery from './filterq.svelte';
 import type MediaState from './media.svelte';
 import { type Playlist, type Track } from './type';
 
 export default class List {
-	activeList = $state<Playlist>();
+	activeList = $state<Playlist | null>(null);
 	filters = new FilterQuery();
 	tracks = $state<Track[]>([]);
 
 	constructor(media: MediaState) {
+		onMount(() => {
+			const playlist = localStorage.getItem('playlist');
+			if (playlist) {
+				this.activeList = JSON.parse(playlist);
+			}
+		});
+
 		$effect(() => {
 			let tracks = [];
 			for (const path of this.activeList?.tracks ?? []) {
@@ -16,6 +23,10 @@ export default class List {
 				if (track) tracks.push(track);
 			}
 			this.tracks = tracks;
+		});
+
+		$effect(() => {
+			localStorage.setItem('playlist', JSON.stringify(this.activeList));
 		});
 	}
 }

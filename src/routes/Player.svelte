@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Slider from '$lib/components/Slider.svelte';
-	import LrcManager, { getLrc } from '$lib/lrc.svelte';
-	import type Manager from '$lib/manager.svelte';
+	import { getLrc } from '$lib/lrc.svelte';
 	import { type QueueTrack } from '$lib/type';
 
 	import X from 'lucide-svelte/icons/x';
@@ -13,10 +12,8 @@
 	import Volume1 from 'lucide-svelte/icons/volume-1';
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 
-	import { getContext } from 'svelte';
 	import { getAudioUri, getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
-	import type AppConfig from '$lib/config.svelte';
 	import { getManager } from '$lib/manager.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
 
@@ -122,7 +119,9 @@
 			lrcMngr.update(sound.currentTime);
 		};
 
-		await sound.play();
+		if (manager.initialized) {
+			await sound.play();
+		}
 	};
 
 	manager.afterplay = () => {
@@ -563,6 +562,14 @@
 			black calc(100% - 6em),
 			transparent 100%
 		);
+	}
+
+	.__player::-webkit-scrollbar {
+		display: none;
+	}
+
+	.__player .lrc::-webkit-scrollbar {
+		display: none;
 	}
 
 	.__player .lrc .line:first-child {
