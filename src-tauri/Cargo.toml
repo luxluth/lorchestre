@@ -13,9 +13,9 @@ linker = "x86_64-w64-mingw32-gcc"
 tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = "1.0.117"
 tauri-plugin-shell = "2.0.0-beta"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
 # tauri-plugin-fs = "2.0.0-beta.7"
 lorconf = { path = "../conf" }
 tauri = { version = "2.0.0-beta", features = [
@@ -23,3 +23,23 @@ tauri = { version = "2.0.0-beta", features = [
   "linux-ipc-protocol",
 ] }
 reqwest = "0.12.5"
+## ctl dependencies
+axum = { version = "0.7.5", features = ["json"] }
+axum-extra = { version = "0.9.3", features = ["query"]}
+axum-range = "0.4.0"
+clap = { version = "4.5.7", features = ["derive"] }
+color-thief = "0.2.2"
+dirs = "5.0.1"
+glob = "0.3.1"
+image = "0.25.1"
+lofty = "0.20.0"
+lrc = "0.1.8"
+md5 = "0.7.0"
+mime_guess = "2.0.4"
+socketioxide = { version = "0.13.1", features = ["state"] }
+tokio = { version = "1.38.0", features = ["full"] }
+tower = "0.4.13"
+tower-http = { version = "0.5.2", features = ["cors"] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }

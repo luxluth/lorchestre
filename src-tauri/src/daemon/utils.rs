@@ -4,7 +4,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use lorchestrectl::Media;
+use crate::daemon::global::utils::cache_audio_files;
+use crate::daemon::global::utils::get_audio_files;
+use crate::daemon::global::utils::read_cache_audio_files;
+use crate::daemon::global::Media;
 use tracing::{info, warn};
 
 pub enum CacheCompareDiff {
@@ -20,9 +23,9 @@ pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
     let ac_string = cache_dir.join(".cache.list");
     let ac_path = Path::new(&ac_string);
 
-    let prev_audio_files = lorchestrectl::utils::read_cahe_audio_files(ac_path);
-    let curr_audio_files = lorchestrectl::utils::get_audio_files();
-    lorchestrectl::utils::cache_audio_files(ac_path);
+    let prev_audio_files = read_cache_audio_files(ac_path);
+    let curr_audio_files = get_audio_files();
+    cache_audio_files(ac_path);
 
     let (diff, _, _) = compare_caches(prev_audio_files, curr_audio_files.clone());
 

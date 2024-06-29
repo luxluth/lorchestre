@@ -1,6 +1,5 @@
-pub mod m3u8;
+use crate::daemon::m3u8;
 use color_thief::ColorFormat;
-use glob::glob;
 use lofty::picture::{MimeType, PictureType};
 use lofty::prelude::*;
 use lofty::probe::Probe;
@@ -276,13 +275,13 @@ pub struct Media {
 }
 
 impl Media {
-    pub fn new(songs: Songs) -> Self {
-        Self {
-            tracks: songs.into_collection(),
-            albums: songs.get_albums(),
-            playlists: vec![],
-        }
-    }
+    // pub fn new(songs: Songs) -> Self {
+    //     Self {
+    //         tracks: songs.into_collection(),
+    //         albums: songs.get_albums(),
+    //         playlists: vec![],
+    //     }
+    // }
 
     pub fn search(&self, query: &str) -> SearchResults {
         let query_lower = query.to_lowercase();
@@ -453,14 +452,14 @@ impl Songs {
         albums
     }
 
-    pub fn into_collection(&self) -> TrackCollection {
-        let mut map = TrackCollection::new();
-        for audio in &self.audios {
-            map.insert(PathBuf::from(audio.file_path.clone()), audio.clone());
-        }
-
-        map
-    }
+    // pub fn into_collection(&self) -> TrackCollection {
+    //     let mut map = TrackCollection::new();
+    //     for audio in &self.audios {
+    //         map.insert(PathBuf::from(audio.file_path.clone()), audio.clone());
+    //     }
+    //
+    //     map
+    // }
 }
 
 pub fn check_dir(dir: &PathBuf) {
@@ -476,7 +475,7 @@ pub mod utils {
         str::FromStr,
     };
 
-    use crate::glob;
+    use glob::glob;
 
     pub fn get_image_buffer(img: image::DynamicImage) -> Vec<u8> {
         match img {
@@ -529,7 +528,7 @@ pub mod utils {
         let _ = f.write_all(data.as_bytes());
     }
 
-    pub fn read_cahe_audio_files(cache_path: &std::path::Path) -> Vec<PathBuf> {
+    pub fn read_cache_audio_files(cache_path: &std::path::Path) -> Vec<PathBuf> {
         let mut buf = String::new();
         if cache_path.exists() {
             let mut f = std::fs::File::open(cache_path).unwrap();
@@ -537,41 +536,5 @@ pub mod utils {
         }
 
         buf.lines().map(|x| PathBuf::from_str(x).unwrap()).collect()
-    }
-
-    pub fn music_dir_md5() -> String {
-        let mut files = vec![];
-        if let Some(music_dir) = dirs::audio_dir() {
-            if let Ok(paths) = glob(&format!("{}/**/*", music_dir.display())) {
-                for p in paths {
-                    if p.is_ok() {
-                        let path_buf = p.unwrap();
-                        files.extend(path_buf.to_str().unwrap().as_bytes());
-                    }
-                }
-
-                let digest = md5::compute(files);
-
-                format!("{digest:x}")
-            } else {
-                String::new()
-            }
-        } else {
-            String::new()
-        }
-    }
-}
-
-impl Songs {
-    pub fn new(cache_dir: &PathBuf, audio_files: Vec<PathBuf>) -> Self {
-        let covers_dir = cache_dir.join("covers");
-        check_dir(&covers_dir);
-        let mut audios: Vec<Track> = vec![];
-
-        for audio_file in audio_files {
-            audios.push(Track::from_file(&covers_dir, audio_file))
-        }
-
-        Self { audios }
     }
 }

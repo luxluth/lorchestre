@@ -6,8 +6,8 @@
     <string>com.service.lorchestre</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/bin/lorchestrectl</string>
-        <string>--daemon</string>
+      <string>/usr/local/bin/lorchestre</string>
+        <string>daemon</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

@@ -2,6 +2,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use lorconf::Config;
+mod args;
+mod daemon;
+use crate::daemon::entry::start;
+use clap::Parser;
 use std::env::consts::OS;
 use tauri::Manager;
 
@@ -107,21 +111,28 @@ fn set_blur(app: tauri::AppHandle, state: bool) -> Config {
     config
 }
 
-fn main() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![
-            platform,
-            locale,
-            set_locale,
-            set_theme,
-            set_blur,
-            config,
-            default_config,
-            daemon_endpoint,
-            sync_music,
-            version
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+#[tokio::main]
+async fn main() {
+    let args = args::LorArgs::parse();
+    if let Some(launch_daemon) = args.entity {
+        let _ = start().await;
+        println!("{launch_daemon:?}");
+    } else {
+        tauri::Builder::default()
+            .plugin(tauri_plugin_shell::init())
+            .invoke_handler(tauri::generate_handler![
+                platform,
+                locale,
+                set_locale,
+                set_theme,
+                set_blur,
+                config,
+                default_config,
+                daemon_endpoint,
+                sync_music,
+                version
+            ])
+            .run(tauri::generate_context!())
+            .expect("error while running tauri application");
+    }
 }

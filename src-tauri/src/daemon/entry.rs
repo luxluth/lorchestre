@@ -1,6 +1,7 @@
-mod config;
-mod utils;
-
+use crate::daemon::config;
+use crate::daemon::config::Dir;
+use crate::daemon::global::Media;
+use crate::daemon::utils;
 use axum::{
     body::Body,
     extract::{Path, Query, State},
@@ -11,9 +12,7 @@ use axum::{
 };
 use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
-use config::Dir;
 use image::io::Reader as ImageReader;
-use lorchestrectl::Media;
 use socketioxide::{
     extract::{Data, SocketRef},
     SocketIo,
@@ -54,8 +53,7 @@ async fn on_connect(socket: SocketRef) {
     )
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
     let mut host = "localhost".to_string();
