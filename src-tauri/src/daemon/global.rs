@@ -1,4 +1,5 @@
 use crate::daemon::m3u8;
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use color_thief::ColorFormat;
 use lofty::picture::{MimeType, PictureType};
 use lofty::prelude::*;
@@ -71,6 +72,7 @@ pub struct Track {
     pub color: Option<Color>,
     pub is_light: Option<bool>,
     pub file_path: String,
+    pub path_base64: String,
     pub duration: u64,
     pub bitrate: u32,
     pub created_at: SystemTime,
@@ -94,8 +96,10 @@ impl Track {
             None => tagged_file.first_tag().unwrap_or(&default_tag),
         };
 
+        let path = inode.to_str().unwrap().to_string();
         let mut audio: Track = Track {
-            file_path: inode.to_str().unwrap().to_string(),
+            path_base64: URL_SAFE.encode(path.as_bytes()),
+            file_path: path,
             ..Default::default()
         };
 
@@ -253,6 +257,7 @@ impl Default for Track {
             color: None,
             is_light: None,
             file_path: String::new(),
+            path_base64: String::new(),
             bitrate: 0,
             duration: 0,
             created_at: SystemTime::UNIX_EPOCH,

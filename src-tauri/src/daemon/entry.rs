@@ -12,6 +12,7 @@ use axum::{
 };
 use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use image::io::Reader as ImageReader;
 use socketioxide::{
     extract::{Data, SocketRef},
@@ -198,7 +199,7 @@ async fn audio(
     State(state): State<AppData>,
     Query(music_path): Query<MusicPath>,
 ) -> Response {
-    let path = music_path.path;
+    let path = String::from_utf8_lossy(&URL_SAFE.decode(music_path.path).unwrap()).to_string();
     if let Some(track) = state.media.read().await.get_song(&path) {
         let file = File::open(&track.file_path).await.unwrap();
         let body = KnownSize::file(file).await.unwrap();

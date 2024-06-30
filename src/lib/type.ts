@@ -65,6 +65,7 @@ export type Track = {
 	created_at: SystemTime;
 	is_light?: boolean;
 	file_path: string;
+	path_base64: string;
 	duration: u64;
 	bitrate: u32;
 };

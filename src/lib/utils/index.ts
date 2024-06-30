@@ -62,7 +62,7 @@ export function getCoverUri(album_id: string, ext: String, config: AppConfig, si
 
 export function getAudioUri(path: string, config: AppConfig) {
 	const endpoint = config.getDaemonEndpoint();
-	return `http://${endpoint}/audio?path=${encodeURI(path)}`;
+	return `http://${endpoint}/audio?path=${path}`;
 }
 
 export function toQueueTrack(track: Track): QueueTrack {
