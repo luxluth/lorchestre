@@ -12,6 +12,7 @@ use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+#[cfg(target_os = "linux")]
 const LINUX_SYSTEMD: &str = include_str!("./systemd/lorchestre.service");
 #[cfg(target_os = "macos")]
 const MACOS_LAUNCHD: &str = include_str!("./launchd/dev.luxluth.lorchestre.plist");
@@ -93,7 +94,8 @@ fn init_service(bin_path: String) -> Result<(), Box<dyn std::error::Error>> {
 
     std::process::Command::new(&bin_path)
         .arg("daemon")
-        .spawn()?
+        .spawn()?;
+    Ok(())
 }
 
 #[tauri::command]
