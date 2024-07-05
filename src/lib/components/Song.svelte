@@ -20,10 +20,6 @@
 		return text.slice(0, len) + (text.length > len ? '...' : '');
 	}
 
-	async function play(track: Track) {
-		await manager.play(track);
-	}
-
 	function showContext(e: ContextMenuEvent, track: Track) {
 		const items: ContextMenuItem[] = [
 			{
@@ -73,8 +69,16 @@
 		i,
 		ctx,
 		manager,
-		searchq = $bindable()
-	}: { song: Track; i: number; ctx: Ctx; manager: Manager; searchq: string } = $props();
+		searchq = $bindable(),
+		onPlay
+	}: {
+		song: Track;
+		i: number;
+		ctx: Ctx;
+		manager: Manager;
+		searchq: string;
+		onPlay: (i: number) => Promise<void>;
+	} = $props();
 
 	function replaceTextWithMarker(text: string) {
 		const regex = new RegExp(searchq, 'gi');
@@ -85,13 +89,14 @@
 <div
 	class="track ns"
 	role="presentation"
+	data-content-id={i}
 	draggable
 	oncontextmenu={(e) => {
 		e.preventDefault();
 		showContext(e, song);
 	}}
 	ondblclick={async () => {
-		await manager.play(song);
+		await onPlay(i);
 	}}
 >
 	<div
@@ -114,7 +119,7 @@
 		<button
 			class="play"
 			onclick={async () => {
-				await play(song);
+				await onPlay(i);
 			}}
 		>
 			<Play fill={'var(--fg)'} size={'16px'} />

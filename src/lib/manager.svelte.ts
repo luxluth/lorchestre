@@ -123,7 +123,8 @@ export default class Manager {
 						file_path: t.file_path,
 						duration: t.duration,
 						bitrate: t.bitrate,
-						id: t.id
+						id: t.id,
+						path_base64: t.path_base64
 					} as const;
 				});
 				this.queue = this.shuffle(this.queue);
@@ -138,7 +139,7 @@ export default class Manager {
 	}
 
 	// Fisher-Yates shuffle function
-	private shuffle(queue: QueueTrack[]): QueueTrack[] {
+	private shuffle<T>(queue: T[]): T[] {
 		for (let i = queue.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[queue[i], queue[j]] = [queue[j], queue[i]];
@@ -169,6 +170,7 @@ export default class Manager {
 
 	clearQueue() {
 		this.queue = [];
+		this.history = [];
 	}
 
 	async shiftTo(t: QueueTrack, play = true) {
@@ -197,15 +199,40 @@ export default class Manager {
 		}
 	}
 
+	applyShuffle(tracks: Track[]) {
+		if (this.pmode === PlayingMode.Shuffle) {
+			return this.shuffle(tracks);
+		} else {
+			return tracks;
+		}
+	}
+
+	cycleThroughQmode() {
+		switch (this.qmode) {
+			case QueueMode.Continue:
+				this.qmode = QueueMode.RepeatAll;
+				break;
+			case QueueMode.Repeat:
+				this.qmode = QueueMode.Continue;
+				break;
+			case QueueMode.RepeatAll:
+				this.qmode = QueueMode.Repeat;
+				break;
+		}
+
+		console.log(this.qmode);
+	}
+
 	addManyToQueue(tracks: Track[], mode = QueueAddMode.Bottom) {
+		const songs = this.applyShuffle(tracks);
 		switch (mode) {
 			case QueueAddMode.Top:
-				tracks.reverse().forEach((track) => {
+				songs.reverse().forEach((track) => {
 					this.addToQueue(track, mode);
 				});
 				break;
 			case QueueAddMode.Bottom:
-				tracks.forEach((track) => {
+				songs.forEach((track) => {
 					this.addToQueue(track);
 				});
 				break;
@@ -213,19 +240,55 @@ export default class Manager {
 	}
 
 	async next() {
-		const track = this.queue.shift();
-		if (track) {
-			if (this.currentTrack) this.history.push(this.currentTrack);
-			this.play(track);
-		} else {
-			if (this.onPlayerDeactivate) {
-				console.log('here');
-				this.onPlayerDeactivate();
-				this.paused = true;
-				this.currentTrack = null;
-				this.onstop?.();
-			}
+		switch (this.qmode) {
+			case QueueMode.Continue:
+				const track = this.queue.shift();
+				if (track) {
+					if (this.currentTrack) this.history.push(this.currentTrack);
+					this.play(track);
+				} else {
+					if (this.onPlayerDeactivate) {
+						console.log('here');
+						this.onPlayerDeactivate();
+						this.paused = true;
+						this.currentTrack = null;
+						this.history = [];
+						this.onstop?.();
+					}
+				}
+				break;
+			case QueueMode.Repeat:
+				if (this.currentTrack) this.play(this.currentTrack);
+				break;
+			case QueueMode.RepeatAll:
+				const trackToPlay = this.queue.shift();
+				if (trackToPlay) {
+					if (this.currentTrack) this.history.push(this.currentTrack);
+					this.play(trackToPlay);
+				} else {
+					this.queue = [...this.history];
+					this.history = [];
+					const track = this.queue.shift();
+					if (track) {
+						if (this.currentTrack) this.history.push(this.currentTrack);
+						this.play(track);
+					} else {
+						if (this.onPlayerDeactivate) {
+							console.log('here');
+							this.onPlayerDeactivate();
+							this.paused = true;
+							this.currentTrack = null;
+							this.onstop?.();
+						}
+					}
+				}
 		}
+	}
+
+	static toQmode(i: number) {
+		if (i === 0) return QueueMode.Continue;
+		if (i === 1) return QueueMode.Repeat;
+		return QueueMode.RepeatAll;
 	}
 
 	static getLocalStorageData(): DataFromLocalStorage {
@@ -248,7 +311,11 @@ export default class Manager {
 				if (data.currentTrack) await this.play(JSON.parse(data.currentTrack));
 				if (data.queue) this.queue = JSON.parse(data.queue);
 				if (data.history) this.history = JSON.parse(data.history);
-				if (data.qmode) this.qmode = JSON.parse(data.qmode);
+				if (data.qmode)
+					this.qmode =
+						typeof JSON.parse(data.qmode) === 'string'
+							? JSON.parse(data.qmode)
+							: Manager.toQmode(JSON.parse(data.qmode));
 				if (data.pmode) this.pmode = JSON.parse(data.pmode);
 				if (data.volume) this.volume = JSON.parse(data.volume);
 				if (data.currentTime) this.currentTime = JSON.parse(data.currentTime);

@@ -66,6 +66,16 @@
 		});
 	}
 
+	async function play(i: number) {
+		let tracks = filteredTracks.slice(i, filteredTracks.length);
+		let song = tracks.shift();
+		if (song) {
+			manager.play(song);
+			manager.clearQueue();
+			manager.addManyToQueue(tracks);
+		}
+	}
+
 	function applyFilterQuery(tracks: Track[]): Track[] {
 		let r = [];
 		switch (filterquery.type) {
@@ -104,6 +114,7 @@
 	];
 
 	let searchInput = $state('');
+	let filteredTracks = $derived(applyFilters(media.getSongs()));
 	$effect(() => {
 		setTitle(`${$_('songs').toLowerCase()} — L'orchestre`);
 	});
@@ -196,8 +207,8 @@
 	class="songlist"
 	style="--tracklist-index-column-width: {(media.getSongsCount().toString().length * 16) / 2}px"
 >
-	{#each applyFilters(media.getSongs()) as song, i}
-		<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} />
+	{#each filteredTracks as song, i}
+		<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
 	{/each}
 </div>
 

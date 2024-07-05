@@ -101,6 +101,17 @@
 	];
 
 	let searchInput = $state('');
+	let filteredTracks = $derived(applyFilters(list.tracks));
+
+	async function play(i: number) {
+		let tracks = filteredTracks.slice(i, filteredTracks.length);
+		let song = tracks.shift();
+		if (song) {
+			manager.play(song);
+			manager.clearQueue();
+			manager.addManyToQueue(tracks);
+		}
+	}
 
 	$effect(() => {
 		setTitle(
@@ -204,8 +215,8 @@
 				16) /
 				2}px"
 		>
-			{#each applyFilters(list.tracks) as song, i}
-				<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} />
+			{#each filteredTracks as song, i}
+				<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
 			{/each}
 		</div>
 	{/if}

@@ -78,7 +78,12 @@
 					/>
 				</button>
 			</div>
-			<button>
+			<button
+				data-mode={manager.qmode}
+				onclick={() => {
+					manager.cycleThroughQmode();
+				}}
+			>
 				<Repeat size={'20px'} />
 			</button>
 		</section>
@@ -242,16 +247,21 @@
 		color: var(--brand-color);
 	}
 
-	.controls button.active::after {
-		content: '';
+	.controls button[data-mode='repeat'],
+	.controls button[data-mode='repeat-all'] {
+		opacity: 1;
+		color: var(--brand-color);
+	}
+
+	.controls button[data-mode='repeat']::after {
+		content: '1';
 		position: absolute;
-		width: 3px;
-		height: 3px;
-		background: var(--brand-color);
+		width: 0.5em;
+		height: 0.5em;
 		border-radius: 50%;
-		bottom: 1px;
-		left: 50%;
-		transform: translateX(calc(-50% - 1.5px));
+		font-size: 0.5em;
+		top: 6px;
+		left: 8px;
 	}
 
 	.controls button:hover {

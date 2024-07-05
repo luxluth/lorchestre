@@ -104,6 +104,16 @@
 		manager.addManyToQueue(toAddToTheQue);
 	}
 
+	async function playfrom(i: number) {
+		let songs = tracks.slice(i, tracks.length);
+		let song = songs.shift();
+		if (song) {
+			manager.play(song);
+			manager.clearQueue();
+			manager.addManyToQueue(songs);
+		}
+	}
+
 	if (browser) {
 		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);
 	}
@@ -143,7 +153,7 @@
 
 	<h2 class="section-title ns">{$_('album.page.songs')}</h2>
 	<section class="tracks ns">
-		{#each tracks as track}
+		{#each tracks as track, i}
 			<div
 				class="track"
 				oncontextmenu={(e) => {
@@ -161,7 +171,7 @@
 					<div class="no">{track.track > 0 ? track.track : ''}</div>
 					<button
 						onclick={async () => {
-							await play(track);
+							await playfrom(i);
 						}}
 					>
 						<Play size={'1.5em'} fill={'var(--fg)'} />

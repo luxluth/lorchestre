@@ -182,7 +182,7 @@ export enum PlayingMode {
 }
 
 export enum QueueMode {
-	Continue,
-	Repeat,
-	RepeatAll
+	Continue = 'continue',
+	Repeat = 'repeat',
+	RepeatAll = 'repeat-all'
 }
