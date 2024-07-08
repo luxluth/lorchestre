@@ -6,7 +6,7 @@ register('ja', () => import('./ja.json'));
 
 export const _init = (locale: string) => {
 	init({
-		fallbackLocale: locale,
+		fallbackLocale: 'en',
 		initialLocale: locale
 	});
 };
