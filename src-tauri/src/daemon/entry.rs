@@ -53,7 +53,7 @@ async fn on_connect(socket: SocketRef) {
     )
 }
 
-pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn start(win: Option<tauri::Window>) -> Result<(), Box<dyn std::error::Error>> {
     let mut host = "localhost".to_string();
     let mut port: u32 = 7700;
 
@@ -74,13 +74,13 @@ pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
     let response = req_client.get(format!("http://{host}:{port}")).send().await;
     if let Ok(_) = response {
         tracing::error!("Daemon already running");
-        return Ok(());
+        return Err("Daemon already running".into());
     } else {
         drop(req_client);
         drop(response);
     }
 
-    let m = utils::cache_resolve(&dirs.cache).await;
+    let m = utils::cache_resolve(&dirs.cache, win).await;
     let media_data = Arc::new(RwLock::new(m));
 
     let (layer, io) = SocketIo::builder()
@@ -178,7 +178,7 @@ async fn cover(
 }
 
 async fn updatemusic(State(state): State<AppData>) {
-    let m = utils::cache_resolve(&state.dirs.cache).await;
+    let m = utils::cache_resolve(&state.dirs.cache, None).await;
     let mut binding = state.media.write().await;
     binding.swap_with(m.clone());
     let _ = state.io.emit("newmedia", m);

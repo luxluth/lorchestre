@@ -8,6 +8,7 @@ use crate::daemon::global::utils::cache_audio_files;
 use crate::daemon::global::utils::get_audio_files;
 use crate::daemon::global::utils::read_cache_audio_files;
 use crate::daemon::global::Media;
+use tauri::Manager;
 use tracing::{info, warn};
 
 pub enum CacheCompareDiff {
@@ -16,7 +17,7 @@ pub enum CacheCompareDiff {
     NoDiff,
 }
 
-pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
+pub async fn cache_resolve(cache_dir: &PathBuf, win: Option<tauri::Window>) -> Media {
     info!("Starting cache process...");
     let p_string = cache_dir.join(".cache.json");
     let covers_dir = cache_dir.join("covers");
@@ -42,13 +43,21 @@ pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
                 match d {
                     CacheCompareDiff::ToAdd { files } => {
                         for file in files {
-                            info!("+ {}", file.display().to_string());
+                            let msg = format!("+ {}", file.display().to_string());
+                            info!(msg);
+                            if let Some(win) = win.clone() {
+                                let _ = win.emit("sync", msg);
+                            }
                             cache_data.add_media(file, &covers_dir);
                         }
                     }
                     CacheCompareDiff::ToRemove { files } => {
                         for file in files {
-                            info!("- {}", file.display().to_string());
+                            let msg = format!("- {}", file.display().to_string());
+                            info!(msg);
+                            if let Some(win) = win.clone() {
+                                let _ = win.emit("sync", msg);
+                            }
                             cache_data.remove_media(file);
                         }
                     }
@@ -64,13 +73,24 @@ pub async fn cache_resolve(cache_dir: &PathBuf) -> Media {
         } else {
             warn!("[WARN] Unmatched Media cache verison");
             for file in curr_audio_files {
-                info!("+ {}", file.display().to_string());
+                let msg = format!("+ {}", file.display().to_string());
+                info!(msg);
+                if let Some(win) = win.clone() {
+                    let _ = win.emit("sync", msg);
+                }
+
                 cache.add_media(file, &covers_dir);
             }
             needs_update = true;
         }
     } else {
         for file in curr_audio_files {
+            let msg = format!("+ {}", file.display().to_string());
+            info!(msg);
+            if let Some(win) = win.clone() {
+                let _ = win.emit("sync", msg);
+            }
+
             info!("+ {}", file.display().to_string());
             cache.add_media(file, &covers_dir);
         }
