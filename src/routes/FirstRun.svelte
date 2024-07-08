@@ -6,6 +6,7 @@
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import { getAppConfig } from '$lib/config.svelte';
 	import { onMount } from 'svelte';
+	import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 	let { first_run = $bindable() }: { first_run: boolean } = $props();
 	const quotes = [
@@ -30,20 +31,41 @@
 	const endpoint = config.getDaemonEndpoint();
 	let pingIntervalId = $state(-1);
 
+	function trim(text: string, len = 100) {
+		return text.slice(0, len) + (text.length > len ? '...' : '');
+	}
+
 	async function start() {
 		pingIntervalId = window.setInterval(() => {
 			(async () => {
 				let response = null;
 				try {
 					response = await fetch(`http://${endpoint}/`);
-					synched = true;
+					if (response.ok) synched = true;
 					clearInterval(pingIntervalId);
 				} catch (e) {}
 			})();
 		}, 2000);
 	}
 
-	onMount(() => {});
+	let msg = $state('');
+
+	async function startListening() {
+		return await listen<string>('sync', (e) => {
+			msg = e.payload;
+		});
+	}
+
+	onMount(() => {
+		let unlisten: UnlistenFn;
+		(async () => {
+			unlisten = await startListening();
+		})();
+
+		return () => {
+			unlisten();
+		};
+	});
 </script>
 
 <div class="message">
@@ -62,12 +84,6 @@
 		<div class="act" transition:fade={{ duration: 500 }}>
 			{#if !synched}
 				<h1 class="ns">{$_('indexing_msg')}</h1>
-				<div class="notice">
-					<div class="icon load">
-						<LoaderCircle size={'1em'} />
-					</div>
-					<p>{$_('notice_msg')}</p>
-				</div>
 				<div class="ns">
 					<p>{synchedmsg.parole} - <b>{synchedmsg.author}</b></p>
 				</div>
@@ -80,13 +96,21 @@
 	<button
 		onclick={async () => {
 			act = 2;
-			await invoke('start_service');
+			await invoke('start_daemon');
 			await start();
 		}}
 		class="act_btn btn animate">{$_('start_btn')}</button
 	>
 {/if}
 {#if act === 2}
+	{#if !synched}
+		<div class="notice">
+			<div class="icon load">
+				<LoaderCircle size={'1em'} />
+			</div>
+			<p>{msg.length > 0 ? trim(msg) : $_('notice_msg')}</p>
+		</div>
+	{/if}
 	<button
 		class="act_btn btn"
 		onclick={async () => {
@@ -111,6 +135,17 @@
 		color: white;
 	}
 
+	.notice {
+		position: absolute;
+		bottom: 2em;
+		left: 2em;
+		display: flex;
+		gap: 0.5em;
+		font-family: var(--font-mono);
+		font-size: 0.8em;
+		font-weight: bold;
+	}
+
 	.icon.load {
 		animation: rotate 500ms infinite ease-in-out;
 	}
@@ -130,6 +165,10 @@
 		100% {
 			transform: rotate(360deg);
 		}
+	}
+
+	.act {
+		position: relative;
 	}
 
 	.act_btn {
