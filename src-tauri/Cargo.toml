@@ -6,9 +6,6 @@ authors = ["luxluth"]
 edition = "2021"
 license = "GPL-3.0"
 
-[target.x86_64-pc-windows-gnu]
-linker = "x86_64-w64-mingw32-gcc"
-
 [build-dependencies]
 tauri-build = { version = "2.0.0-beta", features = [] }
 
@@ -24,9 +21,8 @@ tauri = { version = "2.0.0-beta", features = [
 reqwest = "0.12.5"
 ## ctl dependencies
 axum = { version = "0.7.5", features = ["json"] }
-axum-extra = { version = "0.9.3", features = ["query"]}
+axum-extra = { version = "0.9.3", features = ["query"] }
 axum-range = "0.4.0"
-clap = { version = "4.5.7", features = ["derive"] }
 color-thief = "0.2.2"
 dirs = "5.0.1"
 glob = "0.3.1"
