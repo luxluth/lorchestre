@@ -1,5 +1,7 @@
 import { getContext, setContext } from 'svelte';
-import type { LyricLine, Line } from './type';
+import type { LyricLine, Line, Track } from './type';
+import type AppConfig from './config.svelte';
+import { getLyricsUri, searchLyricsUri } from './utils';
 
 const eq = (a: Line[], b: Line[]) => {
 	return a.length === b.length && a.every((element, index) => element === b[index]);
@@ -7,10 +9,13 @@ const eq = (a: Line[], b: Line[]) => {
 
 export default class LrcManager {
 	lines: Line[] = $state([]);
+	private conf: AppConfig;
 	private currentActiveLines: Line[] = $state([]);
 	private chs = new Set<(lines: Line[]) => void>();
+	searching: boolean = $state(false);
 
-	constructor(duration: number, raw_lines: LyricLine[]) {
+	constructor(duration: number, raw_lines: LyricLine[], conf: AppConfig) {
+		this.conf = conf;
 		let lines: Line[] = [];
 
 		for (let i = 0; i < raw_lines.length; i++) {
@@ -37,8 +42,11 @@ export default class LrcManager {
 		this.lines = lines;
 	}
 
-	reset(duration: number, raw_lines: LyricLine[]) {
+	async reset(duration: number, track: Track) {
 		let lines: Line[] = [];
+		let url = getLyricsUri(track.path_base64, this.conf);
+		const raw_lines: LyricLine[] = ((await (await fetch(url)).json()) as { lyrics: LyricLine[] })
+			.lyrics;
 
 		for (let i = 0; i < raw_lines.length; i++) {
 			const current = raw_lines[i] as LyricLine;
@@ -63,6 +71,17 @@ export default class LrcManager {
 
 		this.lines = lines;
 		this.currentActiveLines = [];
+	}
+
+	async searchLyrics(track: Track) {
+		this.searching = true;
+		let url = searchLyricsUri(track.path_base64, this.conf);
+		try {
+			console.log(await (await fetch(url)).json());
+		} catch (e) {
+			console.warn(e);
+		}
+		this.searching = false;
 	}
 
 	private set als(val: Line[]) {
@@ -100,14 +119,14 @@ export default class LrcManager {
 	}
 }
 
-export function base() {
-	return new LrcManager(0, []);
+export function base(conf: AppConfig) {
+	return new LrcManager(0, [], conf);
 }
 
 export const LRC_SYMBOL = Symbol('LRCMANAGER');
 
-export function setLrc() {
-	return setContext<LrcManager>(LRC_SYMBOL, base());
+export function setLrc(conf: AppConfig) {
+	return setContext<LrcManager>(LRC_SYMBOL, base(conf));
 }
 
 export function getLrc() {

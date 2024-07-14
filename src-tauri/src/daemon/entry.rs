@@ -1,7 +1,8 @@
-use crate::daemon::config;
-use crate::daemon::config::Dir;
-use crate::daemon::global::Media;
-use crate::daemon::utils;
+use super::{
+    config::{self, Dir},
+    global::{LyricLine, Media, Track},
+    utils,
+};
 use axum::{
     body::Body,
     extract::{Path, Query, State},
@@ -25,6 +26,9 @@ use tokio::sync::RwLock;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tracing::{info, warn};
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const LRCLIB: &str = "https://lrclib.net/api";
 
 #[derive(Debug, Clone)]
 struct AppData {
@@ -92,9 +96,11 @@ pub async fn start(win: Option<tauri::Window>) -> Result<(), Box<dyn std::error:
         .route("/", get(ping))
         .route("/media", get(media))
         .route("/audio", get(audio))
+        .route("/lyrics", get(lyrics))
         .route("/album/:id", get(album))
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
+        .route("/search/lyrics", get(search_lyrics))
         .with_state(AppData {
             media: media_data,
             dirs: dirs.clone(),
@@ -128,6 +134,78 @@ impl ImageSize {
         self.size
             .split_once('x')
             .map(|(x, y)| (x.parse().unwrap(), y.parse().unwrap()))
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct Lyrics {
+    lyrics: Vec<LyricLine>,
+}
+
+async fn lyrics(State(state): State<AppData>, Query(music_path): Query<MusicPath>) -> Json<Lyrics> {
+    let path = String::from_utf8_lossy(&URL_SAFE.decode(music_path.path).unwrap()).to_string();
+
+    if let Some(track) = state.media.read().await.get_song(&path) {
+        Json(Lyrics {
+            lyrics: track.get_lyrics(),
+        })
+    } else {
+        Json(Lyrics { lyrics: vec![] })
+    }
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+struct LyricsSearchResponse {
+    id: usize,
+    trackName: String,
+    artistName: String,
+    albumName: String,
+    duration: f64,
+    instrumental: bool,
+    plainLyrics: Option<String>,
+    syncedLyrics: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+struct LyricsResponse {
+    lyrics: Vec<Vec<LyricLine>>,
+}
+
+async fn search_lyrics(
+    State(state): State<AppData>,
+    Query(music_path): Query<MusicPath>,
+) -> Result<Json<LyricsResponse>, String> {
+    let path = String::from_utf8_lossy(&URL_SAFE.decode(music_path.path).unwrap()).to_string();
+
+    if let Some(track) = state.media.read().await.get_song(&path) {
+        let client = reqwest::Client::new();
+        match client
+            .get(format!(
+                "{LRCLIB}/search?track_name={}&artist_name={}",
+                track.title, track.artists[0]
+            ))
+            .header(
+                "User-Agent",
+                format!("L'orchestre v{VERSION} (https://github.com/luxluth/lorchestre)"),
+            )
+            .send()
+            .await
+        {
+            Ok(e) => {
+                let mut lyrics = vec![];
+                for lyric in e.json::<Vec<LyricsSearchResponse>>().await.unwrap() {
+                    if let Some(synched) = lyric.syncedLyrics {
+                        lyrics.push(Track::parse_lyrics(&synched));
+                    }
+                }
+
+                Ok(Json(LyricsResponse { lyrics }))
+            }
+            Err(e) => Err(format!("{e:?}")),
+        }
+    } else {
+        Err(String::from("Track not found"))
     }
 }
 

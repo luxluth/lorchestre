@@ -1,9 +1,18 @@
 {
-	"$schema": "../gen/schemas/desktop-schema.json",
-	"identifier": "main-capability",
-	"description": "Capability for the main window",
-	"windows": ["main"],
-	"permissions": [
-    "window:allow-set-title"
-	]
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "window:allow-set-title",
+    "window:allow-close",
+    "window:allow-center",
+    "window:allow-minimize",
+    "window:allow-maximize",
+    "window:allow-set-size",
+    "window:allow-set-focus",
+    "window:allow-start-dragging"
+  ]
 }

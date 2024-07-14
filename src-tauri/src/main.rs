@@ -6,95 +6,9 @@ mod daemon;
 use crate::daemon::entry::start;
 use std::env::consts::OS;
 use tauri::Manager;
-// use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-// #[cfg(target_os = "linux")]
-// const LINUX_SYSTEMD: &str = include_str!("./systemd/lorchestre.service");
-// #[cfg(target_os = "macos")]
-// const MACOS_LAUNCHD: &str = include_str!("./launchd/dev.luxluth.lorchestre.plist");
-
-// #[cfg(target_os = "linux")]
-// fn init_service(bin_path: String) -> std::io::Result<()> {
-//     let service_dir = dirs::config_dir().unwrap().join("systemd/user");
-//
-//     if !service_dir.exists() {
-//         std::fs::DirBuilder::new()
-//             .recursive(true)
-//             .create(&service_dir)
-//             .unwrap();
-//     }
-//
-//     let service_path = service_dir.join("lorchestre.service");
-//     let mut file = std::fs::File::create(&service_path)?;
-//     let service_content = LINUX_SYSTEMD.replace("{{BIN_PATH}}", &bin_path);
-//     file.write_all(service_content.as_bytes())?;
-//     info!(
-//         "Systemd service file created at: {}",
-//         service_path.display()
-//     );
-//
-//     // Reload systemd and start the service
-//     std::process::Command::new("systemctl")
-//         .arg("--user")
-//         .arg("daemon-reload")
-//         .output()?;
-//     std::process::Command::new("systemctl")
-//         .arg("--user")
-//         .arg("enable")
-//         .arg("lorchestre.service")
-//         .output()?;
-//     std::process::Command::new("systemctl")
-//         .arg("--user")
-//         .arg("start")
-//         .arg("lorchestre.service")
-//         .output()?;
-//     info!("Systemd service enabled and started.");
-//     Ok(())
-// }
-//
-// #[cfg(target_os = "macos")]
-// fn init_service(bin_path: String) -> std::io::Result<()> {
-//     let plist_dir = dirs::home_dir().unwrap().join("/Library/LaunchAgents/");
-//
-//     if !plist_dir.exists() {
-//         std::fs::DirBuilder::new()
-//             .recursive(true)
-//             .create(&plist_dir)
-//             .unwrap();
-//     }
-//
-//     let plist_path = plist_dir.join("dev.luxluth.lorchestre.plist");
-//     let mut file = std::fs::File::create(&plist_path)?;
-//     let plist_content = MACOS_LAUNCHD.replace("{{BIN_PATH}}", &bin_path);
-//     file.write_all(plist_content.as_bytes())?;
-//     info!("Launchd service file created at: {}", plist_path.display());
-//
-//     // Load the launchd service
-//     std::process::Command::new("launchctl")
-//         .arg("load")
-//         .arg(&plist_path)
-//         .output()?;
-//
-//     // start the launchd service
-//     std::process::Command::new("launchctl")
-//         .arg("start")
-//         .arg("dev.luxluth.lorchestre")
-//         .output()?;
-//     info!("Launchd service loaded.");
-//     Ok(())
-// }
-//
-// #[cfg(target_os = "windows")]
-// fn init_service(bin_path: String) -> Result<(), Box<dyn std::error::Error>> {
-//     // TODO: Need investigation
-//
-//     std::process::Command::new(&bin_path)
-//         .arg("daemon")
-//         .spawn()?;
-//     Ok(())
-// }
 
 #[tauri::command]
 fn platform() -> String {
@@ -226,6 +140,7 @@ struct AppInfoExternal {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     tauri::Builder::default()
+        .plugin(tauri_plugin_decorum::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             platform,
@@ -254,6 +169,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let _ = start(None).await;
                 }
             });
+
+            #[cfg(target_os = "windows")]
+            {
+                use tauri_plugin_decorum::WebviewWindowExt;
+
+                let main_window = app.get_webview_window("main").unwrap();
+                main_window.create_overlay_titlebar().unwrap();
+            }
+
+            #[cfg(target_os = "macos")]
+            {
+                use tauri_plugin_decorum::WebviewWindowExt;
+                main_window.set_traffic_lights_inset(16.0, 20.0).unwrap();
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())

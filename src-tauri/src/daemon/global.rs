@@ -4,7 +4,6 @@ use color_thief::ColorFormat;
 use lofty::picture::{MimeType, PictureType};
 use lofty::prelude::*;
 use lofty::probe::Probe;
-use lrc::Lyrics;
 use m3u8::Playlist;
 use mime_guess::{self, mime};
 use std::collections::HashMap;
@@ -12,6 +11,7 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::time::SystemTime;
+use tracing::error;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct LyricLine {
@@ -68,7 +68,6 @@ pub struct Track {
     pub cover_ext: String,
     pub mime: String,
     pub album_year: Option<u32>,
-    pub lyrics: Vec<LyricLine>,
     pub color: Option<Color>,
     pub is_light: Option<bool>,
     pub file_path: String,
@@ -210,7 +209,23 @@ impl Track {
         audio.duration = duration.as_secs();
         audio.bitrate = bitrate;
 
-        let lrc_path = inode.with_extension("lrc");
+        audio
+    }
+
+    pub fn parse_lyrics(input: &str) -> Vec<LyricLine> {
+        let lyrics = lrc::Lyrics::from_str(input).unwrap();
+        lyrics
+            .get_timed_lines()
+            .iter()
+            .map(|(time, content)| LyricLine {
+                start_time: time.get_timestamp(),
+                text: content.to_string(),
+            })
+            .collect()
+    }
+
+    pub fn get_lyrics(&self) -> Vec<LyricLine> {
+        let lrc_path = PathBuf::from(&self.file_path).with_extension("lrc");
         if lrc_path.exists() {
             let mut f = fs::File::open(&lrc_path).unwrap();
             let mut buf = Vec::new();
@@ -219,25 +234,16 @@ impl Track {
             match buf {
                 Ok(buf) => {
                     let buf = utils::remove_lyrics_tags(buf);
-                    let lyrics = Lyrics::from_str(buf).unwrap();
-                    let lines: Vec<LyricLine> = lyrics
-                        .get_timed_lines()
-                        .iter()
-                        .map(|(time, content)| LyricLine {
-                            start_time: time.get_timestamp(),
-                            text: content.to_string(),
-                        })
-                        .collect();
-
-                    audio.lyrics = lines;
+                    Track::parse_lyrics(&buf)
                 }
                 Err(e) => {
-                    eprintln!("{e}");
+                    error!("{}", e);
+                    vec![]
                 }
             }
+        } else {
+            vec![]
         }
-
-        audio
     }
 }
 
@@ -251,7 +257,6 @@ impl Default for Track {
             album_artist: None,
             album_id: String::new(),
             album_year: None,
-            lyrics: vec![],
             cover_ext: ".png".to_string(),
             mime: "audio/mp3".to_string(),
             color: None,
@@ -305,10 +310,6 @@ impl Media {
                         .album_artist
                         .as_ref()
                         .map_or(false, |artist| artist.to_lowercase().contains(&query_lower))
-                    || track
-                        .lyrics
-                        .iter()
-                        .any(|lyric| lyric.text.to_lowercase().contains(&query_lower))
             })
             .cloned()
             .collect();

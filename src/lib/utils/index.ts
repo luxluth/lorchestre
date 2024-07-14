@@ -65,6 +65,16 @@ export function getAudioUri(path: string, config: AppConfig) {
 	return `http://${endpoint}/audio?path=${path}`;
 }
 
+export function getLyricsUri(path: string, config: AppConfig) {
+	const endpoint = config.getDaemonEndpoint();
+	return `http://${endpoint}/lyrics?path=${path}`;
+}
+
+export function searchLyricsUri(path: string, config: AppConfig) {
+	const endpoint = config.getDaemonEndpoint();
+	return `http://${endpoint}/search/lyrics?path=${path}`;
+}
+
 export function toQueueTrack(track: Track): QueueTrack {
 	return {
 		...track,

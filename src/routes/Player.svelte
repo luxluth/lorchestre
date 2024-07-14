@@ -11,6 +11,7 @@
 	import Volume from 'lucide-svelte/icons/volume';
 	import Volume1 from 'lucide-svelte/icons/volume-1';
 	import Volume2 from 'lucide-svelte/icons/volume-2';
+	import Search from 'lucide-svelte/icons/search';
 
 	import { getAudioUri, getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
@@ -30,7 +31,7 @@
 
 	//@ts-ignore
 	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
-	let hasLyrics = $derived(manager.currentTrack ? manager.currentTrack.lyrics.length > 0 : false);
+	let hasLyrics = $derived(lrcMngr.lines.length > 0);
 
 	$effect(() => {
 		//@ts-ignore
@@ -94,8 +95,8 @@
 	};
 
 	manager.onplay = async (track: QueueTrack) => {
+		await lrcMngr.reset(track.duration, track);
 		manager.currentTrack = track;
-		lrcMngr.reset(track.duration, track.lyrics);
 
 		sound.src = getAudioUri(track.path_base64, config);
 
@@ -253,6 +254,20 @@
 				>
 					<X size={'3em'} />
 				</button>
+				{#if !hasLyrics}
+					<button
+						class="search"
+						disabled={lrcMngr.searching}
+						onclick={async () => {
+							if (manager.currentTrack) {
+								await lrcMngr.searchLyrics(manager.currentTrack);
+							}
+						}}
+					>
+						<Search size={'1em'} />
+						{lrcMngr.searching ? 'searching...' : 'search for lyrics'}</button
+					>
+				{/if}
 				<div class="volume">
 					<div class="vol-icon">
 						{#if manager.volume === 0}
@@ -437,6 +452,43 @@
 
 	.close:active {
 		transform: scale(0.95);
+	}
+
+	.cover .search {
+		font-weight: bold;
+		position: absolute;
+		top: 2em;
+		right: 2em;
+		background: none;
+		border: none;
+		opacity: 0.5;
+		cursor: pointer;
+		transition: all 0.1s ease-in-out;
+		background-color: var(--text);
+		color: rgb(var(--r), var(--g), var(--b));
+		padding-block: 0.2em;
+		padding-inline: 0.3em;
+		border-radius: 10px;
+		display: flex;
+		gap: 0.2em;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.search:hover {
+		opacity: 1;
+	}
+
+	.search:active {
+		transform: scale(0.95);
+	}
+
+	.__player.blurActive .cover .search {
+		color: var(--text);
+		background: rgba(255, 255, 255, 0.25);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+		border: 1px solid rgba(255, 255, 255, 0.18);
 	}
 
 	.__player {
