@@ -2236,6 +2236,7 @@ dependencies = [
  "socketioxide",
  "tauri",
  "tauri-build",
+ "tauri-plugin-decorum",
  "tauri-plugin-shell",
  "tokio",
  "tower",
@@ -4346,6 +4347,22 @@ dependencies = [
  "tauri-utils",
  "toml 0.8.14",
  "walkdir",
+]
+
+[[package]]
+name = "tauri-plugin-decorum"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fccbcf16f789b3fb01470511cbed050d98803d7580bdd55f53f8ef6d8737e8f1"
+dependencies = [
+ "anyhow",
+ "cocoa",
+ "objc",
+ "rand 0.8.5",
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "windows 0.56.0",
 ]
 
 [[package]]
