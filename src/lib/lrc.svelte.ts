@@ -1,7 +1,8 @@
 import { getContext, setContext } from 'svelte';
-import type { LyricLine, Line, Track } from './type';
+import { type LyricLine, type Line, type Track, type LyricsResponse, ToastKind } from './type';
 import type AppConfig from './config.svelte';
 import { getLyricsUri, searchLyricsUri } from './utils';
+import type ToastManager from './toast.svelte';
 
 const eq = (a: Line[], b: Line[]) => {
 	return a.length === b.length && a.every((element, index) => element === b[index]);
@@ -13,9 +14,11 @@ export default class LrcManager {
 	private currentActiveLines: Line[] = $state([]);
 	private chs = new Set<(lines: Line[]) => void>();
 	searching: boolean = $state(false);
+	tm: ToastManager;
 
-	constructor(duration: number, raw_lines: LyricLine[], conf: AppConfig) {
+	constructor(duration: number, raw_lines: LyricLine[], conf: AppConfig, tm: ToastManager) {
 		this.conf = conf;
+		this.tm = tm;
 		let lines: Line[] = [];
 
 		for (let i = 0; i < raw_lines.length; i++) {
@@ -76,9 +79,14 @@ export default class LrcManager {
 	async searchLyrics(track: Track) {
 		this.searching = true;
 		let url = searchLyricsUri(track.path_base64, this.conf);
+
 		try {
-			console.log(await (await fetch(url)).json());
+			let response = (await (await fetch(url)).json()) as LyricsResponse;
+			if (response.lyrics.length === 0) {
+				this.tm.new(ToastKind.Simple, 'No lyrics found');
+			}
 		} catch (e) {
+			this.tm.new(ToastKind.Error, 'Unable to get lyrics for the selected song');
 			console.warn(e);
 		}
 		this.searching = false;
@@ -119,14 +127,14 @@ export default class LrcManager {
 	}
 }
 
-export function base(conf: AppConfig) {
-	return new LrcManager(0, [], conf);
+export function base(conf: AppConfig, tm: ToastManager) {
+	return new LrcManager(0, [], conf, tm);
 }
 
 export const LRC_SYMBOL = Symbol('LRCMANAGER');
 
-export function setLrc(conf: AppConfig) {
-	return setContext<LrcManager>(LRC_SYMBOL, base(conf));
+export function setLrc(conf: AppConfig, tm: ToastManager) {
+	return setContext<LrcManager>(LRC_SYMBOL, base(conf, tm));
 }
 
 export function getLrc() {

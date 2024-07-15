@@ -168,8 +168,14 @@ struct LyricsSearchResponse {
 }
 
 #[derive(serde::Serialize)]
+struct Lrc {
+    parsed: Vec<LyricLine>,
+    raw: String,
+}
+
+#[derive(serde::Serialize)]
 struct LyricsResponse {
-    lyrics: Vec<Vec<LyricLine>>,
+    lyrics: Vec<Lrc>,
 }
 
 async fn search_lyrics(
@@ -196,7 +202,10 @@ async fn search_lyrics(
                 let mut lyrics = vec![];
                 for lyric in e.json::<Vec<LyricsSearchResponse>>().await.unwrap() {
                     if let Some(synched) = lyric.syncedLyrics {
-                        lyrics.push(Track::parse_lyrics(&synched));
+                        lyrics.push(Lrc {
+                            parsed: Track::parse_lyrics(&synched),
+                            raw: synched,
+                        });
                     }
                 }
 

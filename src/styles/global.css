@@ -12,9 +12,11 @@ html {
 
 	--brand-color: #df632e;
 
+	--toast-z-index: 140;
+	--edit-view-z-index: 130;
 	--player-z-index: 100;
-	--search-z-index: 40;
 	--header-z-index: 50;
+	--search-z-index: 40;
 	--overlay-z-index: 30;
 }
 

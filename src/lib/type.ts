@@ -1,20 +1,18 @@
-export type ToastEvent =
-	| {
-			kind: ToastKind;
-			title: string;
-			message: string;
-			timeout: number;
-	  }
-	| {
-			kind: ToastKind.Close;
-	  };
+export type ToastData = {
+	kind: ToastKind;
+	title?: string;
+	message: string;
+	timeout: number;
+};
 
 export enum ToastKind {
 	Error,
-	Message,
+	Simple,
 	Loading,
-	Close
+	Success
 }
+
+export type Toast = ToastData & { id: number };
 
 export type LyricLine = {
 	start_time: number;
@@ -186,3 +184,12 @@ export enum QueueMode {
 	Repeat = 'repeat',
 	RepeatAll = 'repeat-all'
 }
+
+export type Lrc = {
+	parsed: Array<LyricLine>;
+	raw: string;
+};
+
+export type LyricsResponse = {
+	lyrics: Array<Lrc>;
+};

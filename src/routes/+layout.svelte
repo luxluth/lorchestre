@@ -2,7 +2,7 @@
 	import './fonts';
 	import '../styles/global.css';
 
-	import Toast from './Toast.svelte';
+	import ToastDisplay from './ToastDisplay.svelte';
 	import Player from './Player.svelte';
 	import MiniPlayer from '$lib/components/MiniPlayer.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
@@ -25,19 +25,24 @@
 	import { setPage } from '$lib/page.svelte';
 	import { page } from '$app/stores';
 	import FirstRun from './FirstRun.svelte';
+	import { setToastManager } from '$lib/toast.svelte';
 	// import { invoke } from '@tauri-apps/api/core';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
 	let first_run = $state(data.app_info.first_run);
+
+	const tm = setToastManager();
+
 	let p = setPage();
 	let conf = setAppConfig(data.config, data.default_config);
 	let search = setSearch();
 	let media = setMedia(search);
+
 	setManager();
 	setCmds();
 	setCtx();
-	setLrc(conf);
+	setLrc(conf, tm);
 	setFilter();
 	setList(media);
 
@@ -86,7 +91,7 @@
 	{/if}
 </div>
 {#if !first_run}
-	<Toast />
+	<ToastDisplay />
 	<Player />
 	<ContextMenu />
 {/if}

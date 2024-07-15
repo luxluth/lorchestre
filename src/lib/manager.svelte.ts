@@ -1,6 +1,9 @@
 import { getContext, onMount, setContext } from 'svelte';
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
 import { toQueueTrack } from './utils';
+import { invoke } from '@tauri-apps/api/core';
+import { TauriEvent } from '@tauri-apps/api/event';
+import { getCurrent } from '@tauri-apps/api/window';
 
 type Func<Out> = () => Out;
 type VoidFunc = Func<void>;
@@ -310,18 +313,24 @@ export default class Manager {
 		}
 	}
 
-	static toQmode(i: number) {
-		if (i === 0) return QueueMode.Continue;
-		if (i === 1) return QueueMode.Repeat;
-		return QueueMode.RepeatAll;
-	}
-
-	static getLocalStorageData(): DataFromLocalStorage {
+	static getLocalStorageData(currentVersion: string): DataFromLocalStorage {
+		let dataVersion = localStorage.getItem('__version');
+		if (dataVersion) {
+			if (dataVersion != currentVersion) {
+				console.log('different version:', dataVersion, currentVersion);
+				localStorage.clear();
+				localStorage.setItem('__version', currentVersion);
+			}
+		} else {
+			localStorage.clear();
+			localStorage.setItem('__version', currentVersion);
+		}
 		return {
 			qmode: localStorage.getItem('qmode'),
 			pmode: localStorage.getItem('pmode'),
 			history: localStorage.getItem('history'),
 			queue: localStorage.getItem('queue'),
+			dormantQueue: localStorage.getItem('dormantQueue'),
 			currentTrack: localStorage.getItem('currentTrack'),
 			currentTime: localStorage.getItem('currentTime'),
 			volume: localStorage.getItem('volume')
@@ -331,50 +340,33 @@ export default class Manager {
 	constructor() {
 		onMount(() => {
 			(async () => {
-				const data = Manager.getLocalStorageData();
+				let currentVersion = await invoke<string>('version');
+				const data = Manager.getLocalStorageData(currentVersion);
+				console.log(data);
 
 				if (data.currentTrack) await this.play(JSON.parse(data.currentTrack));
 				if (data.queue) this.queue = JSON.parse(data.queue);
+				if (data.dormantQueue) this.dormantQueue = JSON.parse(data.dormantQueue);
 				if (data.history) this.history = JSON.parse(data.history);
-				if (data.qmode)
-					this.qmode =
-						typeof JSON.parse(data.qmode) === 'string'
-							? JSON.parse(data.qmode)
-							: Manager.toQmode(JSON.parse(data.qmode));
+				if (data.qmode) this.qmode = JSON.parse(data.qmode);
 				if (data.pmode) this.pmode = JSON.parse(data.pmode);
 				if (data.volume) this.volume = JSON.parse(data.volume);
 				if (data.currentTime) this.currentTime = JSON.parse(data.currentTime);
 
+				let win = getCurrent();
+				win.once(TauriEvent.WINDOW_CLOSE_REQUESTED, (ev) => {
+					localStorage.setItem('qmode', JSON.stringify(this.qmode));
+					localStorage.setItem('pmode', JSON.stringify(this.pmode));
+					localStorage.setItem('queue', JSON.stringify(this.queue));
+					localStorage.setItem('history', JSON.stringify(this.history));
+					localStorage.setItem('dormantQueue', JSON.stringify(this.dormantQueue));
+					localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
+					localStorage.setItem('volume', JSON.stringify(this.volume));
+					localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
+				});
+
 				this.initialized = true;
 			})();
-		});
-
-		$effect(() => {
-			localStorage.setItem('qmode', JSON.stringify(this.qmode));
-		});
-
-		$effect(() => {
-			localStorage.setItem('pmode', JSON.stringify(this.pmode));
-		});
-
-		$effect(() => {
-			localStorage.setItem('queue', JSON.stringify(this.queue));
-		});
-
-		$effect(() => {
-			localStorage.setItem('history', JSON.stringify(this.history));
-		});
-
-		$effect(() => {
-			localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
-		});
-
-		$effect(() => {
-			localStorage.setItem('volume', JSON.stringify(this.volume));
-		});
-
-		$effect(() => {
-			localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
 		});
 	}
 }
@@ -384,6 +376,7 @@ type DataFromLocalStorage = {
 	pmode: string | null;
 	history: string | null;
 	queue: string | null;
+	dormantQueue: string | null;
 	currentTrack: string | null;
 	currentTime: string | null;
 	volume: string | null;
