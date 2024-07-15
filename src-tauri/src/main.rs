@@ -170,6 +170,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             });
 
+            // let main_window = app.get_webview_window("main").unwrap();
+            // Get this from cache
+            // let _ = main_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+            //     width: 800.0,
+            //     height: 600.0,
+            // }));
+
             #[cfg(target_os = "windows")]
             {
                 use tauri_plugin_decorum::WebviewWindowExt;
@@ -181,6 +188,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             #[cfg(target_os = "macos")]
             {
                 use tauri_plugin_decorum::WebviewWindowExt;
+                let main_window = app.get_webview_window("main").unwrap();
                 main_window.set_traffic_lights_inset(16.0, 20.0).unwrap();
             }
 
