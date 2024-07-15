@@ -7,12 +7,15 @@ type VoidFunc = Func<void>;
 type OneArgFunc<In, Out> = (arg: In) => Out;
 type TimeFunction = OneArgFunc<number, void>;
 
+const QUEUE_LIMIT = 70;
+
 /**
  * The player Manager
  * That big man
  */
 export default class Manager {
 	queue: QueueTrack[] = $state([]);
+	dormantQueue: QueueTrack[] = $state([]);
 	currentTrack: QueueTrack | null = $state(null);
 	private lastQueueOrder: QueueTrack[] = [];
 	history: QueueTrack[] = $state([]);
@@ -170,6 +173,7 @@ export default class Manager {
 
 	clearQueue() {
 		this.queue = [];
+		this.dormantQueue = [];
 		this.history = [];
 	}
 
@@ -191,10 +195,18 @@ export default class Manager {
 	addToQueue(track: Track, mode = QueueAddMode.Bottom) {
 		switch (mode) {
 			case QueueAddMode.Top:
-				this.queue = [toQueueTrack(track), ...this.queue];
+				if (this.queue.length <= QUEUE_LIMIT) {
+					this.queue = [toQueueTrack(track), ...this.queue];
+				} else {
+					this.dormantQueue = [toQueueTrack(track), ...this.dormantQueue];
+				}
 				break;
 			case QueueAddMode.Bottom:
-				this.queue.push(toQueueTrack(track));
+				if (this.queue.length <= QUEUE_LIMIT) {
+					this.queue.push(toQueueTrack(track));
+				} else {
+					this.dormantQueue.push(toQueueTrack(track));
+				}
 				break;
 		}
 	}
@@ -219,8 +231,6 @@ export default class Manager {
 				this.qmode = QueueMode.Repeat;
 				break;
 		}
-
-		console.log(this.qmode);
 	}
 
 	addManyToQueue(tracks: Track[], mode = QueueAddMode.Bottom) {
@@ -240,9 +250,17 @@ export default class Manager {
 	}
 
 	async next() {
+		let track: QueueTrack | undefined;
 		switch (this.qmode) {
 			case QueueMode.Continue:
-				const track = this.queue.shift();
+				track = this.queue.shift();
+				if (typeof track === 'undefined') {
+					if (this.dormantQueue.length > 0) {
+						let newTracks = this.dormantQueue.splice(0, QUEUE_LIMIT);
+						this.addManyToQueue(newTracks);
+						track = this.queue.shift();
+					}
+				}
 				if (track) {
 					if (this.currentTrack) this.history.push(this.currentTrack);
 					this.play(track);
@@ -261,13 +279,20 @@ export default class Manager {
 				if (this.currentTrack) this.play(this.currentTrack);
 				break;
 			case QueueMode.RepeatAll:
-				const trackToPlay = this.queue.shift();
+				let trackToPlay = this.queue.shift();
+				if (typeof trackToPlay === 'undefined') {
+					if (this.dormantQueue.length > 0) {
+						let newTracks = this.dormantQueue.splice(0, QUEUE_LIMIT);
+						this.addManyToQueue(newTracks);
+						trackToPlay = this.queue.shift();
+					}
+				}
 				if (trackToPlay) {
 					if (this.currentTrack) this.history.push(this.currentTrack);
 					this.play(trackToPlay);
 				} else {
-					this.queue = [...this.history];
-					this.history = [];
+					this.queue.length = 0;
+					this.addManyToQueue(this.history.splice(0, QUEUE_LIMIT));
 					const track = this.queue.shift();
 					if (track) {
 						if (this.currentTrack) this.history.push(this.currentTrack);
