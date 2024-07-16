@@ -90,5 +90,19 @@
 		"song": "トラック",
 		"songs": "トラック",
 		"latest_add": "最新の追加は"
+	},
+
+	"lrc_related": {
+		"no_lyrics": "歌詞が見つかりません",
+		"search_btn": "歌詞を検索",
+		"searching": "検索中...",
+		"fetch_error": "選択した曲の歌詞を取得できません",
+		"title_search": "歌詞が見つかりました",
+		"copy": "これらの歌詞はLRCLIBによって提供されています"
+	},
+
+	"view": {
+		"btn_cancel": "キャンセル",
+		"btn_save": "保存"
 	}
 }

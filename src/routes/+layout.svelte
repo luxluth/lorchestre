@@ -26,6 +26,8 @@
 	import { page } from '$app/stores';
 	import FirstRun from './FirstRun.svelte';
 	import { setToastManager } from '$lib/toast.svelte';
+	import { setEvc } from '$lib/editviewController.svelte';
+	import EditView from './EditView.svelte';
 	// import { invoke } from '@tauri-apps/api/core';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
@@ -33,6 +35,7 @@
 	let first_run = $state(data.app_info.first_run);
 
 	const tm = setToastManager();
+	const evc = setEvc();
 
 	let p = setPage();
 	let conf = setAppConfig(data.config, data.default_config);
@@ -42,7 +45,7 @@
 	setManager();
 	setCmds();
 	setCtx();
-	setLrc(conf, tm);
+	setLrc(conf, tm, evc);
 	setFilter();
 	setList(media);
 
@@ -93,6 +96,7 @@
 {#if !first_run}
 	<ToastDisplay />
 	<Player />
+	<EditView />
 	<ContextMenu />
 {/if}
 

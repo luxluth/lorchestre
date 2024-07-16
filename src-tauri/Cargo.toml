@@ -1,6 +1,6 @@
 [package]
 name = "lorchestre"
-version = "0.1.0"
+version = "0.1.1"
 description = "The only music player you'll ever need"
 authors = ["luxluth"]
 edition = "2021"
@@ -31,7 +31,7 @@ lofty = "0.20.0"
 lrc = "0.1.8"
 md5 = "0.7.0"
 mime_guess = "2.0.4"
-socketioxide = { version = "0.13.1", features = ["state"] }
+socketioxide = { version = "0.14.0", features = ["state"] }
 tokio = { version = "1.38.0", features = ["full"] }
 tower = "0.4.13"
 tower-http = { version = "0.5.2", features = ["cors"] }
@@ -39,4 +39,3 @@ tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
 base64 = "0.22.1"
-tauri-plugin-decorum = "0.1.3"

@@ -90,5 +90,19 @@
 		"song": "track",
 		"songs": "tracks",
 		"latest_add": "Your latest addition is"
+	},
+
+	"lrc_related": {
+		"no_lyrics": "No lyrics found",
+		"search_btn": "search for lyrics",
+		"searching": "searching...",
+		"fetch_error": "Unable to get lyrics for the selected song",
+		"title_search": "Lyrics found",
+		"copy": "Those lyrics are provided by LRCLIB"
+	},
+
+	"view": {
+		"btn_cancel": "Cancel",
+		"btn_save": "Save"
 	}
 }

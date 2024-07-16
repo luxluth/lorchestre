@@ -90,5 +90,19 @@
 		"song": "morceau",
 		"songs": "morceaux",
 		"latest_add": "Votre dernier ajout est"
+	},
+
+	"lrc_related": {
+		"no_lyrics": "Aucune parole trouvée",
+		"search_btn": "rechercher des paroles",
+		"searching": "recherche en cours...",
+		"fetch_error": "Impossible d'obtenir les paroles de la chanson sélectionnée",
+		"title_search": "Paroles trouvées",
+		"copy": "Ces paroles sont fournies par LRCLIB"
+	},
+
+	"view": {
+		"btn_cancel": "Annuler",
+		"btn_save": "Enregistrer"
 	}
 }

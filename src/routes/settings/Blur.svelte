@@ -64,7 +64,7 @@
 		color: var(--bg);
 	}
 
-	:global([aria-checked='true']) {
+	:global(.checkbox[aria-checked='true']) {
 		background-color: var(--brand-color);
 	}
 </style>

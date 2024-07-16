@@ -18,6 +18,8 @@
 	import { getManager } from '$lib/manager.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
 
+	import { _ } from 'svelte-i18n';
+
 	let manager = getManager();
 	let lrcMngr = getLrc();
 	let config = getAppConfig();
@@ -265,7 +267,7 @@
 						}}
 					>
 						<Search size={'1em'} />
-						{lrcMngr.searching ? 'searching...' : 'search for lyrics'}</button
+						{lrcMngr.searching ? $_('lrc_related.searching') : $_('lrc_related.search_btn')}</button
 					>
 				{/if}
 				<div class="volume">

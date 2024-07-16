@@ -2,7 +2,7 @@ import { getContext, onMount, setContext } from 'svelte';
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
 import { toQueueTrack } from './utils';
 import { invoke } from '@tauri-apps/api/core';
-import { TauriEvent } from '@tauri-apps/api/event';
+import { TauriEvent, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrent } from '@tauri-apps/api/window';
 
 type Func<Out> = () => Out;
@@ -339,10 +339,10 @@ export default class Manager {
 
 	constructor() {
 		onMount(() => {
+			let unlistens: UnlistenFn[] = [];
 			(async () => {
 				let currentVersion = await invoke<string>('version');
 				const data = Manager.getLocalStorageData(currentVersion);
-				console.log(data);
 
 				if (data.currentTrack) await this.play(JSON.parse(data.currentTrack));
 				if (data.queue) this.queue = JSON.parse(data.queue);
@@ -354,19 +354,27 @@ export default class Manager {
 				if (data.currentTime) this.currentTime = JSON.parse(data.currentTime);
 
 				let win = getCurrent();
-				win.once(TauriEvent.WINDOW_CLOSE_REQUESTED, (ev) => {
-					localStorage.setItem('qmode', JSON.stringify(this.qmode));
-					localStorage.setItem('pmode', JSON.stringify(this.pmode));
-					localStorage.setItem('queue', JSON.stringify(this.queue));
-					localStorage.setItem('history', JSON.stringify(this.history));
-					localStorage.setItem('dormantQueue', JSON.stringify(this.dormantQueue));
-					localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
-					localStorage.setItem('volume', JSON.stringify(this.volume));
-					localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
-				});
+				unlistens.push(
+					await win.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async (_) => {
+						localStorage.setItem('qmode', JSON.stringify(this.qmode));
+						localStorage.setItem('pmode', JSON.stringify(this.pmode));
+						localStorage.setItem('queue', JSON.stringify(this.queue));
+						localStorage.setItem('history', JSON.stringify(this.history));
+						localStorage.setItem('dormantQueue', JSON.stringify(this.dormantQueue));
+						localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
+						localStorage.setItem('volume', JSON.stringify(this.volume));
+						localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
+						await invoke('close');
+					})
+				);
 
 				this.initialized = true;
 			})();
+			return () => {
+				unlistens.forEach((unlisten) => {
+					unlisten();
+				});
+			};
 		});
 	}
 }

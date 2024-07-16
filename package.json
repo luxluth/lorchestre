@@ -1,6 +1,6 @@
 {
 	"name": "lorchestre",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "",
 	"private": true,
 	"type": "module",
@@ -23,7 +23,6 @@
 		"@fontsource-variable/noto-serif-jp": "^5.0.1",
 		"@fontsource/calistoga": "^5.0.21",
 		"@fontsource/ibm-plex-mono": "^5.0.13",
-		"@fontsource/poppins": "^5.0.14",
 		"@sveltejs/adapter-static": "^3.0.2",
 		"@sveltejs/kit": "^2.5.18",
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
@@ -43,6 +42,6 @@
 		"svelte-i18n": "^4.0.0",
 		"tslib": "^2.6.3",
 		"typescript": "^5.5.3",
-		"vite": "^5.3.3"
+		"vite": "^5.3.4"
 	}
 }

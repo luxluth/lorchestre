@@ -4,7 +4,7 @@
 use lorconf::Config;
 mod daemon;
 use crate::daemon::entry::start;
-use std::env::consts::OS;
+use std::{env::consts::OS, fs::File, io::Write};
 use tauri::Manager;
 use tracing_subscriber::FmtSubscriber;
 
@@ -67,6 +67,13 @@ async fn sync_music(app: tauri::AppHandle, window: tauri::Window) {
     let client = reqwest::Client::new();
     let _ = client.put(endpoint).send().await;
     let _ = window.emit("endsync", "");
+}
+
+#[tauri::command]
+fn save_lyrics(input: String, path: String) {
+    let lrc_path = std::path::PathBuf::from(path).with_extension("lrc");
+    let mut lrc_file = File::create(lrc_path).unwrap();
+    let _ = lrc_file.write_all(input.as_bytes());
 }
 
 #[tauri::command]
@@ -136,11 +143,15 @@ struct AppInfoExternal {
     first_run: bool,
 }
 
+#[tauri::command]
+fn close() {
+    std::process::exit(0x00);
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     tauri::Builder::default()
-        .plugin(tauri_plugin_decorum::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             platform,
@@ -155,7 +166,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             version,
             app_info,
             runned,
-            start_daemon
+            start_daemon,
+            save_lyrics,
+            close
         ])
         .setup(move |app| {
             let is_first_run = !app
@@ -169,28 +182,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let _ = start(None).await;
                 }
             });
-
-            // let main_window = app.get_webview_window("main").unwrap();
-            // Get this from cache
-            // let _ = main_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
-            //     width: 800.0,
-            //     height: 600.0,
-            // }));
-
-            #[cfg(target_os = "windows")]
-            {
-                use tauri_plugin_decorum::WebviewWindowExt;
-
-                let main_window = app.get_webview_window("main").unwrap();
-                main_window.create_overlay_titlebar().unwrap();
-            }
-
-            #[cfg(target_os = "macos")]
-            {
-                use tauri_plugin_decorum::WebviewWindowExt;
-                let main_window = app.get_webview_window("main").unwrap();
-                main_window.set_traffic_lights_inset(16.0, 20.0).unwrap();
-            }
 
             Ok(())
         })
