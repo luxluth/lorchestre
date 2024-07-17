@@ -26,14 +26,14 @@
 <div class="search ns" class:active={search.query.length > 0}>
 	<h1>{$_('search')}</h1>
 	{#if search.query.length > 0}
-		<p class="tip">Résultat pour le terme <b>{search.query}</b></p>
+		<p class="tip">{$_('search_page.res_msg')} <b>{search.query}</b></p>
 	{:else}
-		<p class="tip">Commencer à écrire pour chercher...</p>
+		<p class="tip">{$_('search_page.no_ipt')}</p>
 	{/if}
 
 	<div class="searchres">
 		{#if search.isEmpty() && search.query.length > 0}
-			Aucun résultat
+			{$_('search_page.no_res')}
 		{:else if !search.isEmpty()}
 			<div class="results">
 				{#if search.results.tracks.length > 0}
