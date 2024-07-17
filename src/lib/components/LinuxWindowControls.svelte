@@ -26,67 +26,69 @@
 	});
 </script>
 
-<div class="controls" data-tauri-drag-region>
-	{#each buttons as button}
-		{#if button === 'minimize'}
-			<div
-				role="button"
-				class="minimze"
-				data-desktop={desktop}
-				onclick={async () => {
-					let window = getCurrent();
-					await window.minimize();
-				}}
-				tabindex="-1"
-				onkeydown={() => {}}
-			>
-				{#if desktop === 'kde'}
-					{@html kdeWindowMinimize}
-				{:else}
-					{@html gnomeWindowMinimize}
-				{/if}
-			</div>
-		{/if}
-		{#if button === 'maximize'}
-			<div
-				role="button"
-				class="maximize"
-				data-desktop={desktop}
-				onclick={async () => {
-					let window = getCurrent();
-					await window.maximize();
-				}}
-				tabindex="-1"
-				onkeydown={() => {}}
-			>
-				{#if desktop === 'kde'}
-					{@html kdeWindowMaximize}
-				{:else}
-					{@html gnomeWindowMaximize}
-				{/if}
-			</div>
-		{/if}
-		{#if button === 'close'}
-			<div
-				role="button"
-				class="close"
-				data-desktop={desktop}
-				onclick={async () => {
-					let window = getCurrent();
-					await window.close();
-				}}
-				tabindex="-1"
-				onkeydown={() => {}}
-			>
-				{#if desktop === 'kde'}
-					{@html kdeWindowClose}
-				{:else}
-					{@html gnomeWindowClose}
-				{/if}
-			</div>
-		{/if}
-	{/each}
-</div>
+{#if desktop === 'gnome' || desktop === 'kde'}
+	<div class="controls" data-tauri-drag-region>
+		{#each buttons as button}
+			{#if button === 'minimize'}
+				<div
+					role="button"
+					class="minimze"
+					data-desktop={desktop}
+					onclick={async () => {
+						let window = getCurrent();
+						await window.minimize();
+					}}
+					tabindex="-1"
+					onkeydown={() => {}}
+				>
+					{#if desktop === 'kde'}
+						{@html kdeWindowMinimize}
+					{:else}
+						{@html gnomeWindowMinimize}
+					{/if}
+				</div>
+			{/if}
+			{#if button === 'maximize'}
+				<div
+					role="button"
+					class="maximize"
+					data-desktop={desktop}
+					onclick={async () => {
+						let window = getCurrent();
+						await window.maximize();
+					}}
+					tabindex="-1"
+					onkeydown={() => {}}
+				>
+					{#if desktop === 'kde'}
+						{@html kdeWindowMaximize}
+					{:else}
+						{@html gnomeWindowMaximize}
+					{/if}
+				</div>
+			{/if}
+			{#if button === 'close'}
+				<div
+					role="button"
+					class="close"
+					data-desktop={desktop}
+					onclick={async () => {
+						let window = getCurrent();
+						await window.close();
+					}}
+					tabindex="-1"
+					onkeydown={() => {}}
+				>
+					{#if desktop === 'kde'}
+						{@html kdeWindowClose}
+					{:else}
+						{@html gnomeWindowClose}
+					{/if}
+				</div>
+			{/if}
+		{/each}
+	</div>
+{/if}
 
 <style>
 	.controls {
