@@ -17,11 +17,11 @@
 	let search = getSearch();
 </script>
 
-<div class="nav ns" style="--top-by: {platform === 'macos' ? '4em' : '1em'}">
+<div class="nav ns">
 	{#if platform === 'macos'}
 		<div class="dragzone" data-tauri-drag-region></div>
 	{/if}
-	<section class="search">
+	<section class="search" data-tauri-drag-region>
 		<input
 			type="search"
 			name="search"
@@ -115,10 +115,6 @@
 	}
 
 	.dragzone {
-		z-index: 1000;
-		position: absolute;
-		top: 0;
-		left: 0;
 		height: 2em;
 		background-color: none;
 		width: 100%;
@@ -145,7 +141,7 @@
 
 	.nav {
 		padding-block: 2em;
-		padding-top: var(--top-by);
+		padding-top: 1em;
 		padding-inline: 1em;
 		display: flex;
 		flex-direction: column;

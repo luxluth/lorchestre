@@ -17,6 +17,7 @@
 				"width": 1470,
 				"height": 880,
         "titleBarStyle": "Overlay",
+        "decorations": false,
         "hiddenTitle": true,
         "center": true,
         "shadow": true,

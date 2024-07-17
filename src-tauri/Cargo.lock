@@ -2236,7 +2236,9 @@ dependencies = [
  "socketioxide",
  "tauri",
  "tauri-build",
+ "tauri-plugin-decorum",
  "tauri-plugin-shell",
+ "tauri-plugin-window-state",
  "tokio",
  "tower",
  "tower-http",
@@ -4356,6 +4358,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-decorum"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fccbcf16f789b3fb01470511cbed050d98803d7580bdd55f53f8ef6d8737e8f1"
+dependencies = [
+ "anyhow",
+ "cocoa",
+ "objc",
+ "rand 0.8.5",
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "windows 0.56.0",
+]
+
+[[package]]
 name = "tauri-plugin-shell"
 version = "2.0.0-beta.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4374,6 +4392,21 @@ dependencies = [
  "tauri-plugin",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "tauri-plugin-window-state"
+version = "2.0.0-beta.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74b5596f41b90668ea37562d512e1dead687d9ae5eadb49f9faa8b875a2740a3"
+dependencies = [
+ "bitflags 2.6.0",
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror",
 ]
 
 [[package]]

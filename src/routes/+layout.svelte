@@ -28,6 +28,7 @@
 	import { setToastManager } from '$lib/toast.svelte';
 	import { setEvc } from '$lib/editviewController.svelte';
 	import EditView from './EditView.svelte';
+	import WindowControls from '$lib/components/WindowControls.svelte';
 	// import { invoke } from '@tauri-apps/api/core';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
@@ -64,7 +65,6 @@
 			if (!media.loaded) {
 				await media.load();
 			}
-			// await invoke('plugin:decorum|show_snap_overlay');
 		})();
 	});
 
@@ -82,6 +82,7 @@
 			<header class="glass">
 				<MiniPlayer />
 				<Commands />
+				<WindowControls platform={data.platform} />
 			</header>
 			<main>
 				{@render children()}

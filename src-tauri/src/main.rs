@@ -6,6 +6,7 @@ mod daemon;
 use crate::daemon::entry::start;
 use std::{env::consts::OS, fs::File, io::Write};
 use tauri::Manager;
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tracing_subscriber::FmtSubscriber;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -13,6 +14,32 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[tauri::command]
 fn platform() -> String {
     OS.to_string()
+}
+
+#[cfg(target_os = "linux")]
+#[tauri::command]
+fn desktop() -> String {
+    std::env::var("XDG_CURRENT_DESKTOP")
+        .unwrap_or("UNKNOWN".to_string())
+        .to_lowercase()
+}
+
+#[cfg(target_os = "linux")]
+#[tauri::command]
+fn gnome_window_controls() -> Vec<String> {
+    let cmd = std::process::Command::new("gsettings")
+        .args(["get", "org.gnome.desktop.wm.preferences", "button-layout"])
+        .output()
+        .unwrap();
+
+    String::from_utf8(cmd.stdout)
+        .unwrap()
+        .replace('\'', "")
+        .replace("appmenu:", "")
+        .split(',')
+        .map(|x| x.trim().to_string())
+        .filter(|x| !x.is_empty())
+        .collect()
 }
 
 #[tauri::command]
@@ -144,7 +171,8 @@ struct AppInfoExternal {
 }
 
 #[tauri::command]
-fn close() {
+fn close(app: tauri::AppHandle) {
+    let _ = app.save_window_state(StateFlags::all());
     std::process::exit(0x00);
 }
 
@@ -153,6 +181,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             platform,
             locale,
@@ -168,7 +197,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             runned,
             start_daemon,
             save_lyrics,
-            close
+            close,
+            #[cfg(target_os = "linux")]
+            desktop,
+            #[cfg(target_os = "linux")]
+            gnome_window_controls,
         ])
         .setup(move |app| {
             let is_first_run = !app
@@ -182,6 +215,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let _ = start(None).await;
                 }
             });
+
+            let window = app.get_webview_window("main").unwrap();
+            let _ = window.restore_state(StateFlags::all());
+
+            #[cfg(target_os = "macos")]
+            {
+                use tauri_plugin_decorum::WebviewWindowExt;
+                window.set_traffic_lights_inset(16.0, 20.0).unwrap();
+            }
 
             Ok(())
         })

@@ -35,7 +35,7 @@
 	}
 </script>
 
-<div class="mp" class:dead={typeof manager.currentTrack === 'undefined'}>
+<div class="mp ns" class:dead={typeof manager.currentTrack === 'undefined'} data-tauri-drag-region>
 	{#if manager.currentTrack}
 		<section class="controls">
 			<button
