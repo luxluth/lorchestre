@@ -230,7 +230,8 @@
 						src={getCoverUri(
 							manager.currentTrack?.album_id as string,
 							manager.currentTrack?.cover_ext as string,
-							config
+							config,
+							30
 						)}
 						alt=""
 					/>
@@ -345,7 +346,7 @@
 	</section>
 	{#if hasLyrics}
 		<section class="lrc" bind:this={lyricsParent}>
-			{#each lrcMngr.lines as { text, startTime, id }}
+			{#each lrcMngr.lines as { text, startTime, id, vocals, isInstrumental, marker }}
 				<div
 					class="line ns"
 					data-time={startTime}
@@ -354,13 +355,23 @@
 					onkeydown={() => {}}
 					role="button"
 					tabindex="0"
-					class:instrumental={text == '♪'}
+					class:instrumental={text == '♪' || isInstrumental}
 					class:empty={text == ''}
+					data-marker={typeof marker === 'string'
+						? 'empty'
+						: `${marker.Named[0]}##${marker.Named[1]}`}
 				>
-					{#if text == '♪'}
+					{#if text == '♪' || isInstrumental}
 						<div class="dot"></div>
 					{:else}
 						{text}
+					{/if}
+					{#if vocals.length > 0}
+						<div class="vocals">
+							{#each vocals as vocal}
+								<div class="vocal">{vocal.text}</div>
+							{/each}
+						</div>
 					{/if}
 				</div>
 			{/each}
@@ -707,6 +718,14 @@
 	.line.active.instrumental {
 		scale: 1;
 		height: auto;
+	}
+
+	.__player .lrc .line .vocals {
+		padding-top: 0.3em;
+	}
+
+	.__player .lrc .line .vocal {
+		font-size: 1.5rem;
 	}
 
 	.__player .cover {

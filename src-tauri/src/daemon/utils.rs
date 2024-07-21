@@ -17,7 +17,7 @@ pub enum CacheCompareDiff {
     NoDiff,
 }
 
-pub async fn cache_resolve(cache_dir: &PathBuf, win: Option<tauri::Window>) -> Media {
+pub async fn cache_resolve(cache_dir: &Path, win: Option<tauri::Window>) -> Media {
     info!("Starting cache process...");
     let p_string = cache_dir.join(".cache.json");
     let covers_dir = cache_dir.join("covers");
@@ -43,7 +43,7 @@ pub async fn cache_resolve(cache_dir: &PathBuf, win: Option<tauri::Window>) -> M
                 match d {
                     CacheCompareDiff::ToAdd { files } => {
                         for file in files {
-                            let msg = format!("+ {}", file.display().to_string());
+                            let msg = format!("+ {}", file.display());
                             info!(msg);
                             if let Some(win) = win.clone() {
                                 let _ = win.emit("sync", msg);
@@ -53,7 +53,7 @@ pub async fn cache_resolve(cache_dir: &PathBuf, win: Option<tauri::Window>) -> M
                     }
                     CacheCompareDiff::ToRemove { files } => {
                         for file in files {
-                            let msg = format!("- {}", file.display().to_string());
+                            let msg = format!("- {}", file.display());
                             info!(msg);
                             if let Some(win) = win.clone() {
                                 let _ = win.emit("sync", msg);
@@ -73,7 +73,7 @@ pub async fn cache_resolve(cache_dir: &PathBuf, win: Option<tauri::Window>) -> M
         } else {
             warn!("[WARN] Unmatched Media cache verison");
             for file in curr_audio_files {
-                let msg = format!("+ {}", file.display().to_string());
+                let msg = format!("+ {}", file.display());
                 info!(msg);
                 if let Some(win) = win.clone() {
                     let _ = win.emit("sync", msg);
@@ -85,13 +85,13 @@ pub async fn cache_resolve(cache_dir: &PathBuf, win: Option<tauri::Window>) -> M
         }
     } else {
         for file in curr_audio_files {
-            let msg = format!("+ {}", file.display().to_string());
+            let msg = format!("+ {}", file.display());
             info!(msg);
             if let Some(win) = win.clone() {
                 let _ = win.emit("sync", msg);
             }
 
-            info!("+ {}", file.display().to_string());
+            info!("+ {}", file.display());
             cache.add_media(file, &covers_dir);
         }
         needs_update = true;

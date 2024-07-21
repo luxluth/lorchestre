@@ -1,6 +1,6 @@
 use super::{
     config::{self, Dir},
-    global::{LyricLine, Media, Track},
+    global::{Media, Track},
     utils,
 };
 use axum::{
@@ -76,7 +76,7 @@ pub async fn start(win: Option<tauri::Window>) -> Result<(), Box<dyn std::error:
 
     let req_client = reqwest::Client::new();
     let response = req_client.get(format!("http://{host}:{port}")).send().await;
-    if let Ok(_) = response {
+    if response.is_ok() {
         tracing::error!("Daemon already running");
         return Err("Daemon already running".into());
     } else {
@@ -139,7 +139,7 @@ impl ImageSize {
 
 #[derive(serde::Serialize)]
 pub struct Lyrics {
-    lyrics: Vec<LyricLine>,
+    lyrics: Vec<alrc::Line>,
 }
 
 async fn lyrics(State(state): State<AppData>, Query(music_path): Query<MusicPath>) -> Json<Lyrics> {
@@ -169,7 +169,7 @@ struct LyricsSearchResponse {
 
 #[derive(serde::Serialize)]
 struct Lrc {
-    parsed: Vec<LyricLine>,
+    parsed: Vec<alrc::Line>,
     raw: String,
 }
 
@@ -203,7 +203,7 @@ async fn search_lyrics(
                 for lyric in e.json::<Vec<LyricsSearchResponse>>().await.unwrap() {
                     if let Some(synched) = lyric.syncedLyrics {
                         lyrics.push(Lrc {
-                            parsed: Track::parse_lyrics(&synched),
+                            parsed: Track::parse_lyrics(&synched).lines,
                             raw: synched,
                         });
                     }
@@ -247,8 +247,7 @@ async fn cover(
         let _ = file.read_to_end(&mut buf);
 
         let body = Body::from(buf);
-        let resp = Response::new(body);
-        return resp;
+        Response::new(body)
     } else {
         warn!("Fail to retrieve the cover file `{}`", path.display());
         let buf = include_bytes!("./assets/default-cover.png");
@@ -293,7 +292,7 @@ async fn audio(
         let r = range.clone().map(|TypedHeader(range)| range);
         let response = Ranged::new(r, body).try_respond();
         if let Ok(response) = response {
-            return response.into_response();
+            response.into_response()
         } else {
             let mut response =
                 format!("An error occured while satisfying the request for path `{path}`")

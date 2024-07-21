@@ -39,5 +39,5 @@ pub fn get_dirs() -> Dir {
             .unwrap();
     }
 
-    return dir;
+    dir
 }

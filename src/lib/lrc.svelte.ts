@@ -1,7 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import { type LyricLine, type Line, type Track, type LyricsResponse, ToastKind } from './type';
 import type AppConfig from './config.svelte';
-import { getLyricsUri, searchLyricsUri } from './utils';
+import { getLNTime, getLyricsUri, searchLyricsUri } from './utils';
 import type ToastManager from './toast.svelte';
 import type EditViewController from './editviewController.svelte';
 import LyricsChoiceEditView from '$lib/components/LrycisChoiceEditView.svelte';
@@ -39,17 +39,25 @@ export default class LrcManager {
 
 			if (next) {
 				lines.push({
-					startTime: current.start_time / 1000,
+					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: next.start_time / 1000
+					endTime: getLNTime(next.time) / 1000,
+					vocals: current.vocals,
+					syllables: current.syllables,
+					isInstrumental: current.is_instrumental,
+					marker: current.marker
 				});
 			} else {
 				lines.push({
-					startTime: current.start_time / 1000,
+					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: duration
+					endTime: duration,
+					vocals: current.vocals,
+					syllables: current.syllables,
+					isInstrumental: current.is_instrumental,
+					marker: current.marker
 				});
 			}
 		}
@@ -62,6 +70,7 @@ export default class LrcManager {
 		let url = getLyricsUri(track.path_base64, this.conf);
 		const raw_lines: LyricLine[] = ((await (await fetch(url)).json()) as { lyrics: LyricLine[] })
 			.lyrics;
+		console.debug(raw_lines);
 
 		for (let i = 0; i < raw_lines.length; i++) {
 			const current = raw_lines[i] as LyricLine;
@@ -69,17 +78,25 @@ export default class LrcManager {
 
 			if (next) {
 				lines.push({
-					startTime: current.start_time / 1000,
+					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: next.start_time / 1000
+					endTime: getLNTime(next.time) / 1000,
+					vocals: current.vocals,
+					syllables: current.syllables,
+					isInstrumental: current.is_instrumental,
+					marker: current.marker
 				});
 			} else {
 				lines.push({
-					startTime: current.start_time / 1000,
+					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: duration
+					endTime: duration,
+					vocals: current.vocals,
+					syllables: current.syllables,
+					isInstrumental: current.is_instrumental,
+					marker: current.marker
 				});
 			}
 		}
@@ -97,17 +114,25 @@ export default class LrcManager {
 
 			if (next) {
 				lines.push({
-					startTime: current.start_time / 1000,
+					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: next.start_time / 1000
+					endTime: getLNTime(next.time) / 1000,
+					vocals: current.vocals,
+					syllables: current.syllables,
+					isInstrumental: current.is_instrumental,
+					marker: current.marker
 				});
 			} else {
 				lines.push({
-					startTime: current.start_time / 1000,
+					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: duration
+					endTime: duration,
+					vocals: current.vocals,
+					syllables: current.syllables,
+					isInstrumental: current.is_instrumental,
+					marker: current.marker
 				});
 			}
 		}

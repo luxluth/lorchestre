@@ -1,4 +1,4 @@
-import type { QueueTrack, Track } from '$lib/type';
+import type { LyricLine, QueueTrack, RawTimestamp, Track } from '$lib/type';
 import { getCurrent } from '@tauri-apps/api/window';
 import type AppConfig from '$lib/config.svelte';
 
@@ -97,4 +97,8 @@ export function recordToMap<V>(record: Record<string, V>): Map<string, V> {
 	}
 
 	return map;
+}
+
+export function getLNTime(line: RawTimestamp) {
+	return (line.minutes * 60 + line.seconds) * 1000 + (line.millis ?? 0);
 }

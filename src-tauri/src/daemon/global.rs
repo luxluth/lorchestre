@@ -13,12 +13,6 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 use tracing::error;
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-pub struct LyricLine {
-    pub start_time: i64,
-    pub text: String,
-}
-
 #[derive(serde::Serialize, Debug)]
 pub struct Cover {
     data: Vec<u8>,
@@ -212,19 +206,11 @@ impl Track {
         audio
     }
 
-    pub fn parse_lyrics(input: &str) -> Vec<LyricLine> {
-        let lyrics = lrc::Lyrics::from_str(input).unwrap();
-        lyrics
-            .get_timed_lines()
-            .iter()
-            .map(|(time, content)| LyricLine {
-                start_time: time.get_timestamp(),
-                text: content.to_string(),
-            })
-            .collect()
+    pub fn parse_lyrics(input: &str) -> alrc::AdvancedLrc {
+        alrc::AdvancedLrc::parse(input).unwrap()
     }
 
-    pub fn get_lyrics(&self) -> Vec<LyricLine> {
+    pub fn get_lyrics(&self) -> Vec<alrc::Line> {
         let lrc_path = PathBuf::from(&self.file_path).with_extension("lrc");
         if lrc_path.exists() {
             let mut f = fs::File::open(&lrc_path).unwrap();
@@ -232,10 +218,7 @@ impl Track {
             f.read_to_end(&mut buf).unwrap();
             let buf = String::from_utf8(buf);
             match buf {
-                Ok(buf) => {
-                    let buf = utils::remove_lyrics_tags(buf);
-                    Track::parse_lyrics(&buf)
-                }
+                Ok(buf) => Track::parse_lyrics(&buf).lines,
                 Err(e) => {
                     error!("{}", e);
                     vec![]
@@ -401,9 +384,9 @@ impl Media {
         self.albums.retain(|x| !x.tracks.is_empty());
     }
 
-    pub fn get_album(&self, id: &String) -> Option<Album> {
+    pub fn get_album(&self, id: &str) -> Option<Album> {
         for album in self.albums.iter() {
-            if album.id == id.clone() {
+            if album.id == id {
                 return Some(Album {
                     name: album.name.clone(),
                     artist: album.artist.clone(),
@@ -457,15 +440,6 @@ impl Songs {
 
         albums
     }
-
-    // pub fn into_collection(&self) -> TrackCollection {
-    //     let mut map = TrackCollection::new();
-    //     for audio in &self.audios {
-    //         map.insert(PathBuf::from(audio.file_path.clone()), audio.clone());
-    //     }
-    //
-    //     map
-    // }
 }
 
 pub fn check_dir(dir: &PathBuf) {
@@ -488,22 +462,6 @@ pub mod utils {
             image::DynamicImage::ImageRgb8(buffer) => buffer.to_vec(),
             _ => unreachable!(),
         }
-    }
-
-    pub fn remove_lyrics_tags(buf: String) -> String {
-        let strings: Vec<String> = buf
-            .lines()
-            .filter(|x| !x.is_empty())
-            .filter(|x| {
-                let mut chars = x.chars();
-                let openparen = chars.next().unwrap();
-                let nextdata = chars.next().unwrap();
-                openparen == '[' && nextdata.is_ascii_digit()
-            })
-            .map(|x| x.to_string())
-            .collect();
-
-        strings.join("\n")
     }
 
     pub fn get_audio_files() -> Vec<PathBuf> {

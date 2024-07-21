@@ -14,12 +14,43 @@ export enum ToastKind {
 
 export type Toast = ToastData & { id: number };
 
-export type LyricLine = {
-	start_time: number;
+export type RawTimestamp = {
+	minutes: u8;
+	seconds: u8;
+	millis: Option<u8>;
+};
+
+export type Vocal = {
 	text: string;
+	time: RawTimestamp;
+	syllables: Vec<Syllable>;
+};
+
+export type Syllable = {
+	text: string;
+	start: RawTimestamp;
+};
+
+export type Marker =
+	| {
+			Named: [string, string];
+	  }
+	| 'Empty';
+
+export type LyricLine = {
+	marker: Marker;
+	syllables: Vec<Syllable>;
+	text: string;
+	time: RawTimestamp;
+	vocals: Vec<Vocal>;
+	ln: usize;
+	is_instrumental: boolean;
 };
 
 type u8 = number;
+type usize = number;
+type Option<T> = T | null;
+type Vec<T> = T[];
 
 export type Color = {
 	r: u8;
@@ -96,6 +127,10 @@ export type Line = {
 	endTime: number;
 	text: string;
 	id: number;
+	vocals: Vec<Vocal>;
+	syllables: Vec<Syllable>;
+	isInstrumental: boolean;
+	marker: Marker;
 };
 
 export enum MessageKind {
