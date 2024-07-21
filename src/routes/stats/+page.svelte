@@ -54,7 +54,7 @@
 {#if song}
 	<p class="ns">{$_('stats_page.latest_add')}</p>
 	<div
-		class="recent_added glass"
+		class="glass recent_added"
 		style="--r: {song.color?.r ?? 0}; --g: {song.color?.g ?? 0}; --b: {song.color?.b ?? 0};"
 	>
 		<div
@@ -93,7 +93,7 @@
 		margin-top: 1em;
 		height: 20em;
 		width: 100%;
-		background-color: rgba(var(--r), var(--g), var(--b), 0.2);
+		background-color: rgba(var(--r), var(--g), var(--b), 0.2) !important;
 		border: 1px solid var(--highlight);
 		border-radius: 10px;
 		display: flex;
