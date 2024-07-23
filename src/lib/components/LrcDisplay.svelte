@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { LyricLine } from '$lib/type';
-	import { formatTime } from '$lib/utils';
+	import { formatTime, getLNTime } from '$lib/utils';
 
 	let { lyrics }: { lyrics: LyricLine[] } = $props();
 </script>
@@ -8,7 +8,7 @@
 <div class="lyrics ns">
 	{#each lyrics as lyric}
 		<div class="lrc">
-			<span class="time">{formatTime(lyric.start_time / 1000)}</span>
+			<span class="time">{formatTime(getLNTime(lyric.time) / 1000)}</span>
 			<span class="text">{lyric.text}</span>
 		</div>
 	{/each}
