@@ -1,28 +1,111 @@
 use std::{
+    collections::HashMap,
     fs::File,
-    io::Read,
+    io::{self, Read, Write},
     path::{Path, PathBuf},
+    str::FromStr,
 };
 
 pub struct M3U8;
 
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
-pub struct Playlist {
+pub struct M3u8Playlist {
     pub name: String,
     pub tracks: Vec<PathBuf>,
     pub path: String,
     pub id: String,
 }
 
+pub type PlaylistMetadata = HashMap<String, String>;
+
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
+pub struct PlaylistData {
+    pub metadata: PlaylistMetadata,
+    pub tracks: Vec<PathBuf>,
+    pub path: String,
+    pub id: String,
+}
+
+impl PlaylistData {
+    pub fn parse(path: PathBuf) -> Self {
+        let mut f = std::fs::File::open(&path).unwrap();
+        let mut input = String::new();
+        let _ = f.read_to_string(&mut input);
+
+        let mut metadata = PlaylistMetadata::new();
+        let mut tracks: Vec<PathBuf> = vec![];
+        for line in input.lines() {
+            let line = line.trim();
+            if !line.is_empty() {
+                if let Some((left, right)) = line.split_once(':') {
+                    metadata.insert(left.trim().to_string(), right.trim().to_string());
+                } else {
+                    if let Ok(path) = PathBuf::from_str(line) {
+                        tracks.push(path)
+                    };
+                }
+            }
+        }
+
+        let data = format!("{}", path.display());
+        let id = md5::compute(data);
+
+        Self {
+            metadata,
+            path: format!("{}", path.display()),
+            tracks,
+            id: format!("{id:x}"),
+        }
+    }
+
+    pub fn get_name(&self) -> String {
+        if let Some(name) = self.metadata.get("Name") {
+            name.clone()
+        } else {
+            "@UNKNOWN@".to_string()
+        }
+    }
+
+    pub fn from_m3u8_playlist(p: M3u8Playlist) -> Self {
+        let mut metadata = PlaylistMetadata::new();
+        metadata.insert("Name".to_string(), p.name.clone());
+
+        Self {
+            metadata,
+            tracks: p.tracks,
+            path: p.path,
+            id: p.id,
+        }
+    }
+
+    pub fn save(&self, path: PathBuf) -> io::Result<()> {
+        let mut output = Vec::new();
+        for (meta_k, meta_v) in &self.metadata {
+            writeln!(&mut output, "{}: {}", meta_k, meta_v)?;
+        }
+
+        writeln!(&mut output)?;
+
+        for file in &self.tracks {
+            writeln!(&mut output, "{}", file.display())?;
+        }
+
+        let mut f = std::fs::File::create(path)?;
+        f.write_all(&output)?;
+
+        Ok(())
+    }
+}
+
 impl M3U8 {
-    pub fn parse(path: PathBuf) -> Playlist {
+    pub fn parse(path: PathBuf) -> PlaylistData {
         let p = path.clone();
         let name = p.file_stem().unwrap().to_str().unwrap_or("@UNKNOWN@");
         let mut text = String::new();
         let mut f = File::open(path.clone()).unwrap();
         let _ = f.read_to_string(&mut text);
 
-        let mut playlist = Playlist {
+        let mut playlist = M3u8Playlist {
             name: name.to_string(),
             path: format!("{}", path.display()),
             tracks: text
@@ -43,6 +126,11 @@ impl M3U8 {
 
         let id = md5::compute(data);
         playlist.id = format!("{id:x}");
+
+        let playlist = PlaylistData::from_m3u8_playlist(playlist);
+        if playlist.save(path.with_extension("playlist")).is_ok() {
+            let _ = std::fs::remove_file(&path);
+        }
 
         playlist
     }

@@ -104,8 +104,8 @@ export type QueueTrack = Track & {
 };
 
 export type Playlist = {
-	name: string;
-	tracks: string[];
+	metadata: Record<string, string>;
+	tracks: Vec<string>;
 	path: string;
 	id: string;
 };
@@ -167,7 +167,8 @@ export type ContextMenuEvent =
 
 export enum FilterType {
 	Alphabetic,
-	TimeBased
+	TimeBased,
+	NoFilter
 }
 
 export enum FilterOrder {

@@ -1,11 +1,11 @@
 import { getContext, onMount, setContext } from 'svelte';
 import FilterQuery from './filterq.svelte';
 import type MediaState from './media.svelte';
-import { type Playlist, type Track } from './type';
+import { FilterType, type Playlist, type Track } from './type';
 
 export default class List {
 	activeList = $state<Playlist | null>(null);
-	filters = new FilterQuery();
+	filters = new FilterQuery(FilterType.NoFilter);
 	tracks = $state<Track[]>([]);
 
 	constructor(media: MediaState) {

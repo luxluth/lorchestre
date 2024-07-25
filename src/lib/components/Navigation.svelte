@@ -69,7 +69,7 @@
 						}}
 					>
 						<List size={'1em'} />
-						{playlist.name}
+						{playlist.metadata['Name'] ?? '+£@&0m'}
 					</a>
 				{/each}
 			</div>

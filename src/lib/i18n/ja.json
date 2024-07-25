@@ -48,7 +48,8 @@
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
-				"title": "インターフェースの言語"
+				"title": "インターフェースの言語",
+				"choose_a_lang": "言語を選択してください"
 			},
 			"theme": {
 				"title": "アプリケーションの外観"
@@ -69,10 +70,13 @@
 
 		"filter": {
 			"filter_to_apply": "適用するフィルタ",
+			"selection_area_label_type": "フィルタータイプを選択してください",
 			"sort_order": "並び替え順序",
+			"selection_area_label_order": "並び順を選択してください",
 			"type": {
 				"alpha": "アルファベット順",
-				"date": "追加日"
+				"date": "追加日",
+				"no_filter": "フィルターなし"
 			},
 			"order": {
 				"asc": "昇順",

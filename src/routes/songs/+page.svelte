@@ -77,13 +77,16 @@
 	}
 
 	function applyFilterQuery(tracks: Track[]): Track[] {
-		let r = [];
+		let r: Track[] = [];
 		switch (filterquery.type) {
 			case FilterType.Alphabetic:
 				r = sortTracksByTitle(tracks);
 				break;
 			case FilterType.TimeBased:
 				r = sortTracksByDate(tracks);
+				break;
+			default:
+				r = tracks;
 				break;
 		}
 

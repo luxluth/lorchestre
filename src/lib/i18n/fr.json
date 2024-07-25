@@ -48,7 +48,8 @@
 		"section_ui_ux": {
 			"title": "Interface",
 			"language": {
-				"title": "Langage de l'interface"
+				"title": "Langage de l'interface",
+				"choose_a_lang": "Choisissez une langue"
 			},
 			"theme": {
 				"title": "Apparence de l'application"
@@ -69,10 +70,13 @@
 
 		"filter": {
 			"filter_to_apply": "Filtre à appliquer",
+			"selection_area_label_type": "Choisissez un type de filtre",
 			"sort_order": "Ordre du tri",
+			"selection_area_label_order": "Choisissez l'ordre du tri",
 			"type": {
 				"alpha": "Alphabétique",
-				"date": "Date d'ajout"
+				"date": "Date d'ajout",
+				"no_filter": "Sans filtre"
 			},
 			"order": {
 				"asc": "Ascendant",

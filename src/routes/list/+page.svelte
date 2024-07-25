@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FilterOrder, FilterType, type Track } from '$lib/type';
+	import { FilterOrder, FilterType, PlayingMode, type Track } from '$lib/type';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
@@ -20,8 +20,9 @@
 	let filterquery = list.filters;
 
 	async function playAll() {
-		let songs = applyFilters(list.tracks);
+		let songs = [...applyFilters(list.tracks)];
 		let song = songs.shift() as Track;
+		manager.pmode = PlayingMode.Normal;
 		manager.play(song);
 		manager.clearQueue();
 		manager.addManyToQueue(songs);
@@ -72,6 +73,9 @@
 			case FilterType.TimeBased:
 				r = sortTracksByDate(tracks);
 				break;
+			case FilterType.NoFilter:
+				r = tracks;
+				break;
 		}
 
 		if (filterquery.order == FilterOrder.Descendant) {
@@ -91,6 +95,7 @@
 	}
 
 	const filterTypes = [
+		{ value: FilterType.NoFilter, label: 'songs_page.filter.type.no_filter' },
 		{ value: FilterType.Alphabetic, label: 'songs_page.filter.type.alpha' },
 		{ value: FilterType.TimeBased, label: 'songs_page.filter.type.date' }
 	];
@@ -115,14 +120,14 @@
 
 	$effect(() => {
 		setTitle(
-			`${$_('playlist').toLowerCase()} — ${list.activeList ? list.activeList.name : ''} - L'orchestre`
+			`${$_('playlist').toLowerCase()} — ${list.activeList ? (list.activeList.metadata['Name'] ?? '+£@&0m') : ''} - L'orchestre`
 		);
 	});
 </script>
 
 <div class="page ns">
 	{#if list.activeList}
-		<h1>{list.activeList.name}</h1>
+		<h1>{list.activeList.metadata['Name'] ?? '+£@&0m'}</h1>
 		<p class="track_counts">
 			{list.activeList.tracks.length}
 			{list.activeList.tracks.length > 1 ? $_('stats_page.songs') : $_('stats_page.song')}
@@ -162,7 +167,10 @@
 						}
 					}}
 				>
-					<Select.Trigger class="select-trigger" aria-label="Choisissez un type de filtre">
+					<Select.Trigger
+						class="select-trigger"
+						aria-label={$_('songs_page.filter.selection_area_label_type')}
+					>
 						<Filter class="icon" />
 						<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
 					</Select.Trigger>
@@ -189,7 +197,10 @@
 						}
 					}}
 				>
-					<Select.Trigger class="select-trigger" aria-label="Choisissez l'ordre du tri">
+					<Select.Trigger
+						class="select-trigger"
+						aria-label={$_('songs_page.filter.selection_area_label_order')}
+					>
 						<ArrowDown10 class="icon" />
 						<div class="text">{$_('songs_page.filter.sort_order')}</div>
 					</Select.Trigger>

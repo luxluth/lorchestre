@@ -25,9 +25,15 @@
 			})();
 		}}
 	>
-		<Select.Trigger class="select-trigger" aria-label="Choisissez une langue">
+		<Select.Trigger
+			class="select-trigger"
+			aria-label={$_('settings_page.section_ui_ux.language.choose_a_lang')}
+		>
 			<Languages class="icon" />
-			<Select.Value class="text" placeholder="Choisissez une langue" />
+			<Select.Value
+				class="text"
+				placeholder={$_('settings_page.section_ui_ux.language.choose_a_lang')}
+			/>
 			<CaretUpDown class="icon caret" />
 		</Select.Trigger>
 		<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>

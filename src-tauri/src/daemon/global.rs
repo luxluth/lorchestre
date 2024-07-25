@@ -4,7 +4,7 @@ use color_thief::ColorFormat;
 use lofty::picture::{MimeType, PictureType};
 use lofty::prelude::*;
 use lofty::probe::Probe;
-use m3u8::Playlist;
+use m3u8::PlaylistData;
 use mime_guess::{self, mime};
 use std::collections::HashMap;
 use std::fs;
@@ -26,13 +26,14 @@ pub struct Color {
     b: u8,
 }
 
+const COLOR_THRESHOLD: f64 = 180.0;
+
 impl Color {
     pub fn is_light_color(&self) -> bool {
         let luminance =
             0.2126 * (self.r as f64) + 0.7152 * (self.g as f64) + 0.0722 * (self.b as f64);
-        let threshold = 180.0;
 
-        luminance > threshold
+        luminance > COLOR_THRESHOLD
     }
 }
 
@@ -264,18 +265,10 @@ pub type TrackCollection = HashMap<PathBuf, Track>;
 pub struct Media {
     pub tracks: TrackCollection,
     pub albums: Vec<Album>,
-    pub playlists: Vec<Playlist>,
+    pub playlists: Vec<PlaylistData>,
 }
 
 impl Media {
-    // pub fn new(songs: Songs) -> Self {
-    //     Self {
-    //         tracks: songs.into_collection(),
-    //         albums: songs.get_albums(),
-    //         playlists: vec![],
-    //     }
-    // }
-
     pub fn search(&self, query: &str) -> SearchResults {
         let query_lower = query.to_lowercase();
 
@@ -307,10 +300,10 @@ impl Media {
             .cloned()
             .collect();
 
-        let playlists: Vec<Playlist> = self
+        let playlists: Vec<PlaylistData> = self
             .playlists
             .iter()
-            .filter(|playlist| playlist.name.to_lowercase().contains(&query_lower))
+            .filter(|playlist| playlist.get_name().to_lowercase().contains(&query_lower))
             .cloned()
             .collect();
 
@@ -350,6 +343,8 @@ impl Media {
         let ext = path.extension().unwrap().to_str().unwrap();
         if ext == "m3u8" {
             self.add_playlist(m3u8::M3U8::parse(path));
+        } else if ext == "playlist" {
+            self.add_playlist(PlaylistData::parse(path));
         } else {
             self.add_song(Track::from_file(covers_dir, path));
         }
@@ -365,7 +360,7 @@ impl Media {
     }
 
     #[inline]
-    pub fn add_playlist(&mut self, playlist: Playlist) {
+    pub fn add_playlist(&mut self, playlist: PlaylistData) {
         self.playlists.push(playlist);
     }
 
@@ -408,7 +403,7 @@ impl Media {
 #[derive(serde::Serialize, Debug)]
 pub struct SearchResults {
     pub albums: Vec<Album>,
-    pub playlists: Vec<Playlist>,
+    pub playlists: Vec<PlaylistData>,
     pub tracks: Vec<Track>,
 }
 
@@ -474,6 +469,10 @@ pub mod utils {
                             mime_guess::from_path(&inode).first_or("text/plain".parse().unwrap());
                         if guess.type_() == super::mime::AUDIO {
                             files.push(inode);
+                        } else if inode.extension().is_some() {
+                            if inode.extension().unwrap() == "playlist" {
+                                files.push(inode);
+                            }
                         }
                     }
                 }
