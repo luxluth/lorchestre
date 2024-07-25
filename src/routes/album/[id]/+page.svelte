@@ -12,7 +12,8 @@
 		ContextMenuItemType,
 		type ContextMenuEvent,
 		type Album,
-		QueueAddMode
+		QueueAddMode,
+		PlayingMode
 	} from '$lib/type';
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
@@ -95,7 +96,8 @@
 	}
 
 	async function playAlbum() {
-		manager.queue = [];
+		manager.clearQueue();
+		manager.pmode = PlayingMode.Normal;
 		let track = tracks[0];
 		await manager.play(track);
 		let toAddToTheQue = [...tracks];
@@ -105,6 +107,7 @@
 	}
 
 	async function playfrom(i: number) {
+		manager.pmode = PlayingMode.Normal;
 		let songs = tracks.slice(i, tracks.length);
 		let song = songs.shift();
 		if (song) {

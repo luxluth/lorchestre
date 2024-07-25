@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FilterOrder, FilterType, type Track } from '$lib/type';
+	import { FilterOrder, FilterType, PlayingMode, type Track } from '$lib/type';
 	import Play from 'lucide-svelte/icons/play';
 	import { _ } from 'svelte-i18n';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
@@ -23,6 +23,7 @@
 	let filterquery = getFilter();
 
 	async function playAll() {
+		manager.pmode = PlayingMode.Normal;
 		let songs = applyFilters(media.getSongs());
 		let song = songs.shift() as Track;
 		await manager.play(song);
