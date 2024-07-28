@@ -22,7 +22,7 @@
 
 	async function save() {
 		if (selection) {
-			lrc.resetFromLines(data.track.duration, selection.parsed);
+			lrc.resetFromLines(selection.parsed, data.track);
 		}
 
 		await invoke('save_lyrics', { input: selection.raw, path: data.track.file_path });

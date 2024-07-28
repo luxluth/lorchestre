@@ -40,9 +40,9 @@
 				type: ContextMenuItemType.Action,
 				action: async (_data: any) => {
 					let firstTrack = sortedTracks.shift() as Track;
-					manager.queue = [];
-					manager.addManyToQueue(sortedTracks);
+					manager.clearQueue();
 					await manager.play(firstTrack);
+					manager.addManyToQueue(sortedTracks);
 				},
 				label: $_('ctx.play'),
 				icon: Play

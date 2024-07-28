@@ -1,5 +1,12 @@
 import { getContext, setContext } from 'svelte';
-import { type LyricLine, type Line, type Track, type LyricsResponse, ToastKind } from './type';
+import {
+	type LyricLine,
+	type Line,
+	type Track,
+	type LyricsResponse,
+	ToastKind,
+	type ProccessedMarker
+} from './type';
 import type AppConfig from './config.svelte';
 import { getLNTime, getLyricsUri, searchLyricsUri } from './utils';
 import type ToastManager from './toast.svelte';
@@ -14,6 +21,7 @@ const eq = (a: Line[], b: Line[]) => {
 
 export default class LrcManager {
 	lines: Line[] = $state([]);
+	proccessedMarkers: ProccessedMarker[] = $state([]);
 	private conf: AppConfig;
 	private currentActiveLines: Line[] = $state([]);
 	private chs = new Set<(lines: Line[]) => void>();
@@ -70,7 +78,6 @@ export default class LrcManager {
 		let url = getLyricsUri(track.path_base64, this.conf);
 		const raw_lines: LyricLine[] = ((await (await fetch(url)).json()) as { lyrics: LyricLine[] })
 			.lyrics;
-		console.debug(raw_lines);
 
 		for (let i = 0; i < raw_lines.length; i++) {
 			const current = raw_lines[i] as LyricLine;
@@ -102,10 +109,11 @@ export default class LrcManager {
 		}
 
 		this.lines = lines;
+		this.proccessedMarkers = this.analyzeMarkers(this.lines, track);
 		this.currentActiveLines = [];
 	}
 
-	resetFromLines(duration: number, raw_lines: LyricLine[]) {
+	resetFromLines(raw_lines: LyricLine[], track: Track) {
 		let lines: Line[] = [];
 
 		for (let i = 0; i < raw_lines.length; i++) {
@@ -128,7 +136,7 @@ export default class LrcManager {
 					startTime: getLNTime(current.time) / 1000,
 					text: current.text,
 					id: i,
-					endTime: duration,
+					endTime: track.duration,
 					vocals: current.vocals,
 					syllables: current.syllables,
 					isInstrumental: current.is_instrumental,
@@ -138,6 +146,7 @@ export default class LrcManager {
 		}
 
 		this.lines = lines;
+		this.proccessedMarkers = this.analyzeMarkers(this.lines, track);
 		this.currentActiveLines = [];
 	}
 
@@ -192,6 +201,71 @@ export default class LrcManager {
 
 	set oncuechange(fn: () => void) {
 		this.chs.add(fn);
+	}
+
+	analyzeMarkers(lyrics: Line[], track: Track) {
+		let artistsInMarkers = new Set<string>();
+		lyrics.forEach((line) => {
+			if (typeof line.marker === 'object') {
+				let [name, value] = line.marker.Named;
+				if (name === 'singer') {
+					if (track.artists.includes(value)) {
+						artistsInMarkers.add(value);
+					}
+				}
+			}
+		});
+
+		let artists = Array.from(artistsInMarkers);
+		let proccessedMarkers: ProccessedMarker[] = [];
+
+		lyrics.forEach((line, i) => {
+			if (typeof line.marker === 'object') {
+				let [name, value] = line.marker.Named;
+				if (name === 'singer') {
+					let idx = artists.findIndex((v) => v == value);
+					proccessedMarkers.push({
+						i,
+						artistName: !line.isInstrumental && line.text != '' ? value : '@@',
+						isMainVocal: idx === 0 && !line.isInstrumental && line.text != '',
+						order: idx
+					});
+				}
+			}
+		});
+
+		return proccessedMarkers;
+	}
+
+	isMainVocal(i: number) {
+		const marker = this.getMarker(i);
+		if (marker) {
+			return marker.isMainVocal;
+		} else {
+			return false;
+		}
+	}
+
+	getOrder(i: number) {
+		const marker = this.getMarker(i);
+		if (marker) {
+			return marker.order;
+		} else {
+			return -1;
+		}
+	}
+
+	getArtistName(i: number) {
+		const marker = this.getMarker(i);
+		if (marker) {
+			return marker.artistName;
+		} else {
+			return '';
+		}
+	}
+
+	getMarker(i: number) {
+		return this.proccessedMarkers.find((v) => v.i == i);
 	}
 }
 

@@ -269,7 +269,6 @@ export default class Manager {
 					this.play(track);
 				} else {
 					if (this.onPlayerDeactivate) {
-						console.log('here');
 						this.onPlayerDeactivate();
 						this.paused = true;
 						this.currentTrack = null;

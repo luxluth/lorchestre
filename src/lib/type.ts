@@ -37,6 +37,13 @@ export type Marker =
 	  }
 	| 'Empty';
 
+export type ProccessedMarker = {
+	i: number;
+	artistName: string;
+	isMainVocal: boolean;
+	order: number;
+};
+
 export type LyricLine = {
 	marker: Marker;
 	syllables: Vec<Syllable>;

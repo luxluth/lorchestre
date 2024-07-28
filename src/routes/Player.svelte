@@ -346,7 +346,7 @@
 	</section>
 	{#if hasLyrics}
 		<section class="lrc" bind:this={lyricsParent}>
-			{#each lrcMngr.lines as { text, startTime, id, vocals, isInstrumental, marker }}
+			{#each lrcMngr.lines as { text, startTime, id, vocals, isInstrumental, endTime }, i}
 				<div
 					class="line ns"
 					data-time={startTime}
@@ -355,13 +355,15 @@
 					onkeydown={() => {}}
 					role="button"
 					tabindex="0"
-					class:instrumental={text == '♪' || isInstrumental}
-					class:empty={text == ''}
-					data-marker={typeof marker === 'string'
-						? 'empty'
-						: `${marker.Named[0]}##${marker.Named[1]}`}
+					class:isMainVocal={lrcMngr.isMainVocal(i)}
+					data-alignment={lrcMngr.getOrder(i) % 2}
+					data-artist={lrcMngr.getArtistName(i)}
+					class:instrumental={text == '♪' ||
+						isInstrumental ||
+						(text == '' && endTime - startTime >= 5)}
+					class:empty={text == '' && endTime - startTime < 5}
 				>
-					{#if text == '♪' || isInstrumental}
+					{#if text == '♪' || isInstrumental || (text == '' && endTime - startTime >= 5)}
 						<div class="dot"></div>
 					{:else}
 						{text}
@@ -388,6 +390,9 @@
 ></audio>
 
 <style>
+	.line[data-alignment='1'] {
+		text-align: right;
+	}
 	.__player .controls {
 		display: flex;
 		align-items: center;
