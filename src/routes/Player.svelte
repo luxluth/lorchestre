@@ -19,6 +19,7 @@
 	import { getAppConfig } from '$lib/config.svelte';
 
 	import { _ } from 'svelte-i18n';
+	import Line from './Line.svelte';
 
 	let manager = getManager();
 	let lrcMngr = getLrc();
@@ -346,36 +347,8 @@
 	</section>
 	{#if hasLyrics}
 		<section class="lrc" bind:this={lyricsParent}>
-			{#each lrcMngr.lines as { text, startTime, id, vocals, isInstrumental, endTime }, i}
-				<div
-					class="line ns"
-					data-time={startTime}
-					class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-					onclick={() => manager.seekTo(startTime)}
-					onkeydown={() => {}}
-					role="button"
-					tabindex="0"
-					class:isMainVocal={lrcMngr.isMainVocal(i)}
-					data-alignment={lrcMngr.getOrder(i) % 2}
-					data-artist={lrcMngr.getArtistName(i)}
-					class:instrumental={text == '♪' ||
-						isInstrumental ||
-						(text == '' && endTime - startTime >= 5)}
-					class:empty={text == '' && endTime - startTime < 5}
-				>
-					{#if text == '♪' || isInstrumental || (text == '' && endTime - startTime >= 5)}
-						<div class="dot"></div>
-					{:else}
-						{text}
-					{/if}
-					{#if vocals.length > 0}
-						<div class="vocals">
-							{#each vocals as vocal}
-								<div class="vocal">{vocal.text}</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
+			{#each lrcMngr.lines as line, i}
+				<Line {line} {lrcMngr} {manager} idx={i} {blurActive} />
 			{/each}
 		</section>
 	{/if}
@@ -390,9 +363,6 @@
 ></audio>
 
 <style>
-	.line[data-alignment='1'] {
-		text-align: right;
-	}
 	.__player .controls {
 		display: flex;
 		align-items: center;
@@ -640,97 +610,6 @@
 
 	.__player .lrc::-webkit-scrollbar {
 		display: none;
-	}
-
-	.__player .lrc .line:first-child {
-		margin-top: 50%;
-	}
-
-	.__player .lrc .line:last-child {
-		margin-bottom: 50%;
-	}
-
-	@keyframes activeLineAnimation {
-		0% {
-			opacity: 0.8;
-			/* text-shadow: none; */
-		}
-		50% {
-			opacity: 0.9;
-			/* text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); */
-		}
-		100% {
-			opacity: 1;
-			/* text-shadow: 0 0 10px rgba(255, 255, 255, 1); */
-		}
-	}
-
-	.__player .lrc .line {
-		font-size: 3em;
-		padding: 0.25em;
-		font-weight: 600;
-		opacity: 0.3;
-		cursor: pointer;
-		line-height: 1;
-		border-radius: 8px;
-		margin-block: 0.5em;
-		transition: opacity 0.1s ease-in;
-	}
-
-	.__player .lrc .line.active {
-		animation: activeLineAnimation 0.1s ease-in-out forwards;
-	}
-
-	.__player .lrc .line:active {
-		transform: scale(0.98);
-	}
-
-	.__player.blurActive .lrc .line:hover {
-		opacity: 0.5;
-		background: rgba(255, 255, 255, 0.2);
-	}
-
-	.__player:not(.blurActive) .lrc .line:hover {
-		opacity: 0.5;
-		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
-	}
-
-	.__player .lrc .line.active:hover,
-	.__player .lrc .line.empty {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0);
-	}
-
-	.line.instrumental {
-		padding: 0;
-		scale: 0;
-		line-height: 0;
-		display: flex;
-		gap: 0.2em;
-		height: 0;
-		transform-origin: top left;
-		transition: all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
-	}
-
-	.instrumental .dot {
-		background-color: var(--text);
-		opacity: 1;
-		height: 0.5em;
-		width: 0.5em;
-		border-radius: 50%;
-	}
-
-	.line.active.instrumental {
-		scale: 1;
-		height: auto;
-	}
-
-	.__player .lrc .line .vocals {
-		padding-top: 0.3em;
-	}
-
-	.__player .lrc .line .vocal {
-		font-size: 1.5rem;
 	}
 
 	.__player .cover {
