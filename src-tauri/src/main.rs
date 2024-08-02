@@ -2,10 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use lorconf::Config;
+use tracing::error;
 mod daemon;
 use crate::daemon::entry::start;
 use std::{env::consts::OS, fs::File, io::Write};
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tracing_subscriber::FmtSubscriber;
 
@@ -176,12 +177,26 @@ fn close(app: tauri::AppHandle) {
     std::process::exit(0x00);
 }
 
+#[derive(Clone, serde::Serialize)]
+struct SingleInstanceArgs {
+    args: Vec<String>,
+    cwd: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            error!(
+                "An instance of l'orchestre is already running :: {}, {argv:?}, {cwd}",
+                app.package_info().name
+            );
+            app.emit("single-instance", SingleInstanceArgs { args: argv, cwd })
+                .unwrap();
+        }))
         .invoke_handler(tauri::generate_handler![
             platform,
             locale,
@@ -218,12 +233,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let window = app.get_webview_window("main").unwrap();
             let _ = window.restore_state(StateFlags::all());
-
-            #[cfg(target_os = "macos")]
-            {
-                use tauri_plugin_decorum::WebviewWindowExt;
-                window.set_traffic_lights_inset(16.0, 20.0).unwrap();
-            }
 
             Ok(())
         })

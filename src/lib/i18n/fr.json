@@ -98,7 +98,7 @@
 
 	"lrc_related": {
 		"no_lyrics": "Aucune parole trouvée",
-		"search_btn": "rechercher des paroles",
+		"search_btn": "rechercher les paroles",
 		"searching": "recherche en cours...",
 		"fetch_error": "Impossible d'obtenir les paroles de la chanson sélectionnée",
 		"title_search": "Paroles trouvées",

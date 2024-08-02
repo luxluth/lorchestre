@@ -3,7 +3,7 @@ import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } fro
 import { toQueueTrack } from './utils';
 import { invoke } from '@tauri-apps/api/core';
 import { TauriEvent, type UnlistenFn } from '@tauri-apps/api/event';
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 type Func<Out> = () => Out;
 type VoidFunc = Func<void>;
@@ -352,7 +352,7 @@ export default class Manager {
 				if (data.volume) this.volume = JSON.parse(data.volume);
 				if (data.currentTime) this.currentTime = JSON.parse(data.currentTime);
 
-				let win = getCurrent();
+				let win = getCurrentWindow();
 				unlistens.push(
 					await win.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async (_) => {
 						localStorage.setItem('qmode', JSON.stringify(this.qmode));

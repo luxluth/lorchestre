@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getCurrent } from '@tauri-apps/api/window';
+	import { getCurrentWindow } from '@tauri-apps/api/window';
 
 	import close from '$lib/assets/window-icons/windows/close.svg?raw';
 	import maximize from '$lib/assets/window-icons/windows/maximize.svg?raw';
@@ -9,7 +9,7 @@
 	let maximized = $state(false);
 
 	(async () => {
-		let window = getCurrent();
+		let window = getCurrentWindow();
 		maximized = await window.isMaximized();
 	})();
 </script>
@@ -19,7 +19,7 @@
 		role="button"
 		class="minimze"
 		onclick={async () => {
-			let window = getCurrent();
+			let window = getCurrentWindow();
 			await window.minimize();
 		}}
 		tabindex="-1"
@@ -31,7 +31,7 @@
 		role="button"
 		class="maximize"
 		onclick={async () => {
-			let window = getCurrent();
+			let window = getCurrentWindow();
 			maximized = await window.isMaximized();
 
 			if (maximized) {
@@ -52,7 +52,7 @@
 		role="button"
 		class="close"
 		onclick={async () => {
-			let window = getCurrent();
+			let window = getCurrentWindow();
 			await window.close();
 		}}
 		tabindex="-1"

@@ -8,7 +8,7 @@ use crate::daemon::global::utils::cache_audio_files;
 use crate::daemon::global::utils::get_audio_files;
 use crate::daemon::global::utils::read_cache_audio_files;
 use crate::daemon::global::Media;
-use tauri::Manager;
+use tauri::Emitter;
 use tracing::{info, warn};
 
 pub enum CacheCompareDiff {

@@ -6,13 +6,13 @@
     "main"
   ],
   "permissions": [
-    "window:allow-set-title",
-    "window:allow-close",
-    "window:allow-center",
-    "window:allow-minimize",
-    "window:allow-maximize",
-    "window:allow-set-size",
-    "window:allow-set-focus",
-    "window:allow-start-dragging"
+    "core:window:allow-set-title",
+    "core:window:allow-close",
+    "core:window:allow-center",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-set-size",
+    "core:window:allow-set-focus",
+    "core:window:allow-start-dragging"
   ]
 }

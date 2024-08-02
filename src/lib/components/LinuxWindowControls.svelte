@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/core';
-	import { getCurrent } from '@tauri-apps/api/window';
+	import { getCurrentWindow } from '@tauri-apps/api/window';
 
 	import gnomeWindowMinimize from '$lib/assets/window-icons/linux/gnome/window-minimize-symbolic.svg?raw';
 	import gnomeWindowMaximize from '$lib/assets/window-icons/linux/gnome/window-maximize-symbolic.svg?raw';
@@ -35,7 +35,7 @@
 					class="minimze"
 					data-desktop={desktop}
 					onclick={async () => {
-						let window = getCurrent();
+						let window = getCurrentWindow();
 						await window.minimize();
 					}}
 					tabindex="-1"
