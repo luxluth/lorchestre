@@ -5,7 +5,7 @@
 
 	import { _ } from 'svelte-i18n';
 
-	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 	import {
 		type Track,
 		type ContextMenuItem,
@@ -17,13 +17,11 @@
 	} from '$lib/type';
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
-	import { browser } from '$app/environment';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
-
-	const { data }: { data: PageData } = $props();
+	import { onMount } from 'svelte';
 
 	let manager = getManager();
 	let media = getMedia();
@@ -38,8 +36,8 @@
 		return tracks;
 	}
 
-	const album = data.album;
-	const tracks = album ? sortTracks(getTracks(album)) : [];
+	let album = $derived($page.data.album);
+	let tracks = $derived(album ? sortTracks(getTracks(album)) : []);
 	let ctx = getCtx();
 	let config = getAppConfig();
 
@@ -117,9 +115,9 @@
 		}
 	}
 
-	if (browser) {
+	onMount(() => {
 		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);
-	}
+	});
 </script>
 
 <svelte:head>
