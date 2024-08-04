@@ -127,6 +127,9 @@ impl M3U8 {
         let id = md5::compute(data);
         playlist.id = format!("{id:x}");
 
+        let mut f = File::create(path.with_extension("m3u8.bak")).unwrap();
+        let _ = f.write(&text.as_bytes());
+
         let playlist = PlaylistData::from_m3u8_playlist(playlist);
         if playlist.save(path.with_extension("playlist")).is_ok() {
             let _ = std::fs::remove_file(&path);
