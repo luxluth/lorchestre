@@ -98,6 +98,7 @@ pub async fn start(win: Option<tauri::Window>) -> Result<(), Box<dyn std::error:
         .route("/audio", get(audio))
         .route("/lyrics", get(lyrics))
         .route("/album/:id", get(album))
+        .route("/playlist/:id", get(playlist))
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
         .route("/search/lyrics", get(search_lyrics))
@@ -277,6 +278,16 @@ async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response
         Json(album).into_response()
     } else {
         let mut response = format!("no album found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+async fn playlist(State(state): State<AppData>, Path(id): Path<String>) -> Response {
+    if let Some(playlist) = state.media.read().await.get_playlist(&id) {
+        Json(playlist).into_response()
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
         *response.status_mut() = StatusCode::NOT_FOUND;
         response
     }

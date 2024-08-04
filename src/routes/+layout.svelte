@@ -48,7 +48,7 @@
 	setCtx();
 	setLrc(conf, tm, evc);
 	setFilter();
-	setList(media);
+	setList();
 
 	if (browser) {
 		if (!dev) {

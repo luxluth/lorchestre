@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FilterOrder, FilterType, PlayingMode, type Track } from '$lib/type';
+	import { FilterOrder, FilterType, PlayingMode, type Playlist, type Track } from '$lib/type';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
@@ -11,16 +11,31 @@
 	import Song from '$lib/components/Song.svelte';
 	import { setTitle } from '$lib/utils';
 	import { getManager } from '$lib/manager.svelte';
+	import { getMedia } from '$lib/media.svelte';
 	import { getList } from '$lib/playlist.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
+	import { page } from '$app/stores';
 
 	let list = getList();
 	let manager = getManager();
 	let ctx = getCtx();
+	let media = getMedia();
 	let filterquery = list.filters;
 
+	let playlistData: Playlist | null = $derived($page.data.list);
+
+	let tracks = $derived(
+		playlistData
+			? playlistData.tracks
+					.map((track) => {
+						return media.getTrack(track);
+					})
+					.filter((f) => typeof f != 'undefined')
+			: []
+	);
+
 	async function playAll() {
-		let songs = [...applyFilters(list.tracks)];
+		let songs = [...applyFilters(tracks)];
 		let song = songs.shift() as Track;
 		manager.pmode = PlayingMode.Normal;
 		manager.play(song);
@@ -29,7 +44,7 @@
 	}
 
 	async function playAllShuffle() {
-		let songs = applyFilters(list.tracks);
+		let songs = applyFilters(tracks);
 		await manager.shufflePlay(songs);
 	}
 
@@ -106,7 +121,7 @@
 	];
 
 	let searchInput = $state('');
-	let filteredTracks = $derived(applyFilters(list.tracks));
+	let filteredTracks = $derived(applyFilters(tracks));
 
 	async function play(i: number) {
 		let tracks = filteredTracks.slice(i, filteredTracks.length);
@@ -120,17 +135,17 @@
 
 	$effect(() => {
 		setTitle(
-			`${$_('playlist').toLowerCase()} — ${list.activeList ? (list.activeList.metadata['Name'] ?? '+£@&0m') : ''} - L'orchestre`
+			`${$_('playlist').toLowerCase()} — ${playlistData ? (playlistData.metadata['Name'] ?? '+£@&0m') : ''} - L'orchestre`
 		);
 	});
 </script>
 
 <div class="page ns">
-	{#if list.activeList}
-		<h1>{list.activeList.metadata['Name'] ?? '+£@&0m'}</h1>
+	{#if playlistData}
+		<h1>{playlistData.metadata['Name'] ?? '+£@&0m'}</h1>
 		<p class="track_counts">
-			{list.activeList.tracks.length}
-			{list.activeList.tracks.length > 1 ? $_('stats_page.songs') : $_('stats_page.song')}
+			{tracks.length}
+			{tracks.length > 1 ? $_('stats_page.songs') : $_('stats_page.song')}
 		</p>
 
 		<div class="quick-actions">
@@ -222,9 +237,7 @@
 
 		<div
 			class="songlist"
-			style="--tracklist-index-column-width: {(list.activeList.tracks.length.toString().length *
-				16) /
-				2}px"
+			style="--tracklist-index-column-width: {(tracks.length.toString().length * 16) / 2}px"
 		>
 			{#each filteredTracks as song, i}
 				<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />

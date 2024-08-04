@@ -382,13 +382,17 @@ impl Media {
     pub fn get_album(&self, id: &str) -> Option<Album> {
         for album in self.albums.iter() {
             if album.id == id {
-                return Some(Album {
-                    name: album.name.clone(),
-                    artist: album.artist.clone(),
-                    tracks: album.tracks.clone(),
-                    year: album.year,
-                    id: album.id.clone(),
-                });
+                return Some(album.clone());
+            }
+        }
+
+        None
+    }
+
+    pub fn get_playlist(&self, id: &str) -> Option<PlaylistData> {
+        for playlist in self.playlists.iter() {
+            if playlist.id == id {
+                return Some(playlist.clone());
             }
         }
 
