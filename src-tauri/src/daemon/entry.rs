@@ -227,17 +227,19 @@ async fn cover(
 
     if let Some(image_size) = size {
         if let Some((w, h)) = image_size.parse() {
-            if let Ok(mut image) = ImageReader::open(&path).unwrap().decode() {
-                image = image.resize(w, h, image::imageops::FilterType::Gaussian);
+            if let Ok(reader) = ImageReader::open(&path) {
+                if let Ok(mut image) = reader.decode() {
+                    image = image.resize(w, h, image::imageops::FilterType::Gaussian);
 
-                let mut buffer = BufWriter::new(Cursor::new(Vec::new()));
-                let _ = image.write_to(&mut buffer, image::ImageFormat::Png);
+                    let mut buffer = BufWriter::new(Cursor::new(Vec::new()));
+                    let _ = image.write_to(&mut buffer, image::ImageFormat::Png);
 
-                let bytes = buffer.into_inner().unwrap().into_inner();
+                    let bytes = buffer.into_inner().unwrap().into_inner();
 
-                let body = Body::from(bytes);
-                let resp = Response::new(body);
-                return resp;
+                    let body = Body::from(bytes);
+                    let resp = Response::new(body);
+                    return resp;
+                }
             }
         }
     }
