@@ -222,6 +222,7 @@
 	style={styleString}
 	class:blurActive
 >
+	<div class="dragzone" data-tauri-drag-region></div>
 	<!-- WARN: Can slow the application down  -->
 	{#if blurActive}
 		<div class="background-images">
@@ -491,11 +492,21 @@
 		display: grid;
 		grid-template-columns: auto 1fr;
 		align-items: center;
-		padding-block: 3em;
-		padding-inline: 2em;
 		gap: 2em;
 		transform: translateY(200%);
 		transition: transform 0.3s ease-in-out;
+
+		padding-inline: 7vw;
+		padding-block: 7vh;
+	}
+
+	.__player .dragzone {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 7vh;
+		z-index: 1000;
 	}
 
 	.__player.no_lyrics {
@@ -613,7 +624,7 @@
 	}
 
 	.__player .cover {
-		width: 60vh;
+		width: 60cqh;
 		aspect-ratio: 1/1;
 		box-shadow: rgba(17, 12, 46, 0.08) 0px 48px 100px 0px;
 		border-radius: 10px;

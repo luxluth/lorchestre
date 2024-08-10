@@ -100,7 +100,7 @@
 		line-height: 1;
 		border-radius: 8px;
 		margin-block: 0.5em;
-		transition: opacity 0.1s ease-in;
+		transition: opacity 0.3s ease-in;
 	}
 
 	.line.active {
@@ -145,8 +145,7 @@
 		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
 	}
 
-	.line.active:hover,
-	.line.empty {
+	.line.active:hover {
 		opacity: 1;
 		background: rgba(255, 255, 255, 0);
 	}
