@@ -102,3 +102,12 @@ export function recordToMap<V>(record: Record<string, V>): Map<string, V> {
 export function getLNTime(line: RawTimestamp) {
 	return (line.minutes * 60 + line.seconds) * 1000 + (line.millis ?? 0);
 }
+
+export function removeDuplicate<T>(elements: T[]): T[] {
+	return elements.reduce((acc: T[], item) => {
+		if (!acc.some((obj) => JSON.stringify(obj) === JSON.stringify(item))) {
+			acc.push(item);
+		}
+		return acc;
+	}, []);
+}

@@ -229,7 +229,7 @@ export enum QueueMode {
 }
 
 export type Lrc = {
-	parsed: Array<LyricLine>;
+	parsed: LyricLine[];
 	raw: string;
 };
 

@@ -4,6 +4,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import LrcDisplay from './LrcDisplay.svelte';
 	import { _ } from 'svelte-i18n';
+	import { removeDuplicate } from '$lib/utils';
 
 	let {
 		onClose,
@@ -36,18 +37,22 @@
 
 	<div class="choices">
 		<div class="container">
-			{#each data.response.lyrics as lrc}
+			{#each removeDuplicate(data.response.lyrics) as lrc}
 				<div
 					class="choice"
 					role="radio"
 					tabindex="0"
-					aria-checked={selection !== null ? selection.raw === lrc.raw : false}
+					aria-checked={selection !== null
+						? selection.raw === lrc.raw && selection.parsed === selection.parsed
+						: false}
 					onclick={() => {
 						selected = true;
 						selection = lrc;
 					}}
 					onkeydown={() => {}}
-					class:selected={selection !== null ? selection.raw === lrc.raw : false}
+					class:selected={selection !== null
+						? selection.raw === lrc.raw && selection.parsed === selection.parsed
+						: false}
 				>
 					<LrcDisplay lyrics={lrc.parsed} />
 				</div>
