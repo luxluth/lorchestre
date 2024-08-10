@@ -7,6 +7,8 @@ mod daemon;
 use crate::daemon::entry::start;
 use std::{env::consts::OS, fs::File, io::Write};
 use tauri::{Emitter, Manager};
+#[cfg(target_os = "macos")]
+use tauri_plugin_decorum::WebviewWindowExt;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tracing_subscriber::FmtSubscriber;
 
@@ -189,6 +191,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_decorum::init())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             error!(
                 "An instance of l'orchestre is already running :: {}, {argv:?}, {cwd}",
@@ -233,6 +236,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let window = app.get_webview_window("main").unwrap();
             let _ = window.restore_state(StateFlags::all());
+
+            #[cfg(target_os = "macos")]
+            {
+                window.set_traffic_lights_inset(12.0, 16.0).unwrap();
+            }
 
             Ok(())
         })
