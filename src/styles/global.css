@@ -13,6 +13,7 @@ html {
 	--brand-color: #df632e;
 
 	--toast-z-index: 140;
+	--starting-screen-z-index: 135;
 	--edit-view-z-index: 130;
 	--player-z-index: 100;
 	--header-z-index: 50;

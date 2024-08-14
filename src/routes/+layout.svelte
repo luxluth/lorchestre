@@ -29,6 +29,8 @@
 	import { setEvc } from '$lib/editviewController.svelte';
 	import EditView from './EditView.svelte';
 	import WindowControls from '$lib/components/WindowControls.svelte';
+	import StartingScreen from './StartingScreen.svelte';
+
 	// import { invoke } from '@tauri-apps/api/core';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
@@ -99,6 +101,10 @@
 	<Player />
 	<EditView />
 	<ContextMenu />
+{/if}
+
+{#if !first_run && !media.loaded}
+	<StartingScreen />
 {/if}
 
 <style>
