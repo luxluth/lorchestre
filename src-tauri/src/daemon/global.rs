@@ -11,6 +11,7 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::time::SystemTime;
+use tauri::Emitter;
 use tracing::error;
 
 #[derive(serde::Serialize, Debug)]
@@ -44,6 +45,7 @@ pub struct Album {
     pub tracks: Vec<PathBuf>,
     pub year: Option<u32>,
     pub id: String,
+    pub disc_total: i32,
 }
 
 impl Album {
@@ -62,6 +64,8 @@ pub struct Track {
     pub album_id: String,
     pub cover_ext: String,
     pub mime: String,
+    pub disc: Option<u32>,
+    pub disc_total: Option<u32>,
     pub album_year: Option<u32>,
     pub color: Option<Color>,
     pub is_light: Option<bool>,
@@ -160,6 +164,11 @@ impl Track {
 
         audio.album_id = format!("{digest:x}");
 
+        let disc_total = tag.disk_total();
+        let disc = tag.disk();
+        audio.disc = disc;
+        audio.disc_total = disc_total;
+
         let cover = tag.get_picture_type(PictureType::CoverFront);
         if let Some(cover) = cover {
             let mime = cover.mime_type().unwrap();
@@ -244,6 +253,8 @@ impl Default for Track {
             cover_ext: ".png".to_string(),
             mime: "audio/mp3".to_string(),
             color: None,
+            disc: None,
+            disc_total: None,
             is_light: None,
             file_path: String::new(),
             path_base64: String::new(),
@@ -314,6 +325,21 @@ impl Media {
         }
     }
 
+    pub fn cache(&self, cache_dir: PathBuf, win: Option<tauri::Window>) {
+        let p_string = cache_dir.join(".cache.json");
+        let ac_string = cache_dir.join(".cache.list");
+        let ac_path = std::path::Path::new(&ac_string);
+        utils::cache_audio_files(ac_path);
+
+        let jason = serde_json::to_string(&self).unwrap();
+        let mut f = fs::File::create(&p_string).unwrap();
+        let _ = f.write_all(jason.as_bytes());
+
+        if let Some(win) = win {
+            let _ = win.emit("synched", ());
+        }
+    }
+
     pub fn swap_with(&mut self, media: Media) {
         self.albums = media.albums;
         self.tracks = media.tracks;
@@ -359,9 +385,30 @@ impl Media {
         }
     }
 
-    #[inline]
     pub fn add_playlist(&mut self, playlist: PlaylistData) {
-        self.playlists.push(playlist);
+        let mut playlist_exist = false;
+        for list in &self.playlists {
+            if list.id == playlist.id {
+                playlist_exist = true;
+                break;
+            }
+        }
+
+        if !playlist_exist {
+            self.playlists.push(playlist);
+        }
+    }
+
+    pub fn substitute_playlist(&mut self, playlist: PlaylistData) {
+        for list in &mut self.playlists {
+            if list.id == playlist.id {
+                list.path = playlist.path;
+                list.metadata = playlist.metadata;
+                list.tracks = playlist.tracks;
+
+                break;
+            }
+        }
     }
 
     #[inline]
@@ -431,6 +478,11 @@ impl Songs {
                         .first()
                         .unwrap_or(&"@UNKNOWN@".to_string()),
                 )),
+                disc_total: if v[0].disc_total.is_some() {
+                    v[0].disc_total.unwrap() as i32
+                } else {
+                    -1
+                },
                 year: v[0].album_year,
                 tracks: v.into_iter().map(|x| PathBuf::from(x.file_path)).collect(),
                 id: k,
