@@ -26,6 +26,47 @@ pub struct PlaylistData {
     pub id: String,
 }
 
+pub enum PlaylistAction {
+    RemoveTrack(PathBuf),
+    AddTrack(PathBuf),
+    UpdateOrder(Vec<PathBuf>),
+    RemoveMeta(String),
+    AddMeta(String, String),
+}
+
+impl PlaylistData {
+    pub fn update(&mut self, action: PlaylistAction) -> io::Result<()> {
+        match action {
+            PlaylistAction::RemoveTrack(track) => {
+                self.tracks.retain(|p| *p != track);
+            }
+            PlaylistAction::AddTrack(track) => {
+                self.tracks.push(track);
+            }
+            PlaylistAction::UpdateOrder(tracks) => {
+                self.tracks = tracks;
+            }
+            PlaylistAction::RemoveMeta(k) => {
+                self.metadata.remove_entry(&k);
+            }
+            PlaylistAction::AddMeta(k, v) => {
+                self.metadata.insert(k, v);
+            }
+        }
+
+        self.save(PathBuf::from(&self.path))
+    }
+
+    pub fn delete(&self) -> io::Result<()> {
+        let path = Path::new(&self.path);
+        if path.exists() {
+            std::fs::remove_file(path)?;
+        }
+
+        Ok(())
+    }
+}
+
 impl PlaylistData {
     pub fn parse(path: PathBuf) -> Self {
         let mut f = std::fs::File::open(&path).unwrap();
