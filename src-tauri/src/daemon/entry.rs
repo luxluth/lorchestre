@@ -1,6 +1,7 @@
 use super::{
     config::{self, Dir},
     global::{Media, Track},
+    m3u8::PlaylistAction,
     utils,
 };
 use axum::{
@@ -8,7 +9,7 @@ use axum::{
     extract::{Path, Query, State},
     http::{header::CACHE_CONTROL, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    routing::{get, put},
+    routing::{delete, get, post, put},
     Json, Router,
 };
 use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
@@ -19,8 +20,11 @@ use socketioxide::{
     extract::{Data, SocketRef},
     SocketIo,
 };
-use std::io::{BufWriter, Cursor, Read};
 use std::sync::Arc;
+use std::{
+    io::{BufWriter, Cursor, Read},
+    path::PathBuf,
+};
 use tokio::fs::File;
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
@@ -57,11 +61,14 @@ async fn on_connect(socket: SocketRef) {
     )
 }
 
-pub async fn start(win: Option<tauri::Window>) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn start(
+    win: Option<tauri::Window>,
+    dirs: Dir,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut host = "localhost".to_string();
     let mut port: u32 = 7700;
+    dirs.check();
 
-    let dirs = config::get_dirs();
     let config_path = dirs.config.join("config.toml");
     let config = lorconf::Config::get(&config_path);
     if let Some(network) = config.network {
@@ -99,6 +106,15 @@ pub async fn start(win: Option<tauri::Window>) -> Result<(), Box<dyn std::error:
         .route("/lyrics", get(lyrics))
         .route("/album/:id", get(album))
         .route("/playlist/:id", get(playlist))
+        // ------ palylist action
+        .route("/playlist/:id", delete(list_remove))
+        .route("/playlist/remove_track/:id", delete(list_remove_track))
+        .route("/playlist/add_track/:id", post(list_add_track))
+        .route("/playlist/update_order/:id", put(list_reorder))
+        .route("/playlist/remove_meta/:id", delete(list_remove_meta))
+        .route("/playlist/add_meta/:id", post(list_add_meta))
+        // .route("/playlist/create/:id", post(playlist))
+        // ------ palylist action
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
         .route("/search/lyrics", get(search_lyrics))
@@ -286,6 +302,183 @@ async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response
 async fn playlist(State(state): State<AppData>, Path(id): Path<String>) -> Response {
     if let Some(playlist) = state.media.read().await.get_playlist(&id) {
         Json(playlist).into_response()
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+// WARNING: Cache the media state from the client
+async fn list_remove(State(state): State<AppData>, Path(id): Path<String>) -> Response {
+    let mut media = state.media.write().await;
+    if let Some(playlist) = media.get_playlist(&id) {
+        if playlist.delete().is_ok() {
+            media.remove_playlist(PathBuf::from(playlist.path));
+            "ok".into_response()
+        } else {
+            let mut response =
+                format!("Something went wrong while removing the playlist [list:id:{id}]")
+                    .into_response();
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct TrackInfo {
+    path: PathBuf,
+}
+
+async fn list_remove_track(
+    State(state): State<AppData>,
+    Path(id): Path<String>,
+    Json(payload): Json<TrackInfo>,
+) -> Response {
+    let mut media = state.media.write().await;
+    if let Some(playlist) = media.get_playlist(&id) {
+        let mut playlist = playlist;
+        if playlist
+            .update(PlaylistAction::RemoveTrack(payload.path))
+            .is_ok()
+        {
+            media.substitute_playlist(playlist.clone());
+            Json(playlist).into_response()
+        } else {
+            let mut response =
+                format!("An error occurred during the cation excecution [list:id:{id}]")
+                    .into_response();
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+async fn list_add_track(
+    State(state): State<AppData>,
+    Path(id): Path<String>,
+    Json(payload): Json<TrackInfo>,
+) -> Response {
+    let mut media = state.media.write().await;
+    if let Some(playlist) = media.get_playlist(&id) {
+        let mut playlist = playlist;
+        if playlist
+            .update(PlaylistAction::AddTrack(payload.path))
+            .is_ok()
+        {
+            media.substitute_playlist(playlist.clone());
+            Json(playlist).into_response()
+        } else {
+            let mut response =
+                format!("Something went wrong while removing the playlist [list:id:{id}]")
+                    .into_response();
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+async fn list_reorder(
+    State(state): State<AppData>,
+    Path(id): Path<String>,
+    Json(payload): Json<Vec<PathBuf>>,
+) -> Response {
+    let mut media = state.media.write().await;
+    if let Some(playlist) = media.get_playlist(&id) {
+        let mut playlist = playlist;
+        if playlist
+            .update(PlaylistAction::UpdateOrder(payload))
+            .is_ok()
+        {
+            media.substitute_playlist(playlist.clone());
+            Json(playlist).into_response()
+        } else {
+            let mut response =
+                format!("Something went wrong while removing the playlist [list:id:{id}]")
+                    .into_response();
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct MetaKey {
+    key: String,
+}
+
+async fn list_remove_meta(
+    State(state): State<AppData>,
+    Path(id): Path<String>,
+    Json(payload): Json<MetaKey>,
+) -> Response {
+    let mut media = state.media.write().await;
+    if let Some(playlist) = media.get_playlist(&id) {
+        let mut playlist = playlist;
+        if playlist
+            .update(PlaylistAction::RemoveMeta(payload.key))
+            .is_ok()
+        {
+            media.substitute_playlist(playlist.clone());
+            Json(playlist).into_response()
+        } else {
+            let mut response =
+                format!("Something went wrong while removing the playlist [list:id:{id}]")
+                    .into_response();
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
+    } else {
+        let mut response = format!("no playlist found with the id of {id}").into_response();
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct MetaKeyValue {
+    key: String,
+    value: String,
+}
+
+async fn list_add_meta(
+    State(state): State<AppData>,
+    Path(id): Path<String>,
+    Json(payload): Json<MetaKeyValue>,
+) -> Response {
+    let mut media = state.media.write().await;
+    if let Some(playlist) = media.get_playlist(&id) {
+        let mut playlist = playlist;
+        if playlist
+            .update(PlaylistAction::AddMeta(payload.key, payload.value))
+            .is_ok()
+        {
+            media.substitute_playlist(playlist.clone());
+            Json(playlist).into_response()
+        } else {
+            let mut response =
+                format!("Something went wrong while removing the playlist [list:id:{id}]")
+                    .into_response();
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
     } else {
         let mut response = format!("no playlist found with the id of {id}").into_response();
         *response.status_mut() = StatusCode::NOT_FOUND;
