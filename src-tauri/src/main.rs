@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use daemon::{config::Dir, global::Media};
 use lorconf::Config;
 use tracing::error;
 mod daemon;
@@ -162,10 +163,19 @@ fn runned(app: tauri::AppHandle) {
 }
 
 #[tauri::command]
-fn start_daemon(window: tauri::Window) {
+fn start_daemon(window: tauri::Window, app: tauri::AppHandle) {
     tokio::task::spawn(async move {
-        let _ = start(Some(window)).await;
+        let dirs = Dir {
+            config: app.path().app_config_dir().unwrap(),
+            cache: app.path().app_cache_dir().unwrap(),
+        };
+        let _ = start(Some(window), dirs).await;
     });
+}
+
+#[tauri::command]
+fn cache_media(app: tauri::AppHandle, window: tauri::Window, media: Media) {
+    media.cache(app.path().app_cache_dir().unwrap(), Some(window));
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -216,6 +226,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             start_daemon,
             save_lyrics,
             close,
+            cache_media,
             #[cfg(target_os = "linux")]
             desktop,
             #[cfg(target_os = "linux")]
@@ -228,9 +239,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap()
                 .join("__runned")
                 .exists();
+
+            let dirs = Dir {
+                config: app.path().app_config_dir().unwrap(),
+                cache: app.path().app_cache_dir().unwrap(),
+            };
+
             tokio::task::spawn(async move {
                 if !is_first_run {
-                    let _ = start(None).await;
+                    let _ = start(None, dirs).await;
                 }
             });
 
