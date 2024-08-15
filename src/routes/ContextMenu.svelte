@@ -32,7 +32,7 @@
 				>
 					<div class="icon">
 						{#if item.icon}
-							<svelte:component this={item.icon} size={18} />
+							<item.icon size={18} />
 						{/if}
 					</div>
 					<div class="label">

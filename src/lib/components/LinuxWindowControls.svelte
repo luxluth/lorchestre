@@ -54,7 +54,7 @@
 					class="maximize"
 					data-desktop={desktop}
 					onclick={async () => {
-						let window = getCurrent();
+						let window = getCurrentWindow();
 						await window.maximize();
 					}}
 					tabindex="-1"
@@ -73,7 +73,7 @@
 					class="close"
 					data-desktop={desktop}
 					onclick={async () => {
-						let window = getCurrent();
+						let window = getCurrentWindow();
 						await window.close();
 					}}
 					tabindex="-1"

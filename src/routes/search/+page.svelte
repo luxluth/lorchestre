@@ -56,7 +56,7 @@
 					<h2>{$_('playlists')}</h2>
 					<div class="playlists">
 						{#each search.results.playlists as playlist}
-							<SearchPlaylist {playlist} {list} />
+							<SearchPlaylist {playlist} />
 						{/each}
 					</div>
 				{/if}

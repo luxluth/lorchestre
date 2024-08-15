@@ -8,8 +8,7 @@
 {#if evc.visible}
 	<div class="__edit_view" transition:flyAndScale>
 		{#if evc.componnentToRender}
-			<svelte:component
-				this={evc.componnentToRender}
+			<evc.componnentToRender
 				data={evc.data}
 				onClose={() => {
 					evc.visible = false;

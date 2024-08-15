@@ -15,7 +15,7 @@ use axum::{
 use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
-use image::io::Reader as ImageReader;
+use image::ImageReader;
 use socketioxide::{
     extract::{Data, SocketRef},
     SocketIo,
