@@ -1,4 +1,4 @@
-import type { QueueTrack, RawTimestamp, Track } from '$lib/type';
+import type { Playlist, QueueTrack, RawTimestamp, Track } from '$lib/type';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type AppConfig from '$lib/config.svelte';
 
@@ -63,6 +63,11 @@ export function getCoverUri(album_id: string, ext: String, config: AppConfig, si
 export function getAudioUri(path: string, config: AppConfig) {
 	const endpoint = config.getDaemonEndpoint();
 	return `http://${endpoint}/audio?path=${path}`;
+}
+
+export function getPlaylistUri(playlist: Playlist, config: AppConfig) {
+	const endpoint = config.getDaemonEndpoint();
+	return `http://${endpoint}/playlist/${playlist.path_base64}`;
 }
 
 export function getLyricsUri(path: string, config: AppConfig) {

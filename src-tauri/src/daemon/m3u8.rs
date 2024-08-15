@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use std::{
     collections::HashMap,
     fs::File,
@@ -13,7 +14,6 @@ pub struct M3u8Playlist {
     pub name: String,
     pub tracks: Vec<PathBuf>,
     pub path: String,
-    pub id: String,
 }
 
 pub type PlaylistMetadata = HashMap<String, String>;
@@ -22,8 +22,8 @@ pub type PlaylistMetadata = HashMap<String, String>;
 pub struct PlaylistData {
     pub metadata: PlaylistMetadata,
     pub tracks: Vec<PathBuf>,
-    pub path: String,
-    pub id: String,
+    pub path: PathBuf,
+    pub path_base64: String,
 }
 
 pub enum PlaylistAction {
@@ -88,14 +88,13 @@ impl PlaylistData {
             }
         }
 
-        let data = format!("{}", path.display());
-        let id = md5::compute(data);
+        let s_path = format!("{}", path.display());
 
         Self {
             metadata,
-            path: format!("{}", path.display()),
+            path_base64: URL_SAFE.encode(s_path.as_bytes()),
+            path,
             tracks,
-            id: format!("{id:x}"),
         }
     }
 
@@ -114,8 +113,8 @@ impl PlaylistData {
         Self {
             metadata,
             tracks: p.tracks,
-            path: p.path,
-            id: p.id,
+            path_base64: URL_SAFE.encode(p.path.as_bytes()),
+            path: PathBuf::from(p.path),
         }
     }
 
@@ -146,7 +145,7 @@ impl M3U8 {
         let mut f = File::open(path.clone()).unwrap();
         let _ = f.read_to_string(&mut text);
 
-        let mut playlist = M3u8Playlist {
+        let playlist = M3u8Playlist {
             name: name.to_string(),
             path: format!("{}", path.display()),
             tracks: text
@@ -155,18 +154,7 @@ impl M3U8 {
                 .map(|x| Path::new(x).to_path_buf())
                 .filter(|p| p.exists())
                 .collect(),
-            id: String::new(),
         };
-
-        let data = format!(
-            "{}{}#{}",
-            playlist.name,
-            playlist.path,
-            playlist.tracks.len()
-        );
-
-        let id = md5::compute(data);
-        playlist.id = format!("{id:x}");
 
         let mut f = File::create(path.with_extension("m3u8.bak")).unwrap();
         let _ = f.write(&text.as_bytes());

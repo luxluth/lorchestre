@@ -300,7 +300,7 @@ async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response
 }
 
 async fn playlist(State(state): State<AppData>, Path(id): Path<String>) -> Response {
-    if let Some(playlist) = state.media.read().await.get_playlist(&id) {
+    if let Some(playlist) = state.media.read().await.get_playlist(id.clone()) {
         Json(playlist).into_response()
     } else {
         let mut response = format!("no playlist found with the id of {id}").into_response();
@@ -312,7 +312,7 @@ async fn playlist(State(state): State<AppData>, Path(id): Path<String>) -> Respo
 // WARNING: Cache the media state from the client
 async fn list_remove(State(state): State<AppData>, Path(id): Path<String>) -> Response {
     let mut media = state.media.write().await;
-    if let Some(playlist) = media.get_playlist(&id) {
+    if let Some(playlist) = media.get_playlist(id.clone()) {
         if playlist.delete().is_ok() {
             media.remove_playlist(PathBuf::from(playlist.path));
             "ok".into_response()
@@ -341,7 +341,7 @@ async fn list_remove_track(
     Json(payload): Json<TrackInfo>,
 ) -> Response {
     let mut media = state.media.write().await;
-    if let Some(playlist) = media.get_playlist(&id) {
+    if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
         if playlist
             .update(PlaylistAction::RemoveTrack(payload.path))
@@ -369,7 +369,7 @@ async fn list_add_track(
     Json(payload): Json<TrackInfo>,
 ) -> Response {
     let mut media = state.media.write().await;
-    if let Some(playlist) = media.get_playlist(&id) {
+    if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
         if playlist
             .update(PlaylistAction::AddTrack(payload.path))
@@ -397,7 +397,7 @@ async fn list_reorder(
     Json(payload): Json<Vec<PathBuf>>,
 ) -> Response {
     let mut media = state.media.write().await;
-    if let Some(playlist) = media.get_playlist(&id) {
+    if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
         if playlist
             .update(PlaylistAction::UpdateOrder(payload))
@@ -430,7 +430,7 @@ async fn list_remove_meta(
     Json(payload): Json<MetaKey>,
 ) -> Response {
     let mut media = state.media.write().await;
-    if let Some(playlist) = media.get_playlist(&id) {
+    if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
         if playlist
             .update(PlaylistAction::RemoveMeta(payload.key))
@@ -464,7 +464,7 @@ async fn list_add_meta(
     Json(payload): Json<MetaKeyValue>,
 ) -> Response {
     let mut media = state.media.write().await;
-    if let Some(playlist) = media.get_playlist(&id) {
+    if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
         if playlist
             .update(PlaylistAction::AddMeta(payload.key, payload.value))

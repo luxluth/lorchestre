@@ -62,10 +62,10 @@
 			<div class="links">
 				{#each media.playlists as playlist}
 					<a
-						href="/list/{playlist.id}"
-						class:active={pathId == '/list/[id]' && list.activeList === playlist.id}
+						href="/list/{playlist.path_base64}"
+						class:active={pathId == '/list/[id]' && list.activeList === playlist.path_base64}
 						onclick={() => {
-							list.activeList = playlist.id;
+							list.activeList = playlist.path_base64;
 						}}
 					>
 						<List size={'1em'} />

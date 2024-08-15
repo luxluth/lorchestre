@@ -1,15 +1,19 @@
 <script lang="ts">
+	import type List from '$lib/playlist.svelte';
 	import type { Playlist } from '$lib/type';
 	import ListIcon from 'lucide-svelte/icons/list';
 	import { _ } from 'svelte-i18n';
 
-	let { playlist }: { playlist: Playlist } = $props();
-	function trim(text: string, len = 40) {
-		return text.slice(0, len) + (text.length > len ? '...' : '');
-	}
+	let { playlist, list }: { playlist: Playlist; list: List } = $props();
 </script>
 
-<a class="playlist" href="/list/{playlist.id}">
+<a
+	class="playlist"
+	href="/list/{playlist.path_base64}"
+	onclick={() => {
+		list.activeList = playlist.path_base64;
+	}}
+>
 	<div class="holder">
 		<ListIcon size={'2em'} />
 	</div>

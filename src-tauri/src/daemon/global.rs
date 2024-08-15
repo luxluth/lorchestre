@@ -378,7 +378,7 @@ impl Media {
 
     pub fn remove_media(&mut self, path: PathBuf) {
         let ext = path.extension().unwrap().to_str().unwrap();
-        if ext == "m3u8" {
+        if ext == "playlist" {
             self.remove_playlist(path);
         } else {
             self.remove_song(path);
@@ -388,7 +388,7 @@ impl Media {
     pub fn add_playlist(&mut self, playlist: PlaylistData) {
         let mut playlist_exist = false;
         for list in &self.playlists {
-            if list.id == playlist.id {
+            if list.path == playlist.path {
                 playlist_exist = true;
                 break;
             }
@@ -401,7 +401,7 @@ impl Media {
 
     pub fn substitute_playlist(&mut self, playlist: PlaylistData) {
         for list in &mut self.playlists {
-            if list.id == playlist.id {
+            if list.path == playlist.path {
                 list.path = playlist.path;
                 list.metadata = playlist.metadata;
                 list.tracks = playlist.tracks;
@@ -413,8 +413,7 @@ impl Media {
 
     #[inline]
     pub fn remove_playlist(&mut self, path: PathBuf) {
-        self.playlists
-            .retain(|x| x.path != format!("{}", path.display()));
+        self.playlists.retain(|x| x.path != path);
     }
 
     pub fn remove_song(&mut self, path: PathBuf) {
@@ -436,9 +435,12 @@ impl Media {
         None
     }
 
-    pub fn get_playlist(&self, id: &str) -> Option<PlaylistData> {
+    pub fn get_playlist(&self, path_base64: String) -> Option<PlaylistData> {
+        let path = PathBuf::from(
+            String::from_utf8_lossy(&URL_SAFE.decode(path_base64).unwrap()).to_string(),
+        );
         for playlist in self.playlists.iter() {
-            if playlist.id == id {
+            if playlist.path == path {
                 return Some(playlist.clone());
             }
         }

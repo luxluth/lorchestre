@@ -114,7 +114,7 @@ export type Playlist = {
 	metadata: Record<string, string>;
 	tracks: Vec<string>;
 	path: string;
-	id: string;
+	path_base64: string;
 };
 
 export type Media = {
