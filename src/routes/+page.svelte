@@ -137,15 +137,13 @@
 
 		return categorizedAlbums;
 	}
-
-	let pAlbums = $state(processAlbums(sort(media.albums)));
 </script>
 
 <h1 class="__page_title ns">{$_('albums')}</h1>
 
 {#if media.loaded}
 	<div class="__medias">
-		{#each pAlbums as data}
+		{#each processAlbums(sort(media.albums)) as data}
 			<section>
 				<h3 class="glass ns">{data.char}</h3>
 				<div class="__albums_container">
