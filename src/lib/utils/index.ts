@@ -65,11 +65,6 @@ export function getAudioUri(path: string, config: AppConfig) {
 	return `http://${endpoint}/audio?path=${path}`;
 }
 
-export function getPlaylistUri(playlist: Playlist, config: AppConfig) {
-	const endpoint = config.getDaemonEndpoint();
-	return `http://${endpoint}/playlist/${playlist.path_base64}`;
-}
-
 export function getLyricsUri(path: string, config: AppConfig) {
 	const endpoint = config.getDaemonEndpoint();
 	return `http://${endpoint}/lyrics?path=${path}`;

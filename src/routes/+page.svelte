@@ -87,38 +87,97 @@
 
 		return tracks;
 	}
+
+	function sort(albums: Album[]): Album[] {
+		return albums.sort((a, b) => a.name.localeCompare(b.name));
+	}
+
+	type CategorizedAlbum = {
+		char: string;
+		albums: Album[];
+	};
+
+	function processAlbums(a: Album[]): CategorizedAlbum[] {
+		let albums = [...a];
+		let categorizedAlbums: CategorizedAlbum[] = [];
+		let aCode = 'A'.charCodeAt(0);
+		for (let i = 0; i < 26; i++) {
+			let currentChar = String.fromCharCode(aCode + i);
+			let toRemove: number[] = [];
+			let collectedAlbums = albums.filter((album, idx) => {
+				if (album.name[0].toUpperCase() == currentChar) {
+					toRemove.push(idx);
+					return true;
+				} else {
+					return false;
+				}
+			});
+
+			toRemove.forEach((i) => {
+				delete albums[i];
+			});
+
+			albums = albums.filter((a) => typeof a !== 'undefined');
+
+			if (collectedAlbums.length > 0) {
+				categorizedAlbums.push({
+					char: currentChar,
+					albums: collectedAlbums
+				});
+			}
+		}
+
+		// TODO: improve categorization
+		if (albums.length > 0) {
+			categorizedAlbums.push({
+				char: '#',
+				albums
+			});
+		}
+
+		return categorizedAlbums;
+	}
+
+	let pAlbums = $state(processAlbums(sort(media.albums)));
 </script>
 
 <h1 class="__page_title ns">{$_('albums')}</h1>
 
 {#if media.loaded}
 	<div class="__medias">
-		{#each media.albums as album}
-			<a
-				class="__audio"
-				data-id={album.id}
-				href="/album/{album.id}"
-				oncontextmenu={(e) => {
-					e.preventDefault();
-					showContext(e, getTracks(album));
-				}}
-			>
-				<div
-					class="cover"
-					style="--clr: {getTrack(album.tracks[0])
-						? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
-						: 'rgb(255, 255, 255)'};"
-				>
-					<img
-						class="ns"
-						src={getCoverUri(album.id, getTrack(album.tracks[0]).cover_ext, config, 300)}
-						alt=""
-						loading="lazy"
-					/>
+		{#each pAlbums as data}
+			<section>
+				<h3 class="glass ns">{data.char}</h3>
+				<div class="__albums_container">
+					{#each data.albums as album}
+						<a
+							class="__audio"
+							data-id={album.id}
+							href="/album/{album.id}"
+							oncontextmenu={(e) => {
+								e.preventDefault();
+								showContext(e, getTracks(album));
+							}}
+						>
+							<div
+								class="cover"
+								style="--clr: {getTrack(album.tracks[0])
+									? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
+									: 'rgb(255, 255, 255)'};"
+							>
+								<img
+									class="ns"
+									src={getCoverUri(album.id, getTrack(album.tracks[0]).cover_ext, config, -1)}
+									alt=""
+									loading="lazy"
+								/>
+							</div>
+							<p class="title ns">{trim(album.name)}</p>
+							<p class="artist ns">{album.artist}</p>
+						</a>
+					{/each}
 				</div>
-				<p class="title ns">{trim(album.name)}</p>
-				<p class="artist ns">{album.artist}</p>
-			</a>
+			</section>
 		{/each}
 	</div>
 {:else}
@@ -148,11 +207,30 @@
 		padding-bottom: 2em;
 	}
 
-	.__medias {
+	.__albums_container {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
 		column-gap: 1em;
 		row-gap: 3em;
+	}
+
+	section h3 {
+		text-align: right;
+		position: -webkit-sticky;
+		position: sticky;
+		height: 2em;
+		width: 80%;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		padding-inline: 1em;
+		margin-block: 1em;
+		top: 0;
+		margin-inline: auto;
+		border-radius: 12px;
+		border: 1px solid var(--highlight);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+		z-index: 30;
 	}
 
 	.__audio {
