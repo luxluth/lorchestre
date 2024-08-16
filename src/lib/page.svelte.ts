@@ -32,6 +32,6 @@ export function setPage() {
 	return setContext<Page>(PAGE_SYMBOL, new Page());
 }
 
-export function getList() {
+export function getPage() {
 	return getContext<ReturnType<typeof setPage>>(PAGE_SYMBOL);
 }

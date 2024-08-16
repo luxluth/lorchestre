@@ -224,7 +224,8 @@
 		justify-content: flex-end;
 		align-items: center;
 		padding-inline: 1em;
-		margin-block: 1em;
+		margin-bottom: 2em;
+		margin-top: 0.5em;
 		top: 0;
 		margin-inline: auto;
 		border-radius: 12px;

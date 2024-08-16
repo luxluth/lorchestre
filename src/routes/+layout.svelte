@@ -30,6 +30,7 @@
 	import EditView from './EditView.svelte';
 	import WindowControls from '$lib/components/WindowControls.svelte';
 	import StartingScreen from './StartingScreen.svelte';
+	import { setPageScroll } from '$lib/pageScroll.svelte';
 
 	// import { invoke } from '@tauri-apps/api/core';
 
@@ -51,6 +52,7 @@
 	setLrc(conf, tm, evc);
 	setFilter();
 	setList();
+	const ps = setPageScroll();
 
 	if (browser) {
 		if (!dev) {
@@ -86,7 +88,12 @@
 				<Commands />
 				<WindowControls platform={data.platform} />
 			</header>
-			<main>
+			<main
+				id="__main__"
+				onscroll={(e) => {
+					ps.save(e, $page.url.pathname);
+				}}
+			>
 				{@render children()}
 				<Queue />
 				<Lrc />

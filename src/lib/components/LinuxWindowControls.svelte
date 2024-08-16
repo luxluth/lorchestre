@@ -19,11 +19,6 @@
 			buttons = await invoke('gnome_window_controls');
 		}
 	})();
-
-	$effect(() => {
-		console.log('desktop', desktop);
-		console.log('buttons', buttons);
-	});
 </script>
 
 {#if desktop === 'gnome' || desktop === 'kde'}

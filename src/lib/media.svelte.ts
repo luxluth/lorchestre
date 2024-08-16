@@ -32,7 +32,6 @@ export default class MediaState {
 			response = await fetch(`http://${endpoint}/media`);
 		} catch (e) {}
 		if (response) {
-			console.log('First response');
 			let media = (await response.json()) as Media;
 			this.albums = media.albums;
 			this.playlists = media.playlists;
