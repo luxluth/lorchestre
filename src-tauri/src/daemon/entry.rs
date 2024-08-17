@@ -113,7 +113,7 @@ pub async fn start(
         .route("/playlist/update_order/:id", put(list_reorder))
         .route("/playlist/remove_meta/:id", delete(list_remove_meta))
         .route("/playlist/add_meta/:id", post(list_add_meta))
-        // .route("/playlist/create/:id", post(playlist))
+        .route("/playlist/create", post(list_create))
         // ------ palylist action
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
@@ -330,28 +330,23 @@ async fn list_remove(State(state): State<AppData>, Path(id): Path<String>) -> Re
     }
 }
 
-#[derive(serde::Deserialize)]
-struct TrackInfo {
-    path: PathBuf,
-}
-
 async fn list_remove_track(
     State(state): State<AppData>,
     Path(id): Path<String>,
-    Json(payload): Json<TrackInfo>,
+    Json(payload): Json<Vec<PathBuf>>,
 ) -> Response {
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
         if playlist
-            .update(PlaylistAction::RemoveTrack(payload.path))
+            .update(PlaylistAction::RemoveTracks(payload))
             .is_ok()
         {
             media.substitute_playlist(playlist.clone());
             Json(playlist).into_response()
         } else {
             let mut response =
-                format!("An error occurred during the cation excecution [list:id:{id}]")
+                format!("An error occurred during the action excecution [list:id:{id}]")
                     .into_response();
             *response.status_mut() = StatusCode::NOT_FOUND;
             response
@@ -366,15 +361,12 @@ async fn list_remove_track(
 async fn list_add_track(
     State(state): State<AppData>,
     Path(id): Path<String>,
-    Json(payload): Json<TrackInfo>,
+    Json(payload): Json<Vec<PathBuf>>,
 ) -> Response {
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
         let mut playlist = playlist;
-        if playlist
-            .update(PlaylistAction::AddTrack(payload.path))
-            .is_ok()
-        {
+        if playlist.update(PlaylistAction::AddTracks(payload)).is_ok() {
             media.substitute_playlist(playlist.clone());
             Json(playlist).into_response()
         } else {
@@ -485,6 +477,8 @@ async fn list_add_meta(
         response
     }
 }
+
+async fn list_create(State(_state): State<AppData>) {}
 
 async fn audio(
     range: Option<TypedHeader<Range>>,

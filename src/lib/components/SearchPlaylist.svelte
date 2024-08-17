@@ -7,13 +7,7 @@
 	let { playlist, list }: { playlist: Playlist; list: List } = $props();
 </script>
 
-<a
-	class="playlist"
-	href="/list/{playlist.path_base64}"
-	onclick={() => {
-		list.activeList = playlist.path_base64;
-	}}
->
+<a class="playlist" href="/list/{playlist.path_base64}">
 	<div class="holder">
 		<ListIcon size={'2em'} />
 	</div>

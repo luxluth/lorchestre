@@ -27,8 +27,8 @@ pub struct PlaylistData {
 }
 
 pub enum PlaylistAction {
-    RemoveTrack(PathBuf),
-    AddTrack(PathBuf),
+    RemoveTracks(Vec<PathBuf>),
+    AddTracks(Vec<PathBuf>),
     UpdateOrder(Vec<PathBuf>),
     RemoveMeta(String),
     AddMeta(String, String),
@@ -37,11 +37,13 @@ pub enum PlaylistAction {
 impl PlaylistData {
     pub fn update(&mut self, action: PlaylistAction) -> io::Result<()> {
         match action {
-            PlaylistAction::RemoveTrack(track) => {
-                self.tracks.retain(|p| *p != track);
+            PlaylistAction::RemoveTracks(tracks) => {
+                for track in tracks {
+                    self.tracks.retain(|p| *p != track);
+                }
             }
-            PlaylistAction::AddTrack(track) => {
-                self.tracks.push(track);
+            PlaylistAction::AddTracks(track) => {
+                self.tracks.extend(track);
             }
             PlaylistAction::UpdateOrder(tracks) => {
                 self.tracks = tracks;

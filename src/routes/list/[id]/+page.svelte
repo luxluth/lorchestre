@@ -6,6 +6,8 @@
 	import { Select } from 'bits-ui';
 	import Filter from 'lucide-svelte/icons/filter';
 	import Check from 'lucide-svelte/icons/check';
+	import Plus from 'lucide-svelte/icons/list-plus';
+	import Bolt from 'lucide-svelte/icons/bolt';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
@@ -15,14 +17,24 @@
 	import { getList } from '$lib/playlist.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
+	import ShallowSong from '$lib/components/ShallowSong.svelte';
+
+	type DisplayMode = 'normal' | 'edit';
 
 	let list = getList();
 	let manager = getManager();
 	let ctx = getCtx();
 	let media = getMedia();
 	let filterquery = list.filters;
+	let mode: DisplayMode = $state('normal');
 
 	let playlistData: Playlist | null = $derived($page.data.list);
+	let selections: string[] = $state([]);
+
+	$effect(() => {
+		list.activeList = playlistData?.path_base64 ?? null;
+	});
 
 	let tracks = $derived(
 		playlistData
@@ -138,122 +150,220 @@
 			`${$_('playlist').toLowerCase()} — ${playlistData ? (playlistData.metadata['Name'] ?? '+£@&0m') : ''} - L'orchestre`
 		);
 	});
+
+	function toggleSelect(path: string) {
+		if (selections.includes(path)) {
+			selections = selections.filter((s) => s !== path);
+		} else {
+			selections = [...selections, path];
+		}
+	}
+
+	document.addEventListener('pagechanged', () => {
+		mode = 'normal';
+		selections = [];
+	});
 </script>
 
 <div class="page ns">
+	<button
+		class="edit btn"
+		class:active={mode === 'edit'}
+		onclick={() => {
+			mode = mode == 'normal' ? 'edit' : 'normal';
+		}}
+	>
+		<div class="icon">
+			<Bolt />
+		</div>
+	</button>
 	{#if playlistData}
-		<h1>{playlistData.metadata['Name'] ?? '+£@&0m'}</h1>
-		<p class="track_counts">
-			{tracks.length}
-			{tracks.length > 1 ? $_('stats_page.songs') : $_('stats_page.song')}
-		</p>
+		{#if mode === 'normal'}
+			<h1>{playlistData.metadata['Name'] ?? '+£@&0m'}</h1>
+			<p class="track_counts">
+				{tracks.length}
+				{tracks.length > 1 ? $_('stats_page.songs') : $_('stats_page.song')}
+			</p>
 
-		<div class="quick-actions">
-			<button
-				onclick={async () => {
-					await playAll();
-				}}
-			>
-				<div class="icon">
-					<Play fill={'var(--fg)'} size={'1em'} />
-				</div>
-				{$_('songs_page.listen')}
-			</button>
-			<button
-				onclick={async () => {
-					await playAllShuffle();
-				}}
-			>
-				<div class="icon">
-					<Shuffle size={'1em'} />
-				</div>
-				{$_('songs_page.shuffle')}
-			</button>
-		</div>
-
-		<div class="filters">
-			<div class="filter">
-				<Select.Root
-					items={filterTypes}
-					selected={filterTypes.find((l) => l.value === filterquery.type)}
-					onSelectedChange={(e) => {
-						if (e) {
-							filterquery.type = e.value;
-						}
+			<p class="description">{playlistData.metadata['Description'] ?? ''}</p>
+		{:else if mode === 'edit'}
+			<input type="text" class="list_name" value={playlistData.metadata['Name'] ?? '+£@&0m'} />
+			<input
+				type="text"
+				class="desc"
+				placeholder="playlist description"
+				value={playlistData.metadata['Description'] ?? ''}
+			/>
+		{/if}
+		{#if mode === 'normal'}
+			<div class="quick-actions">
+				<button
+					onclick={async () => {
+						await playAll();
 					}}
 				>
-					<Select.Trigger
-						class="select-trigger"
-						aria-label={$_('songs_page.filter.selection_area_label_type')}
-					>
-						<Filter class="icon" />
-						<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
-					</Select.Trigger>
-					<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-						{#each filterTypes as filter}
-							<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-								{$_(filter.label)}
-								<Select.ItemIndicator class="ml-auto" asChild={false}>
-									<Check />
-								</Select.ItemIndicator>
-							</Select.Item>
-						{/each}
-					</Select.Content>
-					<Select.Input name="favoriteFruit" />
-				</Select.Root>
-			</div>
-			<div class="filter">
-				<Select.Root
-					items={filterOrders}
-					selected={filterOrders.find((l) => l.value === filterquery.order)}
-					onSelectedChange={(e) => {
-						if (e) {
-							filterquery.order = e.value;
-						}
+					<div class="icon">
+						<Play fill={'var(--fg)'} size={'1em'} />
+					</div>
+					{$_('songs_page.listen')}
+				</button>
+				<button
+					onclick={async () => {
+						await playAllShuffle();
 					}}
 				>
-					<Select.Trigger
-						class="select-trigger"
-						aria-label={$_('songs_page.filter.selection_area_label_order')}
-					>
-						<ArrowDown10 class="icon" />
-						<div class="text">{$_('songs_page.filter.sort_order')}</div>
-					</Select.Trigger>
-					<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-						{#each filterOrders as filter}
-							<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-								{$_(filter.label)}
-								<Select.ItemIndicator class="ml-auto" asChild={false}>
-									<Check />
-								</Select.ItemIndicator>
-							</Select.Item>
-						{/each}
-					</Select.Content>
-					<Select.Input name="favoriteFruit" />
-				</Select.Root>
+					<div class="icon">
+						<Shuffle size={'1em'} />
+					</div>
+					{$_('songs_page.shuffle')}
+				</button>
 			</div>
-			<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
-		</div>
+
+			<div class="filters">
+				<div class="filter">
+					<Select.Root
+						items={filterTypes}
+						selected={filterTypes.find((l) => l.value === filterquery.type)}
+						onSelectedChange={(e) => {
+							if (e) {
+								filterquery.type = e.value;
+							}
+						}}
+					>
+						<Select.Trigger
+							class="select-trigger"
+							aria-label={$_('songs_page.filter.selection_area_label_type')}
+						>
+							<Filter class="icon" />
+							<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
+						</Select.Trigger>
+						<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
+							{#each filterTypes as filter}
+								<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+									{$_(filter.label)}
+									<Select.ItemIndicator class="ml-auto" asChild={false}>
+										<Check />
+									</Select.ItemIndicator>
+								</Select.Item>
+							{/each}
+						</Select.Content>
+						<Select.Input name="favoriteFruit" />
+					</Select.Root>
+				</div>
+				<div class="filter">
+					<Select.Root
+						items={filterOrders}
+						selected={filterOrders.find((l) => l.value === filterquery.order)}
+						onSelectedChange={(e) => {
+							if (e) {
+								filterquery.order = e.value;
+							}
+						}}
+					>
+						<Select.Trigger
+							class="select-trigger"
+							aria-label={$_('songs_page.filter.selection_area_label_order')}
+						>
+							<ArrowDown10 class="icon" />
+							<div class="text">{$_('songs_page.filter.sort_order')}</div>
+						</Select.Trigger>
+						<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
+							{#each filterOrders as filter}
+								<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+									{$_(filter.label)}
+									<Select.ItemIndicator class="ml-auto" asChild={false}>
+										<Check />
+									</Select.ItemIndicator>
+								</Select.Item>
+							{/each}
+						</Select.Content>
+						<Select.Input name="favoriteFruit" />
+					</Select.Root>
+				</div>
+				<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
+			</div>
+		{/if}
 
 		<div
 			class="songlist"
 			style="--tracklist-index-column-width: {(tracks.length.toString().length * 16) / 2}px"
 		>
-			{#each filteredTracks as song, i}
-				<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
-			{/each}
+			{#if mode === 'normal'}
+				{#each filteredTracks as song, i}
+					<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
+				{/each}
+			{:else if mode === 'edit'}
+				{#each tracks as song}
+					<ShallowSong
+						{song}
+						selected={selections.includes(song.file_path)}
+						toggleSelection={(p) => {
+							toggleSelect(p);
+						}}
+					/>
+				{/each}
+			{/if}
 		</div>
+		{#if mode === 'edit'}
+			<section class="adding_tracks">
+				<h3><Plus /> Add Tracks</h3>
+			</section>
+		{/if}
 	{/if}
 </div>
 
 <style>
+	.description {
+		opacity: 0.7;
+		padding-bottom: 2em;
+	}
+	.edit {
+		top: 4.5em;
+		right: 1em;
+		position: absolute;
+	}
+
+	.edit.active {
+		background: var(--brand-color);
+	}
+
+	.adding_tracks {
+		margin-top: 2em;
+		width: 100%;
+	}
+
+	.desc {
+		background: none;
+		border: none;
+		width: 100%;
+	}
+
+	.adding_tracks h3 {
+		display: flex;
+		align-items: center;
+		gap: 0.2em;
+	}
+
 	h1 {
 		font-size: clamp(2.5rem, 1.8333rem + 5.3333vw, 7.5rem);
 		font-family: var(--font-fantasy);
 	}
 
+	.list_name {
+		font-size: clamp(2.5rem, 1.8333rem + 5.3333vw, 7.5rem);
+		font-family: var(--font-fantasy);
+		width: 100%;
+		background: none;
+		border: none;
+	}
+
+	.list_name:focus,
+	.desc:focus {
+		outline: none;
+	}
+
 	.track_counts {
-		padding-bottom: 2em;
+		padding-bottom: 0.5em;
 	}
 
 	.filters {

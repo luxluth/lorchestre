@@ -15,6 +15,8 @@ class PageScroll {
 				const path = page.url.pathname;
 				const main = document.getElementById('__main__') as HTMLElement;
 				if (path !== this.prevPath) {
+					const ev = new CustomEvent('pagechanged');
+					document.dispatchEvent(ev);
 					const scrollTop = this.scrollPositions.get(path);
 					if (scrollTop) {
 						main.scrollTo({ top: scrollTop });
