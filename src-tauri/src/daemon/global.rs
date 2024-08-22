@@ -330,8 +330,9 @@ impl Media {
         let album_searcher = albums_reader.searcher();
 
         let terms = [
-            Term::from_field_text(album_name, query),
-            Term::from_field_text(album_artist, query),
+            Term::from_field_text(title, query),
+            Term::from_field_text(artists, query),
+            Term::from_field_text(album, query),
         ];
 
         for term in terms {
@@ -358,9 +359,8 @@ impl Media {
         }
 
         let terms = [
-            Term::from_field_text(title, query),
-            Term::from_field_text(artists, query),
-            Term::from_field_text(album, query),
+            Term::from_field_text(album_name, query),
+            Term::from_field_text(album_artist, query),
         ];
 
         for term in terms {
