@@ -125,7 +125,6 @@ export type Media = {
 
 export type SearchResults = {
 	albums: Array<Album>;
-	playlists: Array<Playlist>;
 	tracks: Array<Track>;
 };
 

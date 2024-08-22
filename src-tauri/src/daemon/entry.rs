@@ -53,9 +53,10 @@ async fn on_connect(socket: SocketRef) {
         "search",
         |sock: SocketRef,
          Data::<String>(q),
-         media: socketioxide::extract::State<Arc<RwLock<Media>>>| async move {
+         data: socketioxide::extract::State<(Arc<RwLock<Media>>, Dir)>| async move {
+            let (media, dirs) = data.0;
             let m = media.read().await;
-            let res = m.search(&q);
+            let res = m.search(dirs.cache, &q);
             let _ = sock.emit("searchresponse", res);
         },
     )
@@ -95,7 +96,7 @@ pub async fn start(
     let media_data = Arc::new(RwLock::new(m));
 
     let (layer, io) = SocketIo::builder()
-        .with_state(Arc::clone(&media_data))
+        .with_state((Arc::clone(&media_data), dirs.clone()))
         .build_layer();
     io.ns("/", on_connect);
 

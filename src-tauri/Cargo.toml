@@ -41,3 +41,4 @@ uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
 base64 = "0.22.1"
 alrc = { version = "0.1.0", features = ["serde"] }
 tauri-plugin-decorum = "1.0.0"
+tantivy = "0.22.0"

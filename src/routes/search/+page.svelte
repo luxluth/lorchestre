@@ -52,14 +52,6 @@
 						{/each}
 					</div>
 				{/if}
-				{#if search.results.playlists.length > 0}
-					<h2>{$_('playlists')}</h2>
-					<div class="playlists">
-						{#each search.results.playlists as playlist}
-							<SearchPlaylist {playlist} {list} />
-						{/each}
-					</div>
-				{/if}
 			</div>
 		{/if}
 	</div>

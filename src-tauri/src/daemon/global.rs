@@ -11,6 +11,10 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::time::SystemTime;
+use tantivy::collector::{Count, TopDocs};
+use tantivy::query::FuzzyTermQuery;
+use tantivy::schema::*;
+use tantivy::{doc, Index, IndexWriter, ReloadPolicy};
 use tauri::Emitter;
 use tracing::error;
 
@@ -38,7 +42,7 @@ impl Color {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 pub struct Album {
     pub name: String,
     pub artist: String,
@@ -75,6 +79,14 @@ pub struct Track {
     pub bitrate: u32,
     pub created_at: SystemTime,
 }
+
+impl PartialEq for Track {
+    fn eq(&self, other: &Self) -> bool {
+        self.file_path == other.file_path
+    }
+}
+
+impl Eq for Track {}
 
 impl Track {
     pub fn from_file(covers_dir: &PathBuf, inode: PathBuf) -> Self {
@@ -280,49 +292,103 @@ pub struct Media {
 }
 
 impl Media {
-    pub fn search(&self, query: &str) -> SearchResults {
-        let query_lower = query.to_lowercase();
+    pub fn search(&self, cache_dir: PathBuf, query: &str) -> SearchResults {
+        let songs_index_path = cache_dir.join(".search.songs");
+        let albums_index_path = cache_dir.join(".search.albums");
+        let songs_index = Index::open_in_dir(songs_index_path).unwrap();
+        let albums_index = Index::open_in_dir(albums_index_path).unwrap();
 
-        let tracks: Vec<Track> = self
-            .tracks
-            .values()
-            .filter(|track| {
-                track.title.to_lowercase().contains(&query_lower)
-                    || track
-                        .artists
-                        .iter()
-                        .any(|artist| artist.to_lowercase().contains(&query_lower))
-                    || track.album.to_lowercase().contains(&query_lower)
-                    || track
-                        .album_artist
-                        .as_ref()
-                        .map_or(false, |artist| artist.to_lowercase().contains(&query_lower))
-            })
-            .cloned()
-            .collect();
+        let mut schema_builder = Schema::builder();
+        let title = schema_builder.add_text_field("title", TEXT | STORED);
+        let artists = schema_builder.add_text_field("artists", TEXT | STORED);
+        let album = schema_builder.add_text_field("album", TEXT | STORED);
+        schema_builder.add_text_field("path", TEXT | STORED);
+        let songs_schema = schema_builder.build();
 
-        let albums: Vec<Album> = self
-            .albums
-            .iter()
-            .filter(|album| {
-                album.name.to_lowercase().contains(&query_lower)
-                    || album.artist.to_lowercase().contains(&query_lower)
-            })
-            .cloned()
-            .collect();
+        schema_builder = tantivy::schema::Schema::builder();
+        let album_name = schema_builder.add_text_field("name", TEXT | STORED);
+        let album_artist = schema_builder.add_text_field("artist", TEXT | STORED);
+        schema_builder.add_text_field("id", TEXT | STORED);
+        let albums_schema = schema_builder.build();
 
-        let playlists: Vec<PlaylistData> = self
-            .playlists
-            .iter()
-            .filter(|playlist| playlist.get_name().to_lowercase().contains(&query_lower))
-            .cloned()
-            .collect();
+        let songs_reader = songs_index
+            .reader_builder()
+            .reload_policy(ReloadPolicy::OnCommitWithDelay)
+            .try_into()
+            .unwrap();
 
-        SearchResults {
-            albums,
-            playlists,
-            tracks,
+        let albums_reader = albums_index
+            .reader_builder()
+            .reload_policy(ReloadPolicy::OnCommitWithDelay)
+            .try_into()
+            .unwrap();
+
+        let mut tracks = vec![];
+        let mut albums = vec![];
+
+        let song_searcher = songs_reader.searcher();
+        let album_searcher = albums_reader.searcher();
+
+        let terms = [
+            Term::from_field_text(album_name, query),
+            Term::from_field_text(album_artist, query),
+        ];
+
+        for term in terms {
+            let q = FuzzyTermQuery::new(term, 2, true);
+            let (top_docs, _) = song_searcher
+                .search(&q, &(TopDocs::with_limit(10), Count))
+                .unwrap();
+
+            for (_, doc_address) in top_docs {
+                let doc: TantivyDocument = song_searcher.doc(doc_address).unwrap();
+                let doc = doc.to_named_doc(&songs_schema);
+
+                if let Some(paths) = doc.0.get("path") {
+                    match paths[0].clone() {
+                        OwnedValue::Str(p) => {
+                            if let Some(track) = self.get_song(&p) {
+                                tracks.push(track);
+                            };
+                        }
+                        _ => {}
+                    }
+                }
+            }
         }
+
+        let terms = [
+            Term::from_field_text(title, query),
+            Term::from_field_text(artists, query),
+            Term::from_field_text(album, query),
+        ];
+
+        for term in terms {
+            let q = FuzzyTermQuery::new(term, 2, true);
+            let (top_docs, _) = album_searcher
+                .search(&q, &(TopDocs::with_limit(5), Count))
+                .unwrap();
+
+            for (_, doc_address) in top_docs {
+                let doc: TantivyDocument = album_searcher.doc(doc_address).unwrap();
+                let doc = doc.to_named_doc(&albums_schema);
+                if let Some(ids) = doc.0.get("id") {
+                    match ids[0].clone() {
+                        OwnedValue::Str(id) => {
+                            if let Some(album) = self.get_album(&id) {
+                                albums.push(album);
+                            };
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+
+        albums.dedup();
+        tracks.dedup();
+
+        SearchResults { albums, tracks }
     }
 
     pub fn cache(&self, cache_dir: PathBuf, win: Option<tauri::Window>) {
@@ -335,9 +401,79 @@ impl Media {
         let mut f = fs::File::create(&p_string).unwrap();
         let _ = f.write_all(jason.as_bytes());
 
+        self.create_search_index(cache_dir);
+
         if let Some(win) = win {
             let _ = win.emit("synched", ());
         }
+    }
+
+    pub fn create_search_index(&self, cache_dir: PathBuf) {
+        let songs_index_path = cache_dir.join(".search.songs");
+        let albums_index_path = cache_dir.join(".search.albums");
+
+        if songs_index_path.exists() {
+            let _ = std::fs::remove_dir_all(&songs_index_path);
+        }
+
+        if std::fs::DirBuilder::new()
+            .recursive(true)
+            .create(&songs_index_path)
+            .is_err()
+        {
+            return;
+        };
+
+        if albums_index_path.exists() {
+            let _ = std::fs::remove_dir_all(&albums_index_path);
+        }
+        if std::fs::DirBuilder::new()
+            .recursive(true)
+            .create(&albums_index_path)
+            .is_err()
+        {
+            return;
+        };
+
+        let mut schema_builder = tantivy::schema::Schema::builder();
+        let title = schema_builder.add_text_field("title", TEXT | STORED);
+        let artists = schema_builder.add_text_field("artists", TEXT | STORED);
+        let album = schema_builder.add_text_field("album", TEXT | STORED);
+        let path = schema_builder.add_text_field("path", TEXT | STORED);
+        let songs_schema = schema_builder.build();
+
+        schema_builder = tantivy::schema::Schema::builder();
+        let album_name = schema_builder.add_text_field("name", TEXT | STORED);
+        let album_artist = schema_builder.add_text_field("artist", TEXT | STORED);
+        let album_id = schema_builder.add_text_field("id", TEXT | STORED);
+        let album_schema = schema_builder.build();
+
+        let songs_index = Index::create_in_dir(&songs_index_path, songs_schema).unwrap();
+        let mut index_writer: IndexWriter = songs_index.writer(50_000_000).unwrap();
+        for (_, track) in &self.tracks {
+            let _ = index_writer.add_document(doc!(
+                title => track.title.clone(),
+                artists => track.artists.join(";"),
+                album => track.album.clone(),
+                path => track.file_path.clone(),
+            ));
+        }
+
+        let p = index_writer.prepare_commit().unwrap();
+        let _ = p.commit();
+
+        let albums_index = Index::create_in_dir(&albums_index_path, album_schema).unwrap();
+        index_writer = albums_index.writer(50_000_000).unwrap();
+        for album in &self.albums {
+            let _ = index_writer.add_document(doc!(
+                album_name => album.name.clone(),
+                album_artist => album.artist.clone(),
+                album_id => album.id.clone(),
+            ));
+        }
+
+        let p = index_writer.prepare_commit().unwrap();
+        let _ = p.commit();
     }
 
     pub fn swap_with(&mut self, media: Media) {
@@ -426,6 +562,7 @@ impl Media {
     }
 
     pub fn get_album(&self, id: &str) -> Option<Album> {
+        let id = id.to_string();
         for album in self.albums.iter() {
             if album.id == id {
                 return Some(album.clone());
@@ -435,7 +572,10 @@ impl Media {
         None
     }
 
-    pub fn get_playlist(&self, path_base64: String) -> Option<PlaylistData> {
+    pub fn get_playlist<T>(&self, path_base64: T) -> Option<PlaylistData>
+    where
+        T: AsRef<[u8]>,
+    {
         let path = PathBuf::from(
             String::from_utf8_lossy(&URL_SAFE.decode(path_base64).unwrap()).to_string(),
         );
@@ -448,7 +588,7 @@ impl Media {
         None
     }
 
-    pub fn get_song(&self, path: &String) -> Option<Track> {
+    pub fn get_song(&self, path: &str) -> Option<Track> {
         self.tracks.get(&PathBuf::from(path)).cloned()
     }
 }
@@ -456,7 +596,6 @@ impl Media {
 #[derive(serde::Serialize, Debug)]
 pub struct SearchResults {
     pub albums: Vec<Album>,
-    pub playlists: Vec<PlaylistData>,
     pub tracks: Vec<Track>,
 }
 

@@ -106,6 +106,8 @@ pub async fn cache_resolve(cache_dir: &Path, win: Option<tauri::Window>) -> Medi
 
     info!("cache process ended");
 
+    cache.create_search_index(cache_dir.to_path_buf());
+
     cache
 }
 
