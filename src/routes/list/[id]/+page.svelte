@@ -17,7 +17,6 @@
 	import { getList } from '$lib/playlist.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 	import ShallowSong from '$lib/components/ShallowSong.svelte';
 
 	type DisplayMode = 'normal' | 'edit';
@@ -325,6 +324,7 @@
 
 	.edit.active {
 		background: var(--brand-color);
+		color: white;
 	}
 
 	.adding_tracks {
@@ -336,6 +336,7 @@
 		background: none;
 		border: none;
 		width: 100%;
+		color: var(--fg);
 	}
 
 	.adding_tracks h3 {
@@ -350,6 +351,7 @@
 	}
 
 	.list_name {
+		color: var(--fg);
 		font-size: clamp(2.5rem, 1.8333rem + 5.3333vw, 7.5rem);
 		font-family: var(--font-fantasy);
 		width: 100%;
