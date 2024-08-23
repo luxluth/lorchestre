@@ -25,7 +25,7 @@
 		"@fontsource/ibm-plex-mono": "^5.0.14",
 		"@sveltejs/adapter-static": "^3.0.4",
 		"@sveltejs/kit": "^2.5.24",
-		"@sveltejs/vite-plugin-svelte": "^3.1.2",
+		"@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
 		"@tauri-apps/api": "2.0.0-rc.0",
 		"@tauri-apps/cli": "2.0.0-rc.0",
 		"@tauri-apps/plugin-shell": "2.0.0-rc.0",
