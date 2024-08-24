@@ -168,6 +168,7 @@ fn start_daemon(window: tauri::Window, app: tauri::AppHandle) {
         let dirs = Dir {
             config: app.path().app_config_dir().unwrap(),
             cache: app.path().app_cache_dir().unwrap(),
+            audio: app.path().audio_dir().unwrap(),
         };
         let _ = start(Some(window), dirs).await;
     });
@@ -199,6 +200,7 @@ struct SingleInstanceArgs {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_decorum::init())
@@ -243,6 +245,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let dirs = Dir {
                 config: app.path().app_config_dir().unwrap(),
                 cache: app.path().app_cache_dir().unwrap(),
+                audio: app.path().audio_dir().unwrap(),
             };
 
             tokio::task::spawn(async move {
