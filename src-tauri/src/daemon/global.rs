@@ -26,9 +26,9 @@ pub struct Cover {
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]
 pub struct Color {
-    r: u8,
-    g: u8,
-    b: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
 const COLOR_THRESHOLD: f64 = 180.0;
@@ -49,7 +49,7 @@ pub struct Album {
     pub tracks: Vec<PathBuf>,
     pub year: Option<u32>,
     pub id: String,
-    pub disc_total: i32,
+    pub disc_total: u32,
 }
 
 impl Album {
@@ -68,8 +68,8 @@ pub struct Track {
     pub album_id: String,
     pub cover_ext: String,
     pub mime: String,
-    pub disc: Option<u32>,
-    pub disc_total: Option<u32>,
+    pub disc: u32,
+    pub disc_total: u32,
     pub album_year: Option<u32>,
     pub color: Option<Color>,
     pub is_light: Option<bool>,
@@ -176,10 +176,8 @@ impl Track {
 
         audio.album_id = format!("{digest:x}");
 
-        let disc_total = tag.disk_total();
-        let disc = tag.disk();
-        audio.disc = disc;
-        audio.disc_total = disc_total;
+        audio.disc = tag.disk().unwrap_or(1);
+        audio.disc_total = tag.disk_total().unwrap_or(1);
 
         let cover = tag.get_picture_type(PictureType::CoverFront);
         if let Some(cover) = cover {
@@ -265,8 +263,8 @@ impl Default for Track {
             cover_ext: ".png".to_string(),
             mime: "audio/mp3".to_string(),
             color: None,
-            disc: None,
-            disc_total: None,
+            disc: 1,
+            disc_total: 1,
             is_light: None,
             file_path: String::new(),
             path_base64: String::new(),
@@ -619,11 +617,7 @@ impl Songs {
                         .first()
                         .unwrap_or(&"@UNKNOWN@".to_string()),
                 )),
-                disc_total: if v[0].disc_total.is_some() {
-                    v[0].disc_total.unwrap() as i32
-                } else {
-                    -1
-                },
+                disc_total: v[0].disc_total,
                 year: v[0].album_year,
                 tracks: v.into_iter().map(|x| PathBuf::from(x.file_path)).collect(),
                 id: k,
@@ -650,10 +644,7 @@ pub mod utils {
     use glob::glob;
 
     pub fn get_image_buffer(img: image::DynamicImage) -> Vec<u8> {
-        match img {
-            image::DynamicImage::ImageRgb8(buffer) => buffer.to_vec(),
-            _ => unreachable!(),
-        }
+        img.to_rgb8().to_vec()
     }
 
     pub fn get_audio_files() -> Vec<PathBuf> {

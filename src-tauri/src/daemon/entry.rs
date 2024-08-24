@@ -1,7 +1,7 @@
 use super::{
     config::{self, Dir},
-    global::{Media, Track},
-    m3u8::PlaylistAction,
+    global::{self, Color, Media, Track},
+    m3u8::{PlaylistAction, PlaylistData, PlaylistMetadata},
     utils,
 };
 use axum::{
@@ -14,7 +14,10 @@ use axum::{
 };
 use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
 use axum_range::{KnownSize, Ranged};
-use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE},
+    Engine as _,
+};
 use image::ImageReader;
 use socketioxide::{
     extract::{Data, SocketRef},
@@ -119,6 +122,7 @@ pub async fn start(
         .route("/cover/:handle", get(cover))
         .route("/updatemusic", put(updatemusic))
         .route("/search/lyrics", get(search_lyrics))
+        .route("/get_image", post(get_image))
         .with_state(AppData {
             media: media_data,
             dirs: dirs.clone(),
@@ -135,6 +139,39 @@ pub async fn start(
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+#[derive(serde::Deserialize, Debug)]
+struct ImageGet {
+    path: PathBuf,
+}
+
+#[derive(serde::Serialize)]
+struct ImageGetResponse {
+    color: Color,
+    data: String,
+}
+
+async fn get_image(Json(payload): Json<ImageGet>) -> Json<ImageGetResponse> {
+    // TODO: save image in temp dir
+    let mut file = std::fs::File::open(&payload.path).unwrap();
+    let mut file_buf = vec![];
+    file.read_to_end(&mut file_buf).unwrap();
+
+    let img = image::load_from_memory(&file_buf).unwrap();
+    // TODO: resize the image
+    let pixels = global::utils::get_image_buffer(img);
+    let color = color_thief::get_palette(&pixels, color_thief::ColorFormat::Rgb, 1, 2).unwrap();
+
+    let color = Color {
+        r: color[0].r,
+        g: color[0].g,
+        b: color[0].b,
+    };
+
+    let data = STANDARD.encode(&file_buf);
+
+    Json(ImageGetResponse { color, data })
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -479,7 +516,22 @@ async fn list_add_meta(
     }
 }
 
-async fn list_create(State(_state): State<AppData>) {}
+#[derive(serde::Deserialize)]
+struct CreateList {
+    meta: PlaylistMetadata,
+    tracks: Vec<PathBuf>,
+}
+
+async fn list_create(State(state): State<AppData>, Json(payload): Json<CreateList>) -> Response {
+    match PlaylistData::create(&state.dirs.audio, payload.meta, payload.tracks) {
+        Ok(_) => {
+            let mut response = "Unable to create a new palylist".into_response();
+            *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+            response
+        }
+        Err(_) => "ok".into_response(),
+    }
+}
 
 async fn audio(
     range: Option<TypedHeader<Range>>,

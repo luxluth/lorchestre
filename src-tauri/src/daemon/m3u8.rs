@@ -59,6 +59,34 @@ impl PlaylistData {
         self.save(PathBuf::from(&self.path))
     }
 
+    pub fn create<P>(
+        audio_dir: P,
+        metadata: PlaylistMetadata,
+        tracks: Vec<PathBuf>,
+    ) -> io::Result<()>
+    where
+        P: AsRef<Path>,
+    {
+        let playlists_dir = audio_dir.as_ref().join("Playlists");
+        if !playlists_dir.exists() {
+            std::fs::DirBuilder::new()
+                .recursive(true)
+                .create(&playlists_dir)
+                .unwrap();
+        }
+        let list_path = playlists_dir.join(format!("{}.playlist", uuid::Uuid::new_v4()));
+        let list = PlaylistData {
+            metadata,
+            tracks,
+            path_base64: URL_SAFE.encode(format!("{}", list_path.display()).as_bytes()),
+            path: list_path.clone(),
+        };
+
+        list.save(list_path)?;
+
+        Ok(())
+    }
+
     pub fn delete(&self) -> io::Result<()> {
         let path = Path::new(&self.path);
         if path.exists() {
@@ -97,14 +125,6 @@ impl PlaylistData {
             path_base64: URL_SAFE.encode(s_path.as_bytes()),
             path,
             tracks,
-        }
-    }
-
-    pub fn get_name(&self) -> String {
-        if let Some(name) = self.metadata.get("Name") {
-            name.clone()
-        } else {
-            "@UNKNOWN@".to_string()
         }
     }
 

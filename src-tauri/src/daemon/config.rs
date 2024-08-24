@@ -6,7 +6,7 @@ pub const _APP_ID: &str = "lorchestre";
 pub struct Dir {
     pub config: PathBuf,
     pub cache: PathBuf,
-    // pub audio: PathBuf,
+    pub audio: PathBuf,
 }
 
 impl Dir {
@@ -22,6 +22,13 @@ impl Dir {
             fs::DirBuilder::new()
                 .recursive(true)
                 .create(&self.cache)
+                .unwrap();
+        }
+
+        if !self.audio.exists() {
+            fs::DirBuilder::new()
+                .recursive(true)
+                .create(&self.audio)
                 .unwrap();
         }
     }

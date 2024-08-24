@@ -3,6 +3,7 @@
 	import Library from 'lucide-svelte/icons/library';
 	import ListMusic from 'lucide-svelte/icons/list-music';
 	import Flame from 'lucide-svelte/icons/flame';
+	import Plus from 'lucide-svelte/icons/plus';
 
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 	import { _ } from 'svelte-i18n';
@@ -56,9 +57,7 @@
 	</section>
 	<section>
 		<h4>{$_('playlist')}</h4>
-		{#if media.playlists.length === 0}
-			<p class="np">{$_('no_playlist_found')}</p>
-		{:else}
+		{#if media.playlists.length > 0}
 			<div class="links">
 				{#each media.playlists as playlist}
 					<a
@@ -69,6 +68,12 @@
 						{playlist.metadata['Name'] ?? '+£@&0m'}
 					</a>
 				{/each}
+				<a class="create_list" href="/create_list">
+					<div class="icon">
+						<Plus size={'1em'} />
+					</div>
+					New playlist
+				</a>
 			</div>
 		{/if}
 	</section>
@@ -83,10 +88,6 @@
 </div>
 
 <style>
-	.np {
-		padding: 1em;
-	}
-
 	.search {
 		display: flex;
 		gap: 0.5em;
@@ -179,5 +180,15 @@
 		background: var(--highlight);
 		color: var(--brand-color);
 		opacity: 1;
+	}
+
+	.create_list {
+		display: flex;
+		margin-top: 0.5em;
+		background: var(--highlight);
+	}
+
+	.create_list:active {
+		transform: scale(0.98);
 	}
 </style>
