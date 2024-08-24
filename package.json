@@ -25,7 +25,7 @@
 		"@fontsource/ibm-plex-mono": "^5.0.14",
 		"@sveltejs/adapter-static": "^3.0.4",
 		"@sveltejs/kit": "^2.5.24",
-		"@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
+		"@sveltejs/vite-plugin-svelte": "4.0.0-next.6",
 		"@tauri-apps/api": "2.0.0-rc.0",
 		"@tauri-apps/cli": "2.0.0-rc.0",
 		"@tauri-apps/plugin-shell": "2.0.0-rc.0",
@@ -37,12 +37,13 @@
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",
 		"socket.io-client": "^4.7.5",
-		"svelte": "5.0.0-next.233",
-		"svelte-check": "^3.8.5",
+		"svelte": "5.0.0-next.236",
+		"svelte-check": "^3.8.6",
 		"svelte-dnd-action": "^0.9.50",
 		"svelte-i18n": "^4.0.0",
-		"tslib": "^2.6.3",
+		"tslib": "^2.7.0",
 		"typescript": "^5.5.4",
-		"vite": "^5.4.2"
+		"vite": "^5.4.2",
+		"@tauri-apps/plugin-dialog": "2.0.0-rc.0"
 	}
 }

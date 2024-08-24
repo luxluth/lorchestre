@@ -134,6 +134,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
+name = "ashpd"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd884d7c72877a94102c3715f3b1cd09ff4fac28221add3e57cfbe25c236d093"
+dependencies = [
+ "enumflags2",
+ "futures-channel",
+ "futures-util",
+ "rand 0.8.5",
+ "serde",
+ "serde_repr",
+ "tokio",
+ "url",
+ "zbus",
+]
+
+[[package]]
 name = "async-broadcast"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -363,7 +380,7 @@ dependencies = [
  "serde_urlencoded",
  "sync_wrapper 1.0.1",
  "tokio",
- "tower",
+ "tower 0.4.13",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -408,7 +425,7 @@ dependencies = [
  "pin-project-lite",
  "serde",
  "serde_html_form",
- "tower",
+ "tower 0.4.13",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -1234,7 +1251,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-tungstenite",
- "tower",
+ "tower 0.4.13",
 ]
 
 [[package]]
@@ -2122,7 +2139,7 @@ dependencies = [
  "pin-project-lite",
  "socket2",
  "tokio",
- "tower",
+ "tower 0.4.13",
  "tower-service",
  "tracing",
 ]
@@ -2534,9 +2551,9 @@ dependencies = [
 
 [[package]]
 name = "lofty"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a102be499034ad09aa54fb54df817528f11ca4f642dd2434b64bced7044945f"
+checksum = "c780f414cc123090cf47ee43a58c3a8ef941a4ea66ce262cb5958a844e909523"
 dependencies = [
  "byteorder",
  "data-encoding",
@@ -2613,11 +2630,12 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-decorum",
+ "tauri-plugin-dialog",
  "tauri-plugin-shell",
  "tauri-plugin-single-instance",
  "tauri-plugin-window-state",
  "tokio",
- "tower",
+ "tower 0.5.0",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -3025,6 +3043,17 @@ checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
 dependencies = [
  "malloc_buf",
  "objc_exception",
+]
+
+[[package]]
+name = "objc-foundation"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1add1b659e36c9607c7aab864a76c7a4c2760cd0cd2e120f3fb8b952c7e22bf9"
+dependencies = [
+ "block",
+ "objc",
+ "objc_id",
 ]
 
 [[package]]
@@ -3983,6 +4012,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "rfd"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25a73a7337fc24366edfca76ec521f51877b114e42dab584008209cca6719251"
+dependencies = [
+ "ashpd",
+ "block",
+ "dispatch",
+ "glib-sys",
+ "gobject-sys",
+ "gtk-sys",
+ "js-sys",
+ "log",
+ "objc",
+ "objc-foundation",
+ "objc_id",
+ "raw-window-handle",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "rgb"
 version = "0.8.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4513,7 +4566,7 @@ dependencies = [
  "state",
  "thiserror",
  "tokio",
- "tower",
+ "tower 0.4.13",
 ]
 
 [[package]]
@@ -5067,6 +5120,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-dialog"
+version = "2.0.0-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23f9acd91025e9b624969422e4c707f7cdcded6de66aa0559bc4d91339753cc2"
+dependencies = [
+ "dunce",
+ "log",
+ "raw-window-handle",
+ "rfd",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "tauri-plugin-fs",
+ "thiserror",
+]
+
+[[package]]
+name = "tauri-plugin-fs"
+version = "2.0.0-rc.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5df6b25b1f2b7b61565e66c4dbee9eb39e5635d2a763206e380e07cc3f601a67"
+dependencies = [
+ "anyhow",
+ "glob",
+ "schemars",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "tauri-plugin",
+ "thiserror",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "tauri-plugin-shell"
 version = "2.0.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5337,6 +5427,7 @@ dependencies = [
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
+ "tracing",
  "windows-sys 0.52.0",
 ]
 
@@ -5492,6 +5583,16 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "tower"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36b837f86b25d7c0d7988f00a54e74739be6477f2aac6201b8f429a7569991b7"
+dependencies = [
+ "tower-layer",
+ "tower-service",
 ]
 
 [[package]]
@@ -6552,6 +6653,7 @@ dependencies = [
  "serde_repr",
  "sha1",
  "static_assertions",
+ "tokio",
  "tracing",
  "uds_windows",
  "windows-sys 0.52.0",
@@ -6674,6 +6776,7 @@ dependencies = [
  "enumflags2",
  "serde",
  "static_assertions",
+ "url",
  "zvariant_derive",
 ]
 

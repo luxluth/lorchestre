@@ -31,17 +31,20 @@ importers:
         version: 5.0.14
       '@sveltejs/adapter-static':
         specifier: ^3.0.4
-        version: 3.0.4(@sveltejs/kit@2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))
+        version: 3.0.4(@sveltejs/kit@2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))
       '@sveltejs/kit':
         specifier: ^2.5.24
-        version: 2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))
+        version: 2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^4.0.0-next.6
-        version: 4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))
+        specifier: 4.0.0-next.6
+        version: 4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))
       '@tauri-apps/api':
         specifier: 2.0.0-rc.0
         version: 2.0.0-rc.0
       '@tauri-apps/cli':
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
+      '@tauri-apps/plugin-dialog':
         specifier: 2.0.0-rc.0
         version: 2.0.0-rc.0
       '@tauri-apps/plugin-shell':
@@ -58,34 +61,34 @@ importers:
         version: 9.0.8
       bits-ui:
         specifier: ^0.21.13
-        version: 0.21.13(svelte@5.0.0-next.233)
+        version: 0.21.13(svelte@5.0.0-next.236)
       lucide-svelte:
         specifier: ^0.379.0
-        version: 0.379.0(svelte@5.0.0-next.233)
+        version: 0.379.0(svelte@5.0.0-next.236)
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
       prettier-plugin-svelte:
         specifier: ^3.2.6
-        version: 3.2.6(prettier@3.3.3)(svelte@5.0.0-next.233)
+        version: 3.2.6(prettier@3.3.3)(svelte@5.0.0-next.236)
       socket.io-client:
         specifier: ^4.7.5
         version: 4.7.5
       svelte:
-        specifier: 5.0.0-next.233
-        version: 5.0.0-next.233
+        specifier: 5.0.0-next.236
+        version: 5.0.0-next.236
       svelte-check:
-        specifier: ^3.8.5
-        version: 3.8.5(postcss@8.4.41)(svelte@5.0.0-next.233)
+        specifier: ^3.8.6
+        version: 3.8.6(postcss@8.4.41)(svelte@5.0.0-next.236)
       svelte-dnd-action:
         specifier: ^0.9.50
-        version: 0.9.50(svelte@5.0.0-next.233)
+        version: 0.9.50(svelte@5.0.0-next.236)
       svelte-i18n:
         specifier: ^4.0.0
-        version: 4.0.0(svelte@5.0.0-next.233)
+        version: 4.0.0(svelte@5.0.0-next.236)
       tslib:
-        specifier: ^2.6.3
-        version: 2.6.3
+        specifier: ^2.7.0
+        version: 2.7.0
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
@@ -633,6 +636,9 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
+  '@tauri-apps/plugin-dialog@2.0.0-rc.0':
+    resolution: {integrity: sha512-DPOXYe8SQ6Radk/67EOdaomlxL7oF99JO/ZUaPp1IBEs3Wro7lhlz63CfdKIBfKIZTLJLzP1R7/EiPL/GTA3Bg==}
+
   '@tauri-apps/plugin-shell@2.0.0-rc.0':
     resolution: {integrity: sha512-bhUcQcrqZoK8H1DFXapr5r1Z75oh6Kd5Tltz97XpZFLREEqp+KhN2Fvyh8r/fKAyenYsTYUIsDsyGdjdueuF9g==}
 
@@ -1005,8 +1011,8 @@ packages:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
 
-  svelte-check@3.8.5:
-    resolution: {integrity: sha512-3OGGgr9+bJ/+1nbPgsvulkLC48xBsqsgtc8Wam281H4G9F5v3mYGa2bHRsPuwHC5brKl4AxJH95QF73kmfihGQ==}
+  svelte-check@3.8.6:
+    resolution: {integrity: sha512-ij0u4Lw/sOTREP13BdWZjiXD/BlHE6/e2e34XzmVmsp5IN4kVa3PWP65NM32JAgwjZlwBg/+JtiNV1MM8khu0Q==}
     hasBin: true
     peerDependencies:
       svelte: ^3.55.0 || ^4.0.0-next.0 || ^4.0.0 || ^5.0.0-next.0
@@ -1060,8 +1066,8 @@ packages:
       typescript:
         optional: true
 
-  svelte@5.0.0-next.233:
-    resolution: {integrity: sha512-7yw1KpHt2NlWa0DZoh6RbhE1kYn0ciyD6fQ+9y4FF2KhmJ1d1Lb9iYtL1vpJHe/58mbxZVQwsc5Ze24j1LkKiA==}
+  svelte@5.0.0-next.236:
+    resolution: {integrity: sha512-PuaqFGPAK6wmGstf+0eyumsk0JYwGSy2OL76TyYX6V5j1Cr/HKSHilv9Qxc+tJm8Mnlbp0Vx4NFCFrwlSas79A==}
     engines: {node: '>=18'}
 
   tabbable@6.2.0:
@@ -1082,8 +1088,8 @@ packages:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
 
-  tslib@2.6.3:
-    resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+  tslib@2.7.0:
+    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
 
   type@2.7.3:
     resolution: {integrity: sha512-8j+1QmAbPvLZow5Qpi6NCaN8FB60p/6x8/vfNqOk/hC+HuvFZhL4+WfekuhQLiqFZXOgQdrs3B+XxEmCc6b3FQ==}
@@ -1330,26 +1336,26 @@ snapshots:
   '@formatjs/ecma402-abstract@2.0.0':
     dependencies:
       '@formatjs/intl-localematcher': 0.5.4
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@formatjs/fast-memoize@2.2.0':
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@formatjs/icu-messageformat-parser@2.7.8':
     dependencies:
       '@formatjs/ecma402-abstract': 2.0.0
       '@formatjs/icu-skeleton-parser': 1.8.2
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@formatjs/icu-skeleton-parser@1.8.2':
     dependencies:
       '@formatjs/ecma402-abstract': 2.0.0
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@formatjs/intl-localematcher@0.5.4':
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@internationalized/date@3.5.5':
     dependencies:
@@ -1372,7 +1378,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@melt-ui/svelte@0.76.2(svelte@5.0.0-next.233)':
+  '@melt-ui/svelte@0.76.2(svelte@5.0.0-next.236)':
     dependencies:
       '@floating-ui/core': 1.6.7
       '@floating-ui/dom': 1.6.10
@@ -1380,7 +1386,7 @@ snapshots:
       dequal: 2.0.3
       focus-trap: 7.5.4
       nanoid: 5.0.7
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
 
   '@polka/url@1.0.0-next.25': {}
 
@@ -1434,13 +1440,13 @@ snapshots:
 
   '@socket.io/component-emitter@3.1.2': {}
 
-  '@sveltejs/adapter-static@3.0.4(@sveltejs/kit@2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))':
+  '@sveltejs/adapter-static@3.0.4(@sveltejs/kit@2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))':
     dependencies:
-      '@sveltejs/kit': 2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))
+      '@sveltejs/kit': 2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))
 
-  '@sveltejs/kit@2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))':
+  '@sveltejs/kit@2.5.24(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))
+      '@sveltejs/vite-plugin-svelte': 4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))
       '@types/cookie': 0.6.0
       cookie: 0.6.0
       devalue: 5.0.0
@@ -1452,27 +1458,27 @@ snapshots:
       sade: 1.8.1
       set-cookie-parser: 2.7.0
       sirv: 2.0.4
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
       tiny-glob: 0.2.9
       vite: 5.4.2(@types/node@20.14.7)
 
-  '@sveltejs/vite-plugin-svelte-inspector@3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))':
+  '@sveltejs/vite-plugin-svelte-inspector@3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))
+      '@sveltejs/vite-plugin-svelte': 4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))
       debug: 4.3.6
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
       vite: 5.4.2(@types/node@20.14.7)
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))':
+  '@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.233)(vite@5.4.2(@types/node@20.14.7))
+      '@sveltejs/vite-plugin-svelte-inspector': 3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.0-next.6(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7)))(svelte@5.0.0-next.236)(vite@5.4.2(@types/node@20.14.7))
       debug: 4.3.6
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.11
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
       vite: 5.4.2(@types/node@20.14.7)
       vitefu: 0.2.5(vite@5.4.2(@types/node@20.14.7))
     transitivePeerDependencies:
@@ -1480,7 +1486,7 @@ snapshots:
 
   '@swc/helpers@0.5.12':
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   '@tauri-apps/api@2.0.0-rc.0': {}
 
@@ -1527,6 +1533,10 @@ snapshots:
       '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-rc.0
       '@tauri-apps/cli-win32-x64-msvc': 2.0.0-rc.0
 
+  '@tauri-apps/plugin-dialog@2.0.0-rc.0':
+    dependencies:
+      '@tauri-apps/api': 2.0.0-rc.0
+
   '@tauri-apps/plugin-shell@2.0.0-rc.0':
     dependencies:
       '@tauri-apps/api': 2.0.0-rc.0
@@ -1571,12 +1581,12 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@0.21.13(svelte@5.0.0-next.233):
+  bits-ui@0.21.13(svelte@5.0.0-next.236):
     dependencies:
       '@internationalized/date': 3.5.5
-      '@melt-ui/svelte': 0.76.2(svelte@5.0.0-next.233)
+      '@melt-ui/svelte': 0.76.2(svelte@5.0.0-next.236)
       nanoid: 5.0.7
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
 
   brace-expansion@1.1.11:
     dependencies:
@@ -1794,7 +1804,7 @@ snapshots:
       '@formatjs/ecma402-abstract': 2.0.0
       '@formatjs/fast-memoize': 2.2.0
       '@formatjs/icu-messageformat-parser': 2.7.8
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   is-binary-path@2.1.0:
     dependencies:
@@ -1822,9 +1832,9 @@ snapshots:
     dependencies:
       es5-ext: 0.10.64
 
-  lucide-svelte@0.379.0(svelte@5.0.0-next.233):
+  lucide-svelte@0.379.0(svelte@5.0.0-next.236):
     dependencies:
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
 
   magic-string@0.30.11:
     dependencies:
@@ -1883,10 +1893,10 @@ snapshots:
       picocolors: 1.0.1
       source-map-js: 1.2.0
 
-  prettier-plugin-svelte@3.2.6(prettier@3.3.3)(svelte@5.0.0-next.233):
+  prettier-plugin-svelte@3.2.6(prettier@3.3.3)(svelte@5.0.0-next.236):
     dependencies:
       prettier: 3.3.3
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
 
   prettier@3.3.3: {}
 
@@ -1970,14 +1980,14 @@ snapshots:
     dependencies:
       min-indent: 1.0.1
 
-  svelte-check@3.8.5(postcss@8.4.41)(svelte@5.0.0-next.233):
+  svelte-check@3.8.6(postcss@8.4.41)(svelte@5.0.0-next.236):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       chokidar: 3.6.0
       picocolors: 1.0.1
       sade: 1.8.1
-      svelte: 5.0.0-next.233
-      svelte-preprocess: 5.1.4(postcss@8.4.41)(svelte@5.0.0-next.233)(typescript@5.5.4)
+      svelte: 5.0.0-next.236
+      svelte-preprocess: 5.1.4(postcss@8.4.41)(svelte@5.0.0-next.236)(typescript@5.5.4)
       typescript: 5.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -1990,11 +2000,11 @@ snapshots:
       - stylus
       - sugarss
 
-  svelte-dnd-action@0.9.50(svelte@5.0.0-next.233):
+  svelte-dnd-action@0.9.50(svelte@5.0.0-next.236):
     dependencies:
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
 
-  svelte-i18n@4.0.0(svelte@5.0.0-next.233):
+  svelte-i18n@4.0.0(svelte@5.0.0-next.236):
     dependencies:
       cli-color: 2.0.4
       deepmerge: 4.3.1
@@ -2002,22 +2012,22 @@ snapshots:
       estree-walker: 2.0.2
       intl-messageformat: 10.5.14
       sade: 1.8.1
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
       tiny-glob: 0.2.9
 
-  svelte-preprocess@5.1.4(postcss@8.4.41)(svelte@5.0.0-next.233)(typescript@5.5.4):
+  svelte-preprocess@5.1.4(postcss@8.4.41)(svelte@5.0.0-next.236)(typescript@5.5.4):
     dependencies:
       '@types/pug': 2.0.10
       detect-indent: 6.1.0
       magic-string: 0.30.11
       sorcery: 0.11.1
       strip-indent: 3.0.0
-      svelte: 5.0.0-next.233
+      svelte: 5.0.0-next.236
     optionalDependencies:
       postcss: 8.4.41
       typescript: 5.5.4
 
-  svelte@5.0.0-next.233:
+  svelte@5.0.0-next.236:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@jridgewell/sourcemap-codec': 1.5.0
@@ -2051,7 +2061,7 @@ snapshots:
 
   totalist@3.0.1: {}
 
-  tslib@2.6.3: {}
+  tslib@2.7.0: {}
 
   type@2.7.3: {}
 
