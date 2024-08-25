@@ -105,10 +105,12 @@ pub async fn start(
 
     let app = Router::new()
         .route("/", get(ping))
+        // TODO: No cache
         .route("/media", get(media))
         .route("/audio", get(audio))
         .route("/lyrics", get(lyrics))
         .route("/album/:id", get(album))
+        // TODO: Do not cache this at all
         .route("/playlist/:id", get(playlist))
         // ------ palylist action
         .route("/playlist/:id", delete(list_remove))
@@ -347,7 +349,7 @@ async fn playlist(State(state): State<AppData>, Path(id): Path<String>) -> Respo
     }
 }
 
-// WARNING: Cache the media state from the client
+// FIXME: Cache the media state from the client
 async fn list_remove(State(state): State<AppData>, Path(id): Path<String>) -> Response {
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
