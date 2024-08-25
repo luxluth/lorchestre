@@ -90,6 +90,7 @@ impl Eq for Track {}
 
 impl Track {
     pub fn from_file(covers_dir: &PathBuf, inode: PathBuf) -> Self {
+        // TODO: avoid unwraping when openning audio files
         let tagged_file = Probe::open(&inode).unwrap().read().unwrap();
         let properties = tagged_file.properties();
         let bitrate = properties.audio_bitrate().unwrap_or(0);
