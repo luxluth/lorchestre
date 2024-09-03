@@ -286,7 +286,7 @@ async fn cover(
         if let Some((w, h)) = image_size.parse() {
             if let Ok(reader) = ImageReader::open(&path) {
                 if let Ok(mut image) = reader.decode() {
-                    image = image.resize(w, h, image::imageops::FilterType::Gaussian);
+                    image = image.resize(w, h, image::imageops::FilterType::Lanczos3);
 
                     let mut buffer = BufWriter::new(Cursor::new(Vec::new()));
                     let _ = image.write_to(&mut buffer, image::ImageFormat::Png);
