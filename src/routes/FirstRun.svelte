@@ -68,62 +68,68 @@
 	});
 </script>
 
-<div class="message">
-	<div class="icon ns">
-		{@html banner}
+<div class="content">
+	<div class="message">
+		<div class="icon ns">
+			{@html banner}
+		</div>
+
+		{#if act === 1}
+			<div class="act">
+				<h1 class="ns">{$_('app_welcome')}</h1>
+				<div class="ns">{$_('welcome_msg')}</div>
+			</div>
+		{/if}
+
+		{#if act === 2}
+			<div class="act" transition:fade={{ duration: 500 }}>
+				{#if !synched}
+					<h1 class="ns">{$_('indexing_msg')}</h1>
+					<div class="msg ns">
+						<p>{synchedmsg.parole} - <b>{synchedmsg.author}</b></p>
+					</div>
+				{/if}
+			</div>
+		{/if}
 	</div>
 
 	{#if act === 1}
-		<div class="act">
-			<h1 class="ns">{$_('app_welcome')}</h1>
-			<div class="ns">{$_('welcome_msg')}</div>
-		</div>
+		<button
+			onclick={async () => {
+				act = 2;
+				await invoke('start_daemon');
+				await start();
+			}}
+			class="act_btn btn animate">{$_('start_btn')}</button
+		>
 	{/if}
-
 	{#if act === 2}
-		<div class="act" transition:fade={{ duration: 500 }}>
-			{#if !synched}
-				<h1 class="ns">{$_('indexing_msg')}</h1>
-				<div class="ns">
-					<p>{synchedmsg.parole} - <b>{synchedmsg.author}</b></p>
+		{#if !synched}
+			<div class="notice">
+				<div class="icon load">
+					<LoaderCircle size={'1em'} />
 				</div>
-			{/if}
-		</div>
+				<p>{msg.length > 0 ? trim(msg) : $_('notice_msg')}</p>
+			</div>
+		{/if}
+		<button
+			class="act_btn btn"
+			onclick={async () => {
+				await invoke('runned');
+				first_run = false;
+			}}
+			class:inactive={!synched}>{$_('end_button')}</button
+		>
 	{/if}
 </div>
 
-{#if act === 1}
-	<button
-		onclick={async () => {
-			act = 2;
-			await invoke('start_daemon');
-			await start();
-		}}
-		class="act_btn btn animate">{$_('start_btn')}</button
-	>
-{/if}
-{#if act === 2}
-	{#if !synched}
-		<div class="notice">
-			<div class="icon load">
-				<LoaderCircle size={'1em'} />
-			</div>
-			<p>{msg.length > 0 ? trim(msg) : $_('notice_msg')}</p>
-		</div>
-	{/if}
-	<button
-		class="act_btn btn"
-		onclick={async () => {
-			await invoke('runned');
-			first_run = false;
-		}}
-		class:inactive={!synched}>{$_('end_button')}</button
-	>
-{/if}
-
 <style>
-	* {
-		color: white;
+	.content {
+		padding: 3vw;
+	}
+
+	.msg {
+		padding-top: 5px;
 	}
 
 	h1 + div {
@@ -172,11 +178,9 @@
 	}
 
 	.act_btn {
-		background: white;
 		position: absolute;
 		bottom: 2em;
 		right: 2em;
-		color: var(--brand-color);
 		animation-delay: 0.5s;
 	}
 

@@ -1,54 +1,20 @@
 html {
-	--dark-fg: #ffffff;
-	--dark-bg: #181818;
-	--dark-highlight: #27272a;
-
-	--light-fg: #000000;
-	--light-bg: #ffffff;
-	--light-highlight: #f4f4f5;
+	--fg: #ffffff;
+	--bg: #242424;
+	--highlight: #27272a;
 
 	--font-fantasy: 'Calistoga', 'Noto Serif JP Variable', serif;
 	--font-mono: 'IBM Plex Mono', monospace;
 
 	--brand-color: #df632e;
-
-	--toast-z-index: 140;
-	--starting-screen-z-index: 135;
-	--edit-view-z-index: 130;
-	--player-z-index: 100;
-	--header-z-index: 50;
-	--search-z-index: 40;
-	--overlay-z-index: 30;
 }
 
 code {
 	font-family: var(--font-mono);
 }
 
-body[data-theme='dark'] {
-	--fg: var(--dark-fg);
-	--bg: var(--dark-bg);
-	--highlight: var(--dark-highlight);
-
-	color: var(--dark-fg);
-	background-color: var(--dark-bg);
-}
-
-body[data-theme='light'] {
-	--fg: var(--light-fg);
-	--bg: var(--light-bg);
-	--highlight: var(--light-highlight);
-
-	color: var(--light-fg);
-	background-color: var(--light-bg);
-}
-
 :root {
-	--fg: var(--light-fg);
-	--bg: var(--light-bg);
-	--highlight: var(--light-highlight);
-
-	color-scheme: ligth dark;
+	color-scheme: dark;
 	font-family:
 		'Inter Variable',
 		system-ui,
@@ -61,8 +27,8 @@ body[data-theme='light'] {
 	font-weight: 400;
 	line-height: 1;
 
-	color: var(--light-fg);
-	background-color: var(--light-bg);
+	color: var(--fg);
+	background-color: var(--bg);
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -77,35 +43,6 @@ body[data-theme='light'] {
 	-webkit-backdrop-filter: blur(12px);
 }
 
-body[data-theme='light'] .glass {
-	background: rgba(255, 255, 255, 0.9);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-}
-
-body[data-theme='dark'] .glass {
-	background: rgba(24, 24, 24, 0.9);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--fg: var(--dark-fg);
-		--bg: var(--dark-bg);
-		--highlight: var(--dark-highlight);
-
-		color: var(--dark-fg);
-		background-color: var(--dark-bg);
-	}
-
-	.glass {
-		background: rgba(24, 24, 24, 0.9);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-	}
-}
-
 * {
 	padding: 0;
 	margin: 0;
@@ -118,6 +55,7 @@ html {
 }
 
 body {
+	height: 100%;
 	overscroll-behavior: contain;
 }
 
@@ -134,12 +72,13 @@ body {
 	gap: 0.5em;
 	font-size: 1.1em;
 	font-weight: bold;
-	border: none;
 	background-color: var(--highlight);
 	cursor: pointer;
 	padding: 0.6em;
-	border-radius: 8px;
-	color: var(--fg);
+	border-radius: 12px;
+	border: 1px solid #404040;
+	background-color: #2f2f2f;
+	box-shadow: rgba(0, 0, 0, 0.25) 1px 1px 8px;
 }
 
 .btn .icon {

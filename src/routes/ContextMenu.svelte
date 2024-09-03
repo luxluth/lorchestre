@@ -11,7 +11,7 @@
 {#if ctx.visible}
 	<div
 		transition:flyAndScale
-		class="__ctxmenu glass"
+		class="__ctxmenu"
 		style="left: {ctx.x}px; top: {ctx.y}px;"
 		use:clickOutside={() => {
 			ctx.visible = false;
@@ -52,11 +52,11 @@
 		position: fixed;
 		z-index: 200;
 		width: 16rem;
-		border: 1px solid rgba(100, 100, 100, 0.18);
+		border: 1px solid #404040;
 		border-radius: 8px;
-		background-color: var(--bg);
+		background-color: #2f2f2f;
 		color: var(--fg);
-		box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+		box-shadow: rgba(0, 0, 0, 0.25) 1px 1px 8px;
 	}
 
 	hr {

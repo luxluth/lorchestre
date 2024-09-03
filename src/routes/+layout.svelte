@@ -31,6 +31,7 @@
 	import WindowControls from '$lib/components/WindowControls.svelte';
 	import StartingScreen from './StartingScreen.svelte';
 	import { setPageScroll } from '$lib/pageScroll.svelte';
+	import { setNav } from '$lib/nav.svelte';
 
 	// import { invoke } from '@tauri-apps/api/core';
 
@@ -52,16 +53,13 @@
 	setLrc(conf, tm, evc);
 	setFilter();
 	setList();
+	setNav();
 	const ps = setPageScroll();
 
 	if (browser) {
 		if (!dev) {
 			window.addEventListener('contextmenu', (e) => e.preventDefault());
 		}
-		document.body.setAttribute(
-			'data-theme',
-			conf.config?.global?.theme ?? conf.defaults.global.theme
-		);
 	}
 
 	onMount(() => {
@@ -78,16 +76,14 @@
 </script>
 
 <div class="layout" class:first_run>
-	{#if !first_run}
-		<section class="__navigation">
-			<Navigation pathId={data.route as string} platform={data.platform} />
-		</section>
+	{#if !first_run && media.loaded}
+		<!-- <section class="__navigation"> -->
+		<!-- 	<Navigation pathId={data.route as string} platform={data.platform} /> -->
+		<!-- </section> -->
 		<section class="__content">
-			<header class="glass">
-				<MiniPlayer />
-				<Commands />
-				<WindowControls platform={data.platform} />
-			</header>
+			<!-- <header class="glass"> -->
+			<!-- 	<WindowControls platform={data.platform} /> -->
+			<!-- </header> -->
 			<main
 				id="__main__"
 				onscroll={(e) => {
@@ -95,18 +91,14 @@
 				}}
 			>
 				{@render children()}
-				<Queue />
-				<Lrc />
 			</main>
+			<Navigation />
 		</section>
 	{:else}
 		<FirstRun bind:first_run />
 	{/if}
 </div>
 {#if !first_run}
-	<ToastDisplay />
-	<Player />
-	<EditView />
 	<ContextMenu />
 {/if}
 
@@ -116,55 +108,14 @@
 
 <style>
 	.layout {
-		display: flex;
-		height: 100vh;
+		height: 100%;
 	}
-
-	.layout.first_run {
-		flex-direction: column;
-		overflow: hidden;
-		align-items: center;
-		justify-content: center;
-		position: relative;
-		gap: 1em;
-		background-color: var(--brand-color);
-	}
-
-	.__navigation {
-		width: 270px;
-		flex-shrink: 0; /* Prevents shrinking of the navigation section */
-		border-right: 1px solid rgba(100, 100, 100, 0.18);
-		background: var(--bg);
-		z-index: var(--header-z-index);
-	}
-
 	.__content {
-		flex-grow: 1; /* Takes up the remaining space */
-		display: flex;
-		flex-direction: column;
-	}
-
-	main {
 		position: relative;
-		flex-grow: 1; /* Main content takes up the remaining space in the column */
-		padding: 20px; /* Optional: padding */
-		overflow-y: auto; /* Ensures main content is scrollable if it overflows */
+		padding: 3vw;
+		height: 100%;
 	}
-
-	header {
-		position: fixed;
-		z-index: var(--header-z-index);
-		width: calc(100% - 270px);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 1em;
-		height: fit-content;
-		border-bottom: 1px solid rgba(100, 100, 100, 0.18);
-	}
-
 	main {
-		padding-block: 8em;
-		padding-inline: 3em;
+		height: 100%;
 	}
 </style>

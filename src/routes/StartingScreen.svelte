@@ -19,7 +19,7 @@
 
 <style>
 	* {
-		color: var(--brand-color);
+		color: var(--fg);
 	}
 
 	.page {
