@@ -22,6 +22,7 @@
 	import { getCtx } from '$lib/ctx.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
 	import { onMount } from 'svelte';
+	import { getNav } from '$lib/nav.svelte';
 
 	let manager = getManager();
 	let media = getMedia();
@@ -114,6 +115,11 @@
 			manager.addManyToQueue(songs);
 		}
 	}
+
+	const nav = getNav();
+	$effect(() => {
+		nav.pageName = `Album • ${album ? album.name : 'Album not found'}`;
+	});
 
 	onMount(() => {
 		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);

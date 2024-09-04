@@ -1,6 +1,9 @@
 dev:
   pnpm tauri dev
 
+dev-release:
+  pnpm tauri dev --release -v
+
 build:
   pnpm install
   just _build-{{os()}}

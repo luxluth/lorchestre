@@ -77,13 +77,7 @@
 
 <div class="layout" class:first_run>
 	{#if !first_run && media.loaded}
-		<!-- <section class="__navigation"> -->
-		<!-- 	<Navigation pathId={data.route as string} platform={data.platform} /> -->
-		<!-- </section> -->
 		<section class="__content">
-			<!-- <header class="glass"> -->
-			<!-- 	<WindowControls platform={data.platform} /> -->
-			<!-- </header> -->
 			<main
 				id="__main__"
 				onscroll={(e) => {
@@ -100,10 +94,9 @@
 </div>
 {#if !first_run}
 	<ContextMenu />
-{/if}
-
-{#if !first_run && !media.loaded}
-	<StartingScreen />
+	{#if !media.loaded}
+		<StartingScreen />
+	{/if}
 {/if}
 
 <style>

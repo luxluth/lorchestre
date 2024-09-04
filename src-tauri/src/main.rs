@@ -3,13 +3,12 @@
 
 use daemon::{config::Dir, global::Media};
 use lorconf::Config;
+use tauri_plugin_decorum::WebviewWindowExt;
 use tracing::error;
 mod daemon;
 use crate::daemon::entry::start;
 use std::{env::consts::OS, fs::File, io::Write};
 use tauri::{Emitter, Manager};
-#[cfg(target_os = "macos")]
-use tauri_plugin_decorum::WebviewWindowExt;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tracing_subscriber::FmtSubscriber;
 
@@ -256,6 +255,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let window = app.get_webview_window("main").unwrap();
             let _ = window.restore_state(StateFlags::all());
+            let _ = window.create_overlay_titlebar();
 
             #[cfg(target_os = "macos")]
             {

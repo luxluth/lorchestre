@@ -14,8 +14,8 @@
     "windows": [
       {
         "title": "L'orchestre",
-        "width": 1170,
-        "height": 800,
+        "width": 995,
+        "height": 690,
         "titleBarStyle": "Overlay",
         "decorations": false,
         "hiddenTitle": true,
