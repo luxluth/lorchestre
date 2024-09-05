@@ -81,10 +81,7 @@ export type Album = {
 	id: string;
 };
 
-export type SystemTime = {
-	nanos_since_epoch: number;
-	secs_since_epoch: number;
-};
+export type SystemTime = number;
 
 export type Track = {
 	title: string;
@@ -118,7 +115,7 @@ export type Playlist = {
 };
 
 export type Media = {
-	tracks: Record<string, Track>;
+	tracks: Array<[string, Track]>;
 	albums: Album[];
 	playlists: Playlist[];
 };

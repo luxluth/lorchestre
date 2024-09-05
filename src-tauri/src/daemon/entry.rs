@@ -354,7 +354,7 @@ async fn list_remove(State(state): State<AppData>, Path(id): Path<String>) -> Re
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
         if playlist.delete().is_ok() {
-            media.remove_playlist(PathBuf::from(playlist.path));
+            media.remove_playlist(playlist.path);
             "ok".into_response()
         } else {
             let mut response =
@@ -373,7 +373,7 @@ async fn list_remove(State(state): State<AppData>, Path(id): Path<String>) -> Re
 async fn list_remove_track(
     State(state): State<AppData>,
     Path(id): Path<String>,
-    Json(payload): Json<Vec<PathBuf>>,
+    Json(payload): Json<Vec<String>>,
 ) -> Response {
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
@@ -401,7 +401,7 @@ async fn list_remove_track(
 async fn list_add_track(
     State(state): State<AppData>,
     Path(id): Path<String>,
-    Json(payload): Json<Vec<PathBuf>>,
+    Json(payload): Json<Vec<String>>,
 ) -> Response {
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
@@ -426,7 +426,7 @@ async fn list_add_track(
 async fn list_reorder(
     State(state): State<AppData>,
     Path(id): Path<String>,
-    Json(payload): Json<Vec<PathBuf>>,
+    Json(payload): Json<Vec<String>>,
 ) -> Response {
     let mut media = state.media.write().await;
     if let Some(playlist) = media.get_playlist(id.clone()) {
@@ -521,7 +521,7 @@ async fn list_add_meta(
 #[derive(serde::Deserialize)]
 struct CreateList {
     meta: PlaylistMetadata,
-    tracks: Vec<PathBuf>,
+    tracks: Vec<String>,
 }
 
 async fn list_create(State(state): State<AppData>, Json(payload): Json<CreateList>) -> Response {

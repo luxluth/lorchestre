@@ -2,7 +2,7 @@ import type { Album, Media, Playlist, Track } from './type';
 import { io } from 'socket.io-client';
 import { getContext, setContext } from 'svelte';
 import { listen } from '@tauri-apps/api/event';
-import { recordToMap } from './utils';
+import { unionToMap } from './utils';
 import type SearchSupervisor from './search.svelte';
 import { getAppConfig } from './config.svelte';
 
@@ -35,7 +35,7 @@ export default class MediaState {
 			let media = (await response.json()) as Media;
 			this.albums = media.albums;
 			this.playlists = media.playlists;
-			this.tracks = recordToMap(media.tracks);
+			this.tracks = unionToMap(media.tracks);
 			this.loaded = true;
 
 			await listen('startsync', () => {
@@ -54,7 +54,7 @@ export default class MediaState {
 				socket.on('newmedia', (media: Media) => {
 					this.albums = media.albums;
 					this.playlists = media.playlists;
-					this.tracks = recordToMap(media.tracks);
+					this.tracks = unionToMap(media.tracks);
 				});
 			} catch (e) {
 				console.warn(e);
@@ -68,7 +68,7 @@ export default class MediaState {
 							let media = (await response.json()) as Media;
 							this.albums = media.albums;
 							this.playlists = media.playlists;
-							this.tracks = recordToMap(media.tracks);
+							this.tracks = unionToMap(media.tracks);
 							this.loaded = true;
 
 							await listen('startsync', () => {
@@ -87,7 +87,7 @@ export default class MediaState {
 								socket.on('newmedia', (media: Media) => {
 									this.albums = media.albums;
 									this.playlists = media.playlists;
-									this.tracks = recordToMap(media.tracks);
+									this.tracks = unionToMap(media.tracks);
 								});
 							} catch (e) {
 								console.warn(e);

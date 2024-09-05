@@ -131,72 +131,90 @@
 </svelte:head>
 
 {#if album}
-	<section class="head ns">
-		<div
-			class="cover"
-			style="--clr: {getTrack(album.tracks[0])
-				? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
-				: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
-				album.id,
-				getTrack(album.tracks[0]).cover_ext,
-				config
-			)}');"
-		>
-			<button
-				class="play"
-				onclick={async () => {
-					await playAlbum();
-				}}
-			>
-				<Play size={'2em'} fill={'var(--fg)'} />
-			</button>
-		</div>
-		<div class="data">
-			<h1>{trim(album.name, 60)}</h1>
-			<h3>{album.artist}</h3>
-			<p>{album.year}</p>
-		</div>
-	</section>
-
-	<h2 class="section-title ns">{$_('album.page.songs')}</h2>
-	<section class="tracks ns">
-		{#each tracks as track, i}
+	<h1>{trim(album.name, 60)}</h1>
+	<section class="page-grid head ns">
+		<div class="info">
 			<div
-				class="track"
-				oncontextmenu={(e) => {
-					e.preventDefault();
-					showContext(e, track);
-				}}
-				role="button"
-				tabindex="0"
-				ondblclick={async () => {
-					await play(track);
-				}}
-				onkeydown={() => {}}
+				class="cover"
+				style="--clr: {getTrack(album.tracks[0])
+					? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
+					: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
+					album.id,
+					getTrack(album.tracks[0]).cover_ext,
+					config
+				)}');"
 			>
-				<div class="trackn">
-					<div class="no">{track.track > 0 ? track.track : ''}</div>
-					<button
-						onclick={async () => {
-							await playfrom(i);
-						}}
-					>
-						<Play size={'1.5em'} fill={'var(--fg)'} />
-					</button>
-				</div>
-				<div class="title">{track.title}</div>
-				<div class="artists">{track.artists.join(', ')}</div>
-				<div class="duration">{formatTime(track.duration)}</div>
+				<button
+					class="play"
+					onclick={async () => {
+						await playAlbum();
+					}}
+				>
+					<Play size={'2em'} fill={'var(--fg)'} />
+				</button>
 			</div>
-		{/each}
+			<div class="details">
+				<div class="artists">ARTISTS</div>
+			</div>
+		</div>
+		<div class="songs">
+			<h2 class="section-title ns">{$_('album.page.songs')}</h2>
+			<section class="tracks ns">
+				{#each tracks as track, i}
+					<div
+						class="track"
+						oncontextmenu={(e) => {
+							e.preventDefault();
+							showContext(e, track);
+						}}
+						role="button"
+						tabindex="0"
+						ondblclick={async () => {
+							await play(track);
+						}}
+						onkeydown={() => {}}
+					>
+						<div class="trackn">
+							<div class="no">{track.track > 0 ? track.track : ''}</div>
+							<button
+								onclick={async () => {
+									await playfrom(i);
+								}}
+							>
+								<Play size={'1.5em'} fill={'var(--fg)'} />
+							</button>
+						</div>
+						<div class="title">{track.title}</div>
+						<div class="artists">{track.artists.join(', ')}</div>
+						<div class="duration">{formatTime(track.duration)}</div>
+					</div>
+				{/each}
+			</section>
+		</div>
 	</section>
 {:else}
 	Album non-existant
 {/if}
 
 <style>
-	.section-title {
+	.details {
+		font-family: var(--font-mono);
+	}
+	h1 {
+		font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem);
+		font-weight: 500;
+		letter-spacing: -6%;
+	}
+
+	.page-grid {
 		padding-top: 2em;
+	}
+
+	.songs {
+		width: 100%;
+	}
+
+	.section-title {
 		padding-bottom: 1em;
 	}
 
@@ -267,23 +285,6 @@
 		display: flex;
 		gap: 1em;
 		width: 100%;
-	}
-
-	.head .data {
-		align-self: flex-end;
-	}
-
-	.head .data h1 {
-		font-size: 4rem;
-		font-family: var(--font-fantasy);
-		line-height: 1;
-		height: 100%;
-		padding-bottom: 0.1em;
-		word-break: break-word;
-	}
-
-	.head .data h3 {
-		opacity: 0.7;
 	}
 
 	.cover button.play {

@@ -110,34 +110,38 @@
 </script>
 
 <h1 class="ns">Listen To Next</h1>
-
-<div class="content">
-	<div class="albums">
-		{#each albums as album}
-			<a
-				class="album"
-				oncontextmenu={(e) => {
-					e.preventDefault();
-					showContext(e, getTracks(album));
-				}}
-				href="/album/{album.id}"
-			>
-				<div
-					class="cover"
-					style="background-image: url({getCoverUri(
-						album.id,
-						getTrack(album.tracks[0]).cover_ext,
-						conf
-					)});"
-				></div>
-				<div class="info">
-					<h4 class="ww">{album.name}</h4>
-					<p class="ww">{album.artist}</p>
-				</div>
-			</a>
-		{/each}
+{#if media.loaded}
+	<div class="content">
+		<div class="albums">
+			{#each albums as album}
+				<a
+					class="album"
+					oncontextmenu={(e) => {
+						e.preventDefault();
+						showContext(e, getTracks(album));
+					}}
+					href="/album/{album.id}"
+				>
+					<div
+						class="cover"
+						style="background-image: url({getCoverUri(
+							album.id,
+							getTrack(album.tracks[0]).cover_ext,
+							conf
+						)}); --clr: {getTrack(album.tracks[0])
+							? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
+							: 'rgb(255, 255, 255)'};
+            "
+					></div>
+					<div class="info">
+						<h4 class="ww">{album.name}</h4>
+						<p class="ww">{album.artist}</p>
+					</div>
+				</a>
+			{/each}
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	h1 {
@@ -180,6 +184,7 @@
 	}
 
 	.album .cover {
+		background-color: var(--clr);
 		width: 20vw;
 		aspect-ratio: 1/1;
 		border-radius: 10px;

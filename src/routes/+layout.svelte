@@ -57,9 +57,9 @@
 	const ps = setPageScroll();
 
 	if (browser) {
-		if (!dev) {
-			window.addEventListener('contextmenu', (e) => e.preventDefault());
-		}
+		// if (!dev) {
+		// 	window.addEventListener('contextmenu', (e) => e.preventDefault());
+		// }
 	}
 
 	onMount(() => {
@@ -76,7 +76,7 @@
 </script>
 
 <div class="layout" class:first_run>
-	{#if !first_run && media.loaded}
+	{#if !first_run}
 		<section class="__content">
 			<main
 				id="__main__"
@@ -94,9 +94,10 @@
 </div>
 {#if !first_run}
 	<ContextMenu />
-	{#if !media.loaded}
-		<StartingScreen />
-	{/if}
+{/if}
+
+{#if !first_run && !media.loaded}
+	<StartingScreen />
 {/if}
 
 <style>

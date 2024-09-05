@@ -88,10 +88,10 @@ export function setTitle(text: string) {
 	})();
 }
 
-export function recordToMap<V>(record: Record<string, V>): Map<string, V> {
+export function unionToMap<V>(record: Array<[string, V]>): Map<string, V> {
 	const map = new Map<string, V>();
 
-	for (const [key, value] of Object.entries(record)) {
+	for (const [key, value] of record) {
 		// Step 4: Add entries to the Map
 		map.set(key, value);
 	}

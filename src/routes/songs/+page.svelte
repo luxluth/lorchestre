@@ -61,9 +61,7 @@
 
 	function sortTracksByDate(tracks: Track[]): Track[] {
 		return tracks.slice().sort((a, b) => {
-			const dateA = a.created_at.secs_since_epoch * 1e9 + a.created_at.nanos_since_epoch;
-			const dateB = b.created_at.secs_since_epoch * 1e9 + b.created_at.nanos_since_epoch;
-			return dateB - dateA;
+			return b.created_at - a.created_at;
 		});
 	}
 
