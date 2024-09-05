@@ -32,6 +32,7 @@
 	import StartingScreen from './StartingScreen.svelte';
 	import { setPageScroll } from '$lib/pageScroll.svelte';
 	import { setNav } from '$lib/nav.svelte';
+	import { fly } from 'svelte/transition';
 
 	// import { invoke } from '@tauri-apps/api/core';
 
@@ -84,7 +85,17 @@
 					ps.save(e, $page.url.pathname);
 				}}
 			>
-				{@render children()}
+				{#key data.url}
+					<div
+						data-transition
+						in:fly={{ x: 200, duration: 300, delay: 300 }}
+						out:fly={{ x: -200, duration: 300 }}
+					>
+						{#if media.loaded}
+							{@render children()}
+						{/if}
+					</div>
+				{/key}
 			</main>
 			<Navigation />
 		</section>
@@ -109,7 +120,9 @@
 		padding: 3vw;
 		height: 100%;
 	}
-	main {
+	main,
+	[data-transition] {
 		height: 100%;
+		overflow: hidden;
 	}
 </style>

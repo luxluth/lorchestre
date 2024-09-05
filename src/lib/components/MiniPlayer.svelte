@@ -14,7 +14,7 @@
 	import Slider from './Slider.svelte';
 	import Marquee from './Marquee.svelte';
 	import { _ } from 'svelte-i18n';
-	import { getCoverUri } from '$lib/utils';
+	import { formatTime, getCoverUri } from '$lib/utils';
 	import { PlayingMode } from '$lib/type';
 	import { getManager } from '$lib/manager.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
@@ -22,17 +22,6 @@
 	let manager = getManager();
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 	let config = getAppConfig();
-
-	function formatTime(time: number) {
-		if (isNaN(time)) {
-			return '-:--';
-		}
-		if (time >= 60 * 60) {
-			return new Date(time * 1000).toISOString().substring(11, 16);
-		} else {
-			return new Date(time * 1000).toISOString().substring(14, 19);
-		}
-	}
 </script>
 
 <div class="mp ns" class:dead={typeof manager.currentTrack === 'undefined'} data-tauri-drag-region>

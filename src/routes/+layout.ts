@@ -7,7 +7,7 @@ import type { Config, DefinedConfig, AppInfoExternal } from '$lib/type';
 export const prerender = true;
 export const ssr = false;
 
-export const load: LayoutLoad = async ({ route }) => {
+export const load: LayoutLoad = async ({ route, url }) => {
 	const lang = await invoke<string>('locale');
 	const config = await invoke<Config>('config');
 	const default_config = await invoke<DefinedConfig>('default_config');
@@ -16,6 +16,7 @@ export const load: LayoutLoad = async ({ route }) => {
 	locale.set(lang);
 
 	return {
+		url,
 		config,
 		default_config,
 		route: route.id as string,

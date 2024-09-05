@@ -4,7 +4,7 @@
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 
 	import { _ } from 'svelte-i18n';
-	import { getCoverUri } from '$lib/utils';
+	import { formatTime, getCoverUri } from '$lib/utils';
 	import type { QueueTrack } from '$lib/type';
 	import X from 'lucide-svelte/icons/x';
 	import { getManager } from '$lib/manager.svelte';
@@ -22,17 +22,6 @@
 	}
 	function handleDndFinalizeColumns(e: CustomEvent<DndEvent<QueueTrack>>) {
 		manager.queue = e.detail.items;
-	}
-
-	function formatTime(time: number) {
-		if (isNaN(time)) {
-			return '-:--';
-		}
-		if (time >= 60 * 60) {
-			return new Date(time * 1000).toISOString().substring(11, 16);
-		} else {
-			return new Date(time * 1000).toISOString().substring(14, 19);
-		}
 	}
 
 	function trim(text: string, len = 20) {

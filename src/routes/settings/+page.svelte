@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Themes from './Themes.svelte';
 	import Lang from './Lang.svelte';
 	import Refresh from './Refresh.svelte';
 	import Blur from './Blur.svelte';
@@ -11,10 +10,12 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { getAppConfig } from '$lib/config.svelte';
 
-	// import Github from 'lucide-svelte/icons/git-branch';
+	import Github from 'lucide-svelte/icons/git-branch';
+	import { getNav } from '$lib/nav.svelte';
 
 	let appConf = getAppConfig();
 	let version = $state('vx.x.x');
+	let nav = getNav();
 
 	if (browser) {
 		(async () => {
@@ -25,6 +26,7 @@
 
 	$effect(() => {
 		setTitle(`${$_('settings').toLowerCase()} — L'orchestre`);
+		nav.pageName = $_('settings');
 	});
 </script>
 
@@ -36,7 +38,6 @@
 	<section id="block" class="ui-ux">
 		<h2>{$_('settings_page.section_ui_ux.title')}</h2>
 		<Lang {appConf} />
-		<Themes {appConf} />
 		<Blur {appConf} />
 	</section>
 	<hr />
@@ -47,16 +48,23 @@
 	<div class="banner">
 		{@html banner}
 		<code>{version}</code>
-		<!-- <a target="_blank" href="https://github.com/luxluth/lorchestre" class=""><Github /></a> -->
+		<a class="btn" target="_blank" href="https://github.com/luxluth/lorchestre"
+			><Github size={14} /> Star On Github</a
+		>
 	</div>
 </div>
 
 <style>
+	a {
+		text-decoration: none;
+		color: inherit;
+		margin-top: 1em;
+	}
 	.banner {
 		margin-top: 8em;
 		width: 100%;
 		height: fit-content;
-		color: var(--brand-color);
+		color: var(--fg);
 		display: flex;
 		justify-content: center;
 		align-items: center;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Play from 'lucide-svelte/icons/play';
 	import ListEnd from 'lucide-svelte/icons/list-end';
-	import { setTitle } from '$lib/utils';
+	import { formatTime, setTitle } from '$lib/utils';
 
 	import { _ } from 'svelte-i18n';
 
@@ -17,6 +17,7 @@
 	} from '$lib/type';
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
+	import Disc from 'lucide-svelte/icons/disc';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
@@ -39,22 +40,29 @@
 
 	let album = $derived($page.data.album);
 	let tracks = $derived(album ? sortTracks(getTracks(album)) : []);
+	let discs = $derived(putIntoDisks(tracks));
+
 	let ctx = getCtx();
 	let config = getAppConfig();
 
-	function sortTracks(t: Track[]) {
-		return t.sort((a, b) => a.track - b.track);
+	function putIntoDisks(tracks: Track[]) {
+		let diskMap = new Map<number, Track[]>();
+		for (const track of tracks) {
+			if (diskMap.has(track.disc)) {
+				let mapts = diskMap.get(track.disc) as Track[];
+				mapts.push(track);
+				mapts = sortTracks(mapts);
+				diskMap.set(track.disc, mapts);
+			} else {
+				diskMap.set(track.disc, [track]);
+			}
+		}
+
+		return diskMap;
 	}
 
-	function formatTime(time: number) {
-		if (isNaN(time)) {
-			return '--:--';
-		}
-		if (time >= 60 * 60) {
-			return new Date(time * 1000).toISOString().substring(11, 16);
-		} else {
-			return new Date(time * 1000).toISOString().substring(14, 19);
-		}
+	function sortTracks(t: Track[]) {
+		return t.sort((a, b) => a.track - b.track);
 	}
 
 	function trim(text: string, len = 40) {
@@ -121,6 +129,28 @@
 		nav.pageName = `Album • ${album ? album.name : 'Album not found'}`;
 	});
 
+	$effect(() => {
+		console.log(discs);
+	});
+
+	function getDuration() {
+		return tracks.reduce((pt, track) => pt + track.duration, 0);
+	}
+
+	function avgbitrate() {
+		let d = tracks.length;
+		let sm = 0;
+		for (const track of tracks) {
+			sm += track.bitrate;
+		}
+
+		if (d > 0) {
+			return sm / d;
+		} else {
+			return 0;
+		}
+	}
+
 	onMount(() => {
 		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);
 	});
@@ -153,43 +183,96 @@
 					<Play size={'2em'} fill={'var(--fg)'} />
 				</button>
 			</div>
-			<div class="details">
-				<div class="artists">ARTISTS</div>
+			<div class="grid-container details">
+				<div class="grid-item label">ARTIST</div>
+				<div class="grid-item value">{album.artist}</div>
+				<div class="grid-item label">GENRES</div>
+				<div class="grid-item value">{album.genres.join(', ')}</div>
+				<div class="grid-item label">TRACKS</div>
+				<div class="grid-item value">
+					{album.tracks_count >= 10 ? album.tracks_count : `0${album.tracks_count}`}
+				</div>
+				<div class="grid-item label">DISKS</div>
+				<div class="grid-item value disc_total">
+					{album.disc_total >= 10 ? album.disc_total : `0${album.disc_total}`}
+				</div>
+				<div class="grid-item label">DURATION</div>
+				<div class="grid-item value">{formatTime(getDuration())}</div>
+				<div class="grid-item label">ENCODER</div>
+				<div class="grid-item value">{album.encoder}</div>
+				<div class="grid-item label">AVG. BITRATE</div>
+				<div class="grid-item value">{avgbitrate()} kb/s</div>
 			</div>
 		</div>
 		<div class="songs">
-			<h2 class="section-title ns">{$_('album.page.songs')}</h2>
-			<section class="tracks ns">
-				{#each tracks as track, i}
-					<div
-						class="track"
-						oncontextmenu={(e) => {
-							e.preventDefault();
-							showContext(e, track);
-						}}
-						role="button"
-						tabindex="0"
-						ondblclick={async () => {
-							await play(track);
-						}}
-						onkeydown={() => {}}
-					>
-						<div class="trackn">
-							<div class="no">{track.track > 0 ? track.track : ''}</div>
-							<button
-								onclick={async () => {
-									await playfrom(i);
+			{#if album.disc_total > 1}
+				{#each discs as [no, tracks]}
+					<h3 class="disc"><Disc /> disc {no}</h3>
+					<section class="tracks ns">
+						{#each tracks as track, i}
+							<div
+								class="track"
+								oncontextmenu={(e) => {
+									e.preventDefault();
+									showContext(e, track);
 								}}
+								role="button"
+								tabindex="0"
+								ondblclick={async () => {
+									await play(track);
+								}}
+								onkeydown={() => {}}
 							>
-								<Play size={'1.5em'} fill={'var(--fg)'} />
-							</button>
-						</div>
-						<div class="title">{track.title}</div>
-						<div class="artists">{track.artists.join(', ')}</div>
-						<div class="duration">{formatTime(track.duration)}</div>
-					</div>
+								<div class="trackn">
+									<div class="no">{track.track > 0 ? track.track : ''}</div>
+									<button
+										onclick={async () => {
+											await playfrom(i);
+										}}
+									>
+										<Play size={'1.5em'} fill={'var(--fg)'} />
+									</button>
+								</div>
+								<div class="title">{track.title}</div>
+								<div class="artists">{track.artists.join(', ')}</div>
+								<div class="duration">{formatTime(track.duration)}</div>
+							</div>
+						{/each}
+					</section>
 				{/each}
-			</section>
+			{:else}
+				<section class="tracks ns">
+					{#each tracks as track, i}
+						<div
+							class="track"
+							oncontextmenu={(e) => {
+								e.preventDefault();
+								showContext(e, track);
+							}}
+							role="button"
+							tabindex="0"
+							ondblclick={async () => {
+								await play(track);
+							}}
+							onkeydown={() => {}}
+						>
+							<div class="trackn">
+								<div class="no">{track.track > 0 ? track.track : ''}</div>
+								<button
+									onclick={async () => {
+										await playfrom(i);
+									}}
+								>
+									<Play size={'1.5em'} fill={'var(--fg)'} />
+								</button>
+							</div>
+							<div class="title">{track.title}</div>
+							<div class="artists">{track.artists.join(', ')}</div>
+							<div class="duration">{formatTime(track.duration)}</div>
+						</div>
+					{/each}
+				</section>
+			{/if}
 		</div>
 	</section>
 {:else}
@@ -197,6 +280,37 @@
 {/if}
 
 <style>
+	.disc {
+		padding-block: 1em;
+		opacity: 0.6;
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	.grid-container {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 10px;
+		padding: 20px;
+		max-width: 25em;
+	}
+
+	.grid-item {
+		padding: 0px 0;
+	}
+
+	.label {
+		text-transform: uppercase;
+		opacity: 0.7;
+	}
+
+	.value {
+		font-weight: bold;
+	}
+
 	.details {
 		font-family: var(--font-mono);
 	}

@@ -77,6 +77,10 @@ export type Album = {
 	name: string;
 	artist: string;
 	tracks: string[];
+	genres: string[];
+	disc_total: number;
+	tracks_count: number;
+	encoder: string;
 	year?: u32;
 	id: string;
 };
@@ -101,6 +105,7 @@ export type Track = {
 	path_base64: string;
 	duration: u64;
 	bitrate: u32;
+	disc: number;
 };
 
 export type QueueTrack = Track & {

@@ -154,15 +154,15 @@ impl Track {
             audio.album_year = Some(year.parse().unwrap_or(0));
         }
 
-        if let Some(encoder) = tag.get_string(&ItemKey::EncodedBy) {
+        if let Some(encoder) = tag.get_string(&ItemKey::EncoderSettings) {
             audio.encoder = encoder.to_string();
         }
 
         if let Some(genres) = tag.genre() {
             if genres.contains(';') {
-                audio.genres = genres.split(';').map(|x| x.to_string()).collect();
+                audio.genres = genres.split(';').map(|x| x.trim().to_string()).collect();
             } else {
-                audio.genres = genres.split(' ').map(|x| x.to_string()).collect();
+                audio.genres = genres.split(' ').map(|x| x.trim().to_string()).collect();
             }
         }
 

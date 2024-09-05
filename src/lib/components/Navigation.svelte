@@ -16,18 +16,20 @@
 	{#if active}
 		<div class="gotos">
 			{#each pages as p}
-				<div
-					class="btn"
-					role="button"
-					tabindex="-1"
-					onclick={() => {
-						active = false;
-						goto(p.path);
-					}}
-					onkeydown={() => {}}
-				>
-					{p.name}
-				</div>
+				{#if n.pageRouteId != p.path}
+					<div
+						class="btn"
+						role="button"
+						tabindex="-1"
+						onclick={() => {
+							active = false;
+							goto(p.path);
+						}}
+						onkeydown={() => {}}
+					>
+						{p.name}
+					</div>
+				{/if}
 			{/each}
 		</div>
 	{/if}

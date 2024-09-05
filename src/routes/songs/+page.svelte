@@ -16,11 +16,18 @@
 	import { getMedia } from '$lib/media.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { getFilter } from '$lib/filterq.svelte';
+	import { getNav } from '$lib/nav.svelte';
 
-	let manager = getManager();
-	let media = getMedia();
-	let ctx = getCtx();
-	let filterquery = getFilter();
+	const manager = getManager();
+	const media = getMedia();
+	const ctx = getCtx();
+	const filterquery = getFilter();
+	const nav = getNav();
+
+	//@ts-ignore
+	let songsWidth: number = $state();
+	//@ts-ignore
+	let songsHeight: number = $state();
 
 	async function playAll() {
 		manager.pmode = PlayingMode.Normal;
@@ -119,215 +126,35 @@
 	let filteredTracks = $derived(applyFilters(media.getSongs()));
 	$effect(() => {
 		setTitle(`${$_('songs').toLowerCase()} — L'orchestre`);
+		nav.pageName = $_('songs');
 	});
 </script>
 
-<h1 class="__page_title ns">{$_('songs')}</h1>
+<h1 class="ns">{$_('songs')}</h1>
 
-<div class="quick-actions">
-	<button
-		onclick={async () => {
-			await playAll();
-		}}
-	>
-		<div class="icon">
-			<Play fill={'var(--fg)'} size={'1em'} />
-		</div>
-		{$_('songs_page.listen')}
-	</button>
-	<button
-		onclick={async () => {
-			await playAllShuffle();
-		}}
-	>
-		<div class="icon">
-			<Shuffle size={'1em'} />
-		</div>
-		{$_('songs_page.shuffle')}
-	</button>
-</div>
-
-<div class="filters">
-	<div class="filter">
-		<Select.Root
-			items={filterTypes}
-			selected={filterTypes.find((l) => l.value === filterquery.type)}
-			onSelectedChange={(e) => {
-				if (e) {
-					filterquery.type = e.value;
-				}
-			}}
-		>
-			<Select.Trigger class="select-trigger" aria-label="Choisissez un type de filtre">
-				<Filter class="icon" />
-				<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
-			</Select.Trigger>
-			<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-				{#each filterTypes as filter}
-					<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-						{$_(filter.label)}
-						<Select.ItemIndicator class="ml-auto" asChild={false}>
-							<Check />
-						</Select.ItemIndicator>
-					</Select.Item>
-				{/each}
-			</Select.Content>
-			<Select.Input name="favoriteFruit" />
-		</Select.Root>
-	</div>
-	<div class="filter">
-		<Select.Root
-			items={filterOrders}
-			selected={filterOrders.find((l) => l.value === filterquery.order)}
-			onSelectedChange={(e) => {
-				if (e) {
-					filterquery.order = e.value;
-				}
-			}}
-		>
-			<Select.Trigger class="select-trigger" aria-label="Choisissez l'ordre du tri">
-				<ArrowDown10 class="icon" />
-				<div class="text">{$_('songs_page.filter.sort_order')}</div>
-			</Select.Trigger>
-			<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-				{#each filterOrders as filter}
-					<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-						{$_(filter.label)}
-						<Select.ItemIndicator class="ml-auto" asChild={false}>
-							<Check />
-						</Select.ItemIndicator>
-					</Select.Item>
-				{/each}
-			</Select.Content>
-			<Select.Input name="favoriteFruit" />
-		</Select.Root>
-	</div>
-	<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
-</div>
-
-<div
-	class="songlist"
-	style="--tracklist-index-column-width: {(media.getSongsCount().toString().length * 16) / 2}px"
->
-	{#each filteredTracks as song, i}
-		<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
-	{/each}
+<div class="container">
+	<div class="songs" bind:clientWidth={songsWidth} bind:clientHeight={songsHeight}></div>
+	<div class="more_info"></div>
 </div>
 
 <style>
-	.filters {
-		padding-top: 2em;
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 1em;
+	.more_info {
+		border: 1px aquamarine dashed;
+	}
+	.songs {
+		border: 1px orange dashed;
+		height: 80vh;
+	}
+	.container {
+		padding-top: 0.5vh;
+		display: grid;
+		grid-template-columns: 3fr 1.5fr;
+		gap: 5vw;
 	}
 
-	.filter :global(.select-trigger) {
-		-webkit-appearance: none;
-		appearance: none;
-		display: flex;
-		justify-content: center;
-		align-content: center;
-		gap: 0.5em;
-		padding-inline: 2em;
-		padding-block: 0.3em;
-		font-size: 0.875em;
-		border: none;
-		background-color: var(--highlight);
-		cursor: pointer;
-		border-radius: 8px;
-		color: var(--fg);
-		width: fit-content;
-		height: 2.5em;
-	}
-
-	:global(.select-trigger .text) {
-		height: 100%;
-		width: 100%;
-		display: flex;
-		align-items: center;
-	}
-
-	:global(.select-trigger svg.icon) {
-		opacity: 0.4;
-	}
-
-	.filter :global(.select-trigger:active) {
-		transform: scale(0.99);
-	}
-
-	:global(.select-item) {
-		display: flex;
-		width: 100%;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.2em;
-		padding-inline: 0.5em;
-		height: 2em;
-		border-radius: 4px;
-	}
-
-	:global(.select-item:hover) {
-		background: var(--highlight);
-	}
-
-	:global(.select-content) {
-		width: fit-content;
-		border-radius: 9px;
-		border: 2px solid rgba(100, 100, 100, 0.18);
-		background: var(--bg);
-		padding: 0.3em;
-	}
-
-	input[type='search'] {
-		-webkit-appearance: none;
-		appearance: none;
-		padding-inline: 0.5em;
-		padding-block: 0.7em;
-		border-radius: 4px;
-		border: 0px;
-		background: var(--highlight);
-		color: var(--fg);
-	}
-
-	.quick-actions button {
-		display: flex;
-		justify-content: center;
-		align-content: center;
-		gap: 0.5em;
-		font-size: 1.1em;
-		font-weight: bold;
-		border: none;
-		background-color: var(--highlight);
-		cursor: pointer;
-		padding: 0.6em;
-		border-radius: 8px;
-		color: var(--fg);
-	}
-
-	.quick-actions button .icon {
-		height: 100%;
-		display: flex;
-		align-items: center;
-	}
-
-	.quick-actions {
-		display: flex;
-		gap: 1em;
-	}
-
-	.quick-actions button:active {
-		transform: scale(0.98);
-	}
-
-	.__page_title {
-		font-weight: 800;
-		padding-bottom: 2em;
-	}
-
-	.songlist {
-		width: 100%;
-		padding-top: 2em;
+	h1 {
+		font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem);
+		font-weight: 500;
+		letter-spacing: -6%;
 	}
 </style>
