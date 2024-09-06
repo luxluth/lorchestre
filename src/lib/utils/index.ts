@@ -111,3 +111,15 @@ export function removeDuplicate<T>(elements: T[]): T[] {
 		return acc;
 	}, []);
 }
+
+function* SequenceGenerator() {
+	let i = 0;
+	while (true) {
+		yield i++;
+	}
+}
+
+export function createSequenceGenerator() {
+	const sequenceGenerator = SequenceGenerator();
+	return () => sequenceGenerator.next().value;
+}

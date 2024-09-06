@@ -106,6 +106,8 @@ export type Track = {
 	duration: u64;
 	bitrate: u32;
 	disc: number;
+	encoder: string;
+	genres: string[];
 };
 
 export type QueueTrack = Track & {

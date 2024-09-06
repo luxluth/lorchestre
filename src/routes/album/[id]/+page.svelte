@@ -328,10 +328,6 @@
 		width: 100%;
 	}
 
-	.section-title {
-		padding-bottom: 1em;
-	}
-
 	.track {
 		display: flex;
 		align-items: center;

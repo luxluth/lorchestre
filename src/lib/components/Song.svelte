@@ -70,7 +70,8 @@
 		ctx,
 		manager,
 		searchq = $bindable(),
-		onPlay
+		onPlay,
+		notify
 	}: {
 		song: Track;
 		i: number;
@@ -78,6 +79,7 @@
 		manager: Manager;
 		searchq: string;
 		onPlay: (i: number) => Promise<void>;
+		notify: (track: Track) => void;
 	} = $props();
 
 	function replaceTextWithMarker(text: string) {
@@ -97,6 +99,9 @@
 	}}
 	ondblclick={async () => {
 		await onPlay(i);
+	}}
+	onmouseenter={() => {
+		notify(song);
 	}}
 >
 	<div
@@ -128,13 +133,11 @@
 	<div class="title-part" aria-colindex="2" role="gridcell">
 		<h4 class="title">{@html replaceTextWithMarker(trim(song.title, 30))}</h4>
 	</div>
-	<div class="artist" aria-colindex="3" role="gridcell">
-		{@html replaceTextWithMarker(trim(song.artists.join(', ')))}
+	<div class="artists" aria-colindex="3" role="gridcell">
+		<div class="artist">
+			{@html replaceTextWithMarker(trim(song.artists[0]))}
+		</div>
 	</div>
-	<div class="album" aria-colindex="4" role="gridcell">
-		<a href="/album/{song.album_id}">{@html replaceTextWithMarker(trim(song.album))}</a>
-	</div>
-	<div class="duration" aria-colindex="5" role="gridcell">{formatTime(song.duration)}</div>
 </div>
 
 <style>
@@ -148,14 +151,15 @@
 		display: grid;
 		grid-template-columns:
 			[index] var(--tracklist-index-column-width, 16px)
-			[first] minmax(120px, var(--col1, 6fr))
-			[var1] minmax(120px, var(--col2, 4fr)) [var2] minmax(120px, var(--col3, 3fr)) [last] minmax(120px, var(--col4, 1fr));
+			[title] minmax(120px, 6fr)
+			[artists] minmax(120px, 5fr);
 		align-items: center;
 		grid-gap: 16px;
 		padding-block: 4px;
-		padding-inline: 20px;
+		padding-right: 6px;
+		padding-left: 12px;
 		height: 2.5em;
-		border-radius: 4px;
+		border-radius: 8px;
 	}
 
 	.track:hover .count {
@@ -186,6 +190,7 @@
 		justify-self: end;
 		opacity: 0.5;
 		width: 100%;
+		font-family: var(--font-mono);
 	}
 
 	.iscurrent {
@@ -235,47 +240,36 @@
 		}
 	}
 
-	.track:nth-child(odd) {
-		background-color: var(--highlight);
+	.track {
+		background-color: #292929;
+		transition: background 0.1s ease-out;
+	}
+
+	.track:hover {
+		background-color: #303030;
 	}
 
 	.title {
 		font-size: 1em;
-		font-weight: 400;
+		font-weight: 500;
 		margin: 0;
+		letter-spacing: -5%;
+	}
+
+	.artists {
+		display: flex;
+		justify-content: flex-end;
 	}
 
 	.artist {
-		font-size: 0.875em;
-		opacity: 0.3;
+		font-size: 1em;
+		padding: 4px;
+		border-radius: calc(8px - 6px);
+		border: 1px #504b4b solid;
+		color: #808080;
 		margin: 0;
-	}
-
-	.album,
-	.duration {
-		font-size: 0.875em;
-		opacity: 0.6;
-	}
-
-	.count,
-	.duration {
-		font-family: var(--font-mono);
-	}
-
-	a {
-		text-decoration: none;
-		color: var(--fg);
-	}
-
-	a:hover {
-		text-decoration: underline;
-	}
-
-	.album {
-		padding: 0 10px;
-	}
-
-	.duration {
+		background: #3d3d3d;
+		width: fit-content;
 		text-align: right;
 	}
 </style>
