@@ -3,6 +3,7 @@
 	import MicVocal from 'lucide-svelte/icons/mic-vocal';
 	import { getManager } from '$lib/manager.svelte';
 	import { getCmds } from '$lib/commands.svelte';
+	import { goto } from '$app/navigation';
 
 	let cmds = getCmds();
 	let manager = getManager();
@@ -14,10 +15,12 @@
 			case 'lrc':
 				cmds.queue = false;
 				cmds.lrc = !cmds.lrc;
+				goto('/lrc');
 				break;
 			case 'queue':
 				cmds.lrc = false;
 				cmds.queue = !cmds.queue;
+				goto('/queue');
 				break;
 		}
 	}

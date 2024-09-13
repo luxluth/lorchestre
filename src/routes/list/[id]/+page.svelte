@@ -11,7 +11,7 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
-	import { setTitle } from '$lib/utils';
+	import { setTitle, sortTracksByDate } from '$lib/utils';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
 	import { getList } from '$lib/playlist.svelte';
@@ -79,14 +79,6 @@
 			if (titleA < titleB) return -1;
 			if (titleA > titleB) return 1;
 			return 0;
-		});
-	}
-
-	function sortTracksByDate(tracks: Track[]): Track[] {
-		return tracks.slice().sort((a, b) => {
-			const dateA = a.created_at.secs_since_epoch * 1e9 + a.created_at.nanos_since_epoch;
-			const dateB = b.created_at.secs_since_epoch * 1e9 + b.created_at.nanos_since_epoch;
-			return dateB - dateA;
 		});
 	}
 

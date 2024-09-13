@@ -77,14 +77,15 @@ export type Album = {
 	name: string;
 	artist: string;
 	tracks: string[];
+	genres: string[];
+	disc_total: number;
+	tracks_count: number;
+	encoder: string;
 	year?: u32;
 	id: string;
 };
 
-export type SystemTime = {
-	nanos_since_epoch: number;
-	secs_since_epoch: number;
-};
+export type SystemTime = number;
 
 export type Track = {
 	title: string;
@@ -104,6 +105,9 @@ export type Track = {
 	path_base64: string;
 	duration: u64;
 	bitrate: u32;
+	disc: number;
+	encoder: string;
+	genres: string[];
 };
 
 export type QueueTrack = Track & {
@@ -118,7 +122,7 @@ export type Playlist = {
 };
 
 export type Media = {
-	tracks: Record<string, Track>;
+	tracks: Array<[string, Track]>;
 	albums: Album[];
 	playlists: Playlist[];
 };

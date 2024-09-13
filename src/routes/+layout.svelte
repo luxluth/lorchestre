@@ -13,8 +13,6 @@
 	import ContextMenu from './ContextMenu.svelte';
 	import { setCmds } from '$lib/commands.svelte';
 	import Commands from '$lib/components/Commands.svelte';
-	import Queue from '$lib/components/Queue.svelte';
-	import Lrc from '$lib/components/Lrc.svelte';
 	import { setLrc } from '$lib/lrc.svelte';
 	import { setMedia } from '$lib/media.svelte';
 	import { setFilter } from '$lib/filterq.svelte';
@@ -95,8 +93,6 @@
 				}}
 			>
 				{@render children()}
-				<Queue />
-				<Lrc />
 			</main>
 		</section>
 	{:else}
@@ -127,7 +123,6 @@
 		justify-content: center;
 		position: relative;
 		gap: 1em;
-		background-color: var(--brand-color);
 	}
 
 	.__navigation {

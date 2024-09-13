@@ -21,6 +21,29 @@ export function clickOutside(element: Element, callbackFunction: () => void) {
 	};
 }
 
+export function unionToMap<V>(record: Array<[string, V]>): Map<string, V> {
+	const map = new Map<string, V>();
+
+	for (const [key, value] of record) {
+		// Step 4: Add entries to the Map
+		map.set(key, value);
+	}
+
+	return map;
+}
+
+function* SequenceGenerator(): Generator<number, number, unknown> {
+	let i = 0;
+	while (true) {
+		yield i++;
+	}
+}
+
+export function createSequenceGenerator() {
+	const sequenceGenerator = SequenceGenerator();
+	return () => sequenceGenerator.next().value;
+}
+
 export function isElementVisible(element: HTMLElement) {
 	if (!element) {
 		return false;
@@ -88,17 +111,6 @@ export function setTitle(text: string) {
 	})();
 }
 
-export function recordToMap<V>(record: Record<string, V>): Map<string, V> {
-	const map = new Map<string, V>();
-
-	for (const [key, value] of Object.entries(record)) {
-		// Step 4: Add entries to the Map
-		map.set(key, value);
-	}
-
-	return map;
-}
-
 export function getLNTime(line: RawTimestamp) {
 	return (line.minutes * 60 + line.seconds) * 1000 + (line.millis ?? 0);
 }
@@ -110,4 +122,10 @@ export function removeDuplicate<T>(elements: T[]): T[] {
 		}
 		return acc;
 	}, []);
+}
+
+export function sortTracksByDate(tracks: Track[]): Track[] {
+	return tracks.slice().sort((a, b) => {
+		return b.created_at - a.created_at;
+	});
 }

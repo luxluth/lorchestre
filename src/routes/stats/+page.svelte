@@ -2,7 +2,7 @@
 	import type { Track } from '$lib/type';
 	import { tweened } from 'svelte/motion';
 	import { quartInOut } from 'svelte/easing';
-	import { formatTime, getCoverUri, setTitle } from '$lib/utils';
+	import { formatTime, getCoverUri, setTitle, sortTracksByDate } from '$lib/utils';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
 	import { getManager } from '$lib/manager.svelte';
@@ -24,14 +24,6 @@
 	$effect(() => {
 		getLatestSong();
 	});
-
-	function sortTracksByDate(tracks: Track[]): Track[] {
-		return tracks.slice().sort((a, b) => {
-			const dateA = a.created_at.secs_since_epoch * 1e9 + a.created_at.nanos_since_epoch;
-			const dateB = b.created_at.secs_since_epoch * 1e9 + b.created_at.nanos_since_epoch;
-			return dateB - dateA;
-		});
-	}
 
 	let song = $state<Track>();
 

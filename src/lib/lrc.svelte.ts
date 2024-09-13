@@ -8,7 +8,7 @@ import {
 	type ProccessedMarker
 } from './type';
 import type AppConfig from './config.svelte';
-import { getLNTime, getLyricsUri, searchLyricsUri } from './utils';
+import { createSequenceGenerator, getLNTime, getLyricsUri, searchLyricsUri } from './utils';
 import type ToastManager from './toast.svelte';
 import type EditViewController from './editviewController.svelte';
 import LyricsChoiceEditView from '$lib/components/LrycisChoiceEditView.svelte';
@@ -19,12 +19,15 @@ const eq = (a: Line[], b: Line[]) => {
 	return a.length === b.length && a.every((element, index) => element === b[index]);
 };
 
+type HookFunc = (lines: Line[]) => void;
+
 export default class LrcManager {
 	lines: Line[] = $state([]);
 	proccessedMarkers: ProccessedMarker[] = $state([]);
 	private conf: AppConfig;
 	private currentActiveLines: Line[] = $state([]);
-	private chs = new Set<(lines: Line[]) => void>();
+	private chs = new Set<[number, HookFunc]>();
+	idNext = createSequenceGenerator();
 	searching: boolean = $state(false);
 	tm: ToastManager;
 	evc: EditViewController;
@@ -172,7 +175,7 @@ export default class LrcManager {
 	private set als(val: Line[]) {
 		if (!eq(val, this.currentActiveLines)) {
 			this.currentActiveLines = val;
-			this.chs.forEach((f) => {
+			this.chs.forEach(([_, f]) => {
 				f(val);
 			});
 		}
@@ -199,8 +202,19 @@ export default class LrcManager {
 		return this.currentActiveLines;
 	}
 
-	set oncuechange(fn: () => void) {
-		this.chs.add(fn);
+	oncuechange(fn: HookFunc): number {
+		const hookId = this.idNext();
+		this.chs.add([hookId, fn]);
+		return hookId;
+	}
+
+	removeHook(id: number) {
+		this.chs.forEach((pair) => {
+			const [i, _] = pair;
+			if (i === id) {
+				this.chs.delete(pair);
+			}
+		});
 	}
 
 	analyzeMarkers(lyrics: Line[], track: Track) {

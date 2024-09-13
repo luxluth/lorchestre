@@ -8,10 +8,8 @@
 	import type { QueueTrack } from '$lib/type';
 	import X from 'lucide-svelte/icons/x';
 	import { getManager } from '$lib/manager.svelte';
-	import { getCmds } from '$lib/commands.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
 
-	let cmds = getCmds();
 	let manager = getManager();
 	let config = getAppConfig();
 
@@ -40,7 +38,7 @@
 	}
 </script>
 
-<div class="__queue glass" class:active={cmds.queue}>
+<div class="__queue">
 	<header>
 		<h3>{$_('cmds.waitlist.title')}</h3>
 		<button
@@ -110,22 +108,6 @@
 </div>
 
 <style>
-	.__queue {
-		position: fixed;
-		z-index: var(--overlay-z-index);
-		margin-top: 5em;
-		height: 85%;
-		width: 25.3em;
-		padding: 1em;
-		right: 2em;
-		top: 0.5em;
-		border: 2px solid rgba(100, 100, 100, 0.18);
-		transform: translateX(200%);
-		transition: transform 0.3s ease-in-out;
-		overflow-y: scroll;
-		border-radius: 8px;
-	}
-
 	header {
 		display: flex;
 		justify-content: space-between;
@@ -133,13 +115,7 @@
 		padding-bottom: 2em;
 	}
 
-	.__queue.active {
-		transform: translateX(0);
-	}
-
 	.__queue .songs {
-		overflow-y: auto;
-		overflow-x: hidden;
 		width: 100%;
 		display: flex;
 		flex-direction: column;

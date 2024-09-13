@@ -5,6 +5,7 @@
 	import { _ } from 'svelte-i18n';
 	import { getManager } from '$lib/manager.svelte';
 	import { getCmds } from '$lib/commands.svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	let lrcParent: HTMLDivElement;
 
@@ -12,7 +13,7 @@
 	let manager = getManager();
 	let lrcMngr = getLrc();
 
-	lrcMngr.oncuechange = () => {
+	const id = lrcMngr.oncuechange(() => {
 		const activeLines = lrcMngr.activeLines;
 		if (activeLines.length > 0) {
 			let child = lrcParent.children[activeLines[0].id];
@@ -20,7 +21,11 @@
 				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
 		}
-	};
+	});
+
+	onDestroy(() => {
+		lrcMngr.removeHook(id);
+	});
 
 	manager.afterplay = () => {
 		if (lrcParent) {
@@ -29,9 +34,19 @@
 			}, 70);
 		}
 	};
+
+	onMount(() => {
+		const activeLines = lrcMngr.activeLines;
+		if (activeLines.length > 0) {
+			let child = lrcParent.children[activeLines[0].id];
+			if (isElementVisible(child as HTMLElement) || !cmds.lrc) {
+				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}
+	});
 </script>
 
-<div class="__lrc glass" class:active={cmds.lrc}>
+<div class="__lrc">
 	<div class="lines" bind:this={lrcParent}>
 		{#if manager.currentTrack}
 			{#if lrcMngr.lines.length > 0}
@@ -63,23 +78,8 @@
 
 <style>
 	.__lrc {
-		position: fixed;
-		z-index: var(--overlay-z-index);
 		margin-top: 5em;
-		height: 85%;
-		width: 25.3em;
 		padding: 1em;
-		right: 2em;
-		top: 0.5em;
-		border: 2px solid rgba(100, 100, 100, 0.18);
-		transform: translateX(200%);
-		transition: transform 0.3s ease-in-out;
-		overflow-y: scroll;
-		border-radius: 8px;
-	}
-
-	.__lrc.active {
-		transform: translateX(0);
 	}
 
 	.lines {

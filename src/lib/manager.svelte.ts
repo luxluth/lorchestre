@@ -130,7 +130,10 @@ export default class Manager {
 						duration: t.duration,
 						bitrate: t.bitrate,
 						id: t.id,
-						path_base64: t.path_base64
+						path_base64: t.path_base64,
+						disc: t.disc,
+						encoder: t.encoder,
+						genres: t.genres
 					} as const;
 				});
 				this.queue = this.shuffle(this.queue);

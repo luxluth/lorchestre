@@ -45,7 +45,7 @@
 	let playing = $state<boolean>(false);
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 
-	lrcMngr.oncuechange = () => {
+	lrcMngr.oncuechange(() => {
 		const activeLines = lrcMngr.activeLines;
 		if (activeLines.length > 0) {
 			let child = lyricsParent.children[activeLines[0].id];
@@ -53,7 +53,7 @@
 				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
 		}
-	};
+	});
 
 	function isElementVisible(element: HTMLElement) {
 		if (!element) {
