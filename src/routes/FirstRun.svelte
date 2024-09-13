@@ -122,10 +122,6 @@
 {/if}
 
 <style>
-	* {
-		color: white;
-	}
-
 	h1 + div {
 		display: flex;
 		gap: 0.1em;
@@ -172,11 +168,9 @@
 	}
 
 	.act_btn {
-		background: white;
 		position: absolute;
 		bottom: 2em;
 		right: 2em;
-		color: var(--brand-color);
 		animation-delay: 0.5s;
 	}
 

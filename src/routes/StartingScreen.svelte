@@ -18,12 +18,7 @@
 </div>
 
 <style>
-	* {
-		color: var(--brand-color);
-	}
-
 	.page {
-		background: var(--bg);
 		position: fixed;
 		top: 0;
 		left: 0;

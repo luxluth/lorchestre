@@ -10,8 +10,6 @@ html {
 	--font-fantasy: 'Calistoga', 'Noto Serif JP Variable', serif;
 	--font-mono: 'IBM Plex Mono', monospace;
 
-	--brand-color: #df632e;
-
 	--toast-z-index: 140;
 	--starting-screen-z-index: 135;
 	--edit-view-z-index: 130;
@@ -47,6 +45,7 @@ body[data-theme='light'] {
 	--fg: var(--light-fg);
 	--bg: var(--light-bg);
 	--highlight: var(--light-highlight);
+	--brand-color: var(--fg);
 
 	color-scheme: ligth dark;
 	font-family:
