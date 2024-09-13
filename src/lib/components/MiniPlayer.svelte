@@ -244,13 +244,13 @@
 
 	.controls button.active {
 		opacity: 1;
-		color: var(--brand-color);
+		color: var(--fg);
 	}
 
 	.controls button[data-mode='repeat'],
 	.controls button[data-mode='repeat-all'] {
 		opacity: 1;
-		color: var(--brand-color);
+		color: var(--fg);
 	}
 
 	.controls button[data-mode='repeat']::after {

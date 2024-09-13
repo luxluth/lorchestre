@@ -11,7 +11,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { getAppConfig } from '$lib/config.svelte';
 
-	// import Github from 'lucide-svelte/icons/git-branch';
+	import Github from 'lucide-svelte/icons/git-branch';
 
 	let appConf = getAppConfig();
 	let version = $state('vx.x.x');
@@ -47,7 +47,9 @@
 	<div class="banner">
 		{@html banner}
 		<code>{version}</code>
-		<!-- <a target="_blank" href="https://github.com/luxluth/lorchestre" class=""><Github /></a> -->
+		<a class="btn" target="_blank" href="https://github.com/luxluth/lorchestre"
+			><Github size={14} /> Star On Github</a
+		>
 	</div>
 </div>
 
@@ -56,11 +58,17 @@
 		margin-top: 8em;
 		width: 100%;
 		height: fit-content;
-		color: var(--brand-color);
+		color: var(--fg);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		flex-direction: column;
+	}
+
+	a {
+		text-decoration: none;
+		color: inherit;
+		margin-top: 1em;
 	}
 
 	section#block {

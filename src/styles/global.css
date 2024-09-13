@@ -45,7 +45,6 @@ body[data-theme='light'] {
 	--fg: var(--light-fg);
 	--bg: var(--light-bg);
 	--highlight: var(--light-highlight);
-	--brand-color: var(--fg);
 
 	color-scheme: ligth dark;
 	font-family:

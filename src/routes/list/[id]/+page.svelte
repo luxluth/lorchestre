@@ -315,8 +315,8 @@
 	}
 
 	.edit.active {
-		background: var(--brand-color);
-		color: white;
+		background: var(--fg);
+		color: var(--bg);
 	}
 
 	.adding_tracks {

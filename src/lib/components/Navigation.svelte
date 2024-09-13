@@ -109,7 +109,7 @@
 	.search a.active {
 		background: var(--highlight);
 		opacity: 1;
-		color: var(--brand-color);
+		color: var(--fg);
 	}
 
 	.dragzone {
@@ -178,7 +178,7 @@
 
 	section div.links a.active {
 		background: var(--highlight);
-		color: var(--brand-color);
+		color: var(--fg);
 		opacity: 1;
 	}
 

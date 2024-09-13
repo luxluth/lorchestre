@@ -55,7 +55,7 @@
 	:global([data-checkbox-root]) {
 		width: 1.7em;
 		height: 1.7em;
-		border: 2px solid var(--brand-color);
+		border: 2px solid var(--fg);
 		border-radius: 6px;
 		display: flex;
 		justify-content: center;
@@ -65,6 +65,6 @@
 	}
 
 	:global(.checkbox[aria-checked='true']) {
-		background-color: var(--brand-color);
+		background-color: var(--fg);
 	}
 </style>

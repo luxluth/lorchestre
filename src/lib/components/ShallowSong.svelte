@@ -103,7 +103,7 @@
 	.checkbox {
 		width: 1em;
 		height: 1em;
-		border: 2px solid var(--brand-color);
+		border: 2px solid var(--fg);
 		border-radius: 6px;
 		display: flex;
 		justify-content: center;
@@ -113,6 +113,6 @@
 	}
 
 	[data-checked='true'] {
-		background-color: var(--brand-color);
+		background-color: var(--fg);
 	}
 </style>

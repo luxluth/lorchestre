@@ -122,7 +122,7 @@
 	}
 
 	.choice.selected {
-		border-color: var(--brand-color);
+		border-color: var(--fg);
 	}
 
 	.choices {
