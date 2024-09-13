@@ -1,5 +1,6 @@
 use crate::daemon::m3u8;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use bitcode::{Decode, Encode};
 use color_thief::ColorFormat;
 use lofty::picture::{MimeType, PictureType};
 use lofty::prelude::*;
@@ -24,7 +25,7 @@ pub struct Cover {
     ext: String,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy, Encode, Decode)]
 pub struct Color {
     pub r: u8,
     pub g: u8,
@@ -42,23 +43,28 @@ impl Color {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    serde::Serialize, serde::Deserialize, Default, Debug, Clone, PartialEq, Eq, Encode, Decode,
+)]
 pub struct Album {
     pub name: String,
     pub artist: String,
-    pub tracks: Vec<PathBuf>,
+    pub tracks: Vec<String>,
     pub year: Option<u32>,
     pub id: String,
     pub disc_total: u32,
+    pub tracks_count: u32,
+    pub genres: Vec<String>,
+    pub encoder: String,
 }
 
 impl Album {
-    pub fn remove_track(&mut self, path: PathBuf) {
+    pub fn remove_track(&mut self, path: String) {
         self.tracks.retain(|x| *x != path);
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Encode, Decode)]
 pub struct Track {
     pub title: String,
     pub artists: Vec<String>,
@@ -77,7 +83,11 @@ pub struct Track {
     pub path_base64: String,
     pub duration: u64,
     pub bitrate: u32,
-    pub created_at: SystemTime,
+    pub encoder: String,
+    pub genres: Vec<String>,
+    pub tracks_count: u32,
+
+    pub created_at: u64,
 }
 
 impl PartialEq for Track {
@@ -132,13 +142,28 @@ impl Track {
         .to_string();
 
         if let Ok(meta) = inode.metadata() {
-            if let Ok(created_at) = meta.created() {
-                audio.created_at = created_at;
+            if let Ok(tm) = meta.created() {
+                let epoch = SystemTime::UNIX_EPOCH;
+                audio.created_at = tm.duration_since(epoch).unwrap().as_secs();
             }
         };
 
         if let Some(year) = tag.year() {
             audio.album_year = Some(year);
+        } else if let Some(year) = tag.get_string(&ItemKey::Unknown("TDOR".into())) {
+            audio.album_year = Some(year.parse().unwrap_or(0));
+        }
+
+        if let Some(encoder) = tag.get_string(&ItemKey::EncoderSettings) {
+            audio.encoder = encoder.to_string();
+        }
+
+        if let Some(genres) = tag.genre() {
+            if genres.contains(';') {
+                audio.genres = genres.split(';').map(|x| x.trim().to_string()).collect();
+            } else {
+                audio.genres = genres.split(' ').map(|x| x.trim().to_string()).collect();
+            }
         }
 
         if let Some(title) = tag.title() {
@@ -162,6 +187,10 @@ impl Track {
 
         if let Some(no) = tag.track() {
             audio.track = no;
+        }
+
+        if let Some(tt) = tag.track_total() {
+            audio.tracks_count = tt;
         }
 
         let mut bytes = audio.album.as_bytes().to_vec();
@@ -271,7 +300,10 @@ impl Default for Track {
             path_base64: String::new(),
             bitrate: 0,
             duration: 0,
-            created_at: SystemTime::UNIX_EPOCH,
+            created_at: 0,
+            encoder: "Unknown".into(),
+            genres: vec![],
+            tracks_count: 0,
         }
     }
 }
@@ -281,11 +313,12 @@ pub struct Songs {
     pub audios: Vec<Track>,
 }
 
-pub type TrackCollection = HashMap<PathBuf, Track>;
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Encode, Decode)]
+pub struct TrackCollection(String, Track);
 
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone, Encode, Decode)]
 pub struct Media {
-    pub tracks: TrackCollection,
+    pub tracks: Vec<TrackCollection>,
     pub albums: Vec<Album>,
     pub playlists: Vec<PlaylistData>,
 }
@@ -345,13 +378,10 @@ impl Media {
                 let doc = doc.to_named_doc(&songs_schema);
 
                 if let Some(paths) = doc.0.get("path") {
-                    match paths[0].clone() {
-                        OwnedValue::Str(p) => {
-                            if let Some(track) = self.get_song(&p) {
-                                tracks.push(track);
-                            };
-                        }
-                        _ => {}
+                    if let OwnedValue::Str(p) = paths[0].clone() {
+                        if let Some(track) = self.get_song(&p) {
+                            tracks.push(track);
+                        };
                     }
                 }
             }
@@ -372,13 +402,10 @@ impl Media {
                 let doc: TantivyDocument = album_searcher.doc(doc_address).unwrap();
                 let doc = doc.to_named_doc(&albums_schema);
                 if let Some(ids) = doc.0.get("id") {
-                    match ids[0].clone() {
-                        OwnedValue::Str(id) => {
-                            if let Some(album) = self.get_album(&id) {
-                                albums.push(album);
-                            };
-                        }
-                        _ => {}
+                    if let OwnedValue::Str(id) = ids[0].clone() {
+                        if let Some(album) = self.get_album(&id) {
+                            albums.push(album);
+                        };
                     }
                 }
             }
@@ -391,14 +418,14 @@ impl Media {
     }
 
     pub fn cache(&self, cache_dir: PathBuf, win: Option<tauri::Window>) {
-        let p_string = cache_dir.join(".cache.json");
+        let p_string = cache_dir.join(".cache");
         let ac_string = cache_dir.join(".cache.list");
         let ac_path = std::path::Path::new(&ac_string);
         utils::cache_audio_files(ac_path);
 
-        let jason = serde_json::to_string(&self).unwrap();
+        let bin = bitcode::encode(&self.clone());
         let mut f = fs::File::create(&p_string).unwrap();
-        let _ = f.write_all(jason.as_bytes());
+        let _ = f.write_all(&bin);
 
         self.create_search_index(cache_dir);
 
@@ -449,7 +476,7 @@ impl Media {
 
         let songs_index = Index::create_in_dir(&songs_index_path, songs_schema).unwrap();
         let mut index_writer: IndexWriter = songs_index.writer(50_000_000).unwrap();
-        for (_, track) in &self.tracks {
+        for TrackCollection(_, track) in &self.tracks {
             let _ = index_writer.add_document(doc!(
                 title => track.title.clone(),
                 artists => track.artists.join(";"),
@@ -485,16 +512,15 @@ impl Media {
         let mut inserted = false;
         for album in &mut self.albums {
             if song.album_id == album.id {
-                album.tracks.push(PathBuf::from(&song.file_path));
+                album.tracks.push(song.file_path.clone());
                 self.tracks
-                    .insert(PathBuf::from(song.file_path.clone()), song.clone());
+                    .ninsert(song.file_path.to_string(), song.clone());
                 inserted = true;
                 break;
             }
         }
         if !inserted {
-            self.tracks
-                .insert(PathBuf::from(song.file_path.clone()), song.clone());
+            self.tracks.ninsert(song.file_path.clone(), song.clone());
             let albums = Songs { audios: vec![song] }.get_albums();
             self.albums.extend(albums);
         }
@@ -505,7 +531,7 @@ impl Media {
         if ext == "m3u8" {
             self.add_playlist(m3u8::M3U8::parse(path));
         } else if ext == "playlist" {
-            self.add_playlist(PlaylistData::parse(path));
+            self.add_playlist(PlaylistData::parse(format!("{}", path.display())));
         } else {
             self.add_song(Track::from_file(covers_dir, path));
         }
@@ -514,9 +540,9 @@ impl Media {
     pub fn remove_media(&mut self, path: PathBuf) {
         let ext = path.extension().unwrap().to_str().unwrap();
         if ext == "playlist" {
-            self.remove_playlist(path);
+            self.remove_playlist(format!("{}", path.display()));
         } else {
-            self.remove_song(path);
+            self.remove_song(format!("{}", path.display()));
         }
     }
 
@@ -547,11 +573,11 @@ impl Media {
     }
 
     #[inline]
-    pub fn remove_playlist(&mut self, path: PathBuf) {
+    pub fn remove_playlist(&mut self, path: String) {
         self.playlists.retain(|x| x.path != path);
     }
 
-    pub fn remove_song(&mut self, path: PathBuf) {
+    pub fn remove_song(&mut self, path: String) {
         for album in &mut self.albums {
             album.remove_track(path.clone());
         }
@@ -575,9 +601,8 @@ impl Media {
     where
         T: AsRef<[u8]>,
     {
-        let path = PathBuf::from(
-            String::from_utf8_lossy(&URL_SAFE.decode(path_base64).unwrap()).to_string(),
-        );
+        let path = String::from_utf8_lossy(&URL_SAFE.decode(path_base64).unwrap()).to_string();
+
         for playlist in self.playlists.iter() {
             if playlist.path == path {
                 return Some(playlist.clone());
@@ -588,7 +613,49 @@ impl Media {
     }
 
     pub fn get_song(&self, path: &str) -> Option<Track> {
-        self.tracks.get(&PathBuf::from(path)).cloned()
+        self.tracks.get(path).cloned()
+    }
+}
+
+pub trait MapLikeAction {
+    fn ninsert(&mut self, path: String, song: Track);
+    fn get(&self, path: &str) -> Option<&Track>;
+    fn remove_entry(&mut self, path: &str);
+}
+
+impl MapLikeAction for Vec<TrackCollection> {
+    fn ninsert(&mut self, path: String, song: Track) {
+        let mut exist = false;
+        for TrackCollection(p, _) in self.iter() {
+            if *p == path {
+                exist = true;
+                break;
+            }
+        }
+
+        if !exist {
+            self.push(TrackCollection(path, song));
+        } else {
+            for TrackCollection(p, s) in self.iter_mut() {
+                if *p == path {
+                    *s = song;
+                    break;
+                }
+            }
+        }
+    }
+    fn get(&self, path: &str) -> Option<&Track> {
+        let path = path.to_string();
+        for TrackCollection(p, s) in self.iter() {
+            if *p == path {
+                return Some(s);
+            }
+        }
+        None
+    }
+    fn remove_entry(&mut self, path: &str) {
+        let path = path.to_string();
+        self.retain(|TrackCollection(p, _)| *p != path);
     }
 }
 
@@ -620,7 +687,10 @@ impl Songs {
                 )),
                 disc_total: v[0].disc_total,
                 year: v[0].album_year,
-                tracks: v.into_iter().map(|x| PathBuf::from(x.file_path)).collect(),
+                encoder: v[0].encoder.clone(),
+                tracks_count: v[0].tracks_count,
+                genres: v[0].genres.clone(),
+                tracks: v.into_iter().map(|x| x.file_path).collect(),
                 id: k,
             });
         }
@@ -656,12 +726,11 @@ pub mod utils {
                     if inode.is_file() {
                         let guess =
                             mime_guess::from_path(&inode).first_or("text/plain".parse().unwrap());
-                        if guess.type_() == super::mime::AUDIO {
+                        if guess.type_() == super::mime::AUDIO
+                            || (inode.extension().is_some()
+                                && inode.extension().unwrap() == "playlist")
+                        {
                             files.push(inode);
-                        } else if inode.extension().is_some() {
-                            if inode.extension().unwrap() == "playlist" {
-                                files.push(inode);
-                            }
                         }
                     }
                 }

@@ -19,7 +19,7 @@ pub enum CacheCompareDiff {
 
 pub async fn cache_resolve(cache_dir: &Path, win: Option<tauri::Window>) -> Media {
     info!("Starting cache process...");
-    let p_string = cache_dir.join(".cache.json");
+    let p_string = cache_dir.join(".cache");
     let covers_dir = cache_dir.join("covers");
     let ac_string = cache_dir.join(".cache.list");
     let ac_path = Path::new(&ac_string);
@@ -36,9 +36,9 @@ pub async fn cache_resolve(cache_dir: &Path, win: Option<tauri::Window>) -> Medi
 
     if cache_file.exists() {
         let mut f = fs::File::open(cache_file).unwrap();
-        let mut buf = String::new();
-        let _ = f.read_to_string(&mut buf);
-        if let Ok(mut cache_data) = serde_json::from_str::<Media>(&buf) {
+        let mut buf = Vec::new();
+        let _ = f.read_to_end(&mut buf);
+        if let Ok(mut cache_data) = bitcode::decode::<Media>(&buf) {
             'f: for d in diff {
                 match d {
                     CacheCompareDiff::ToAdd { files } => {
@@ -99,9 +99,9 @@ pub async fn cache_resolve(cache_dir: &Path, win: Option<tauri::Window>) -> Medi
 
     if needs_update {
         info!("* cache updated");
-        let jason = serde_json::to_string(&cache).unwrap();
+        let bin = bitcode::encode(&cache);
         let mut f = fs::File::create(&p_string).unwrap();
-        let _ = f.write_all(jason.as_bytes());
+        let _ = f.write_all(&bin);
     }
 
     info!("cache process ended");

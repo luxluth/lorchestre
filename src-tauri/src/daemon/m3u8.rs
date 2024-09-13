@@ -1,4 +1,5 @@
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use bitcode::{Decode, Encode};
 use std::{
     collections::HashMap,
     fs::File,
@@ -12,24 +13,24 @@ pub struct M3U8;
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct M3u8Playlist {
     pub name: String,
-    pub tracks: Vec<PathBuf>,
+    pub tracks: Vec<String>,
     pub path: String,
 }
 
 pub type PlaylistMetadata = HashMap<String, String>;
 
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone, Encode, Decode)]
 pub struct PlaylistData {
     pub metadata: PlaylistMetadata,
-    pub tracks: Vec<PathBuf>,
-    pub path: PathBuf,
+    pub tracks: Vec<String>,
+    pub path: String,
     pub path_base64: String,
 }
 
 pub enum PlaylistAction {
-    RemoveTracks(Vec<PathBuf>),
-    AddTracks(Vec<PathBuf>),
-    UpdateOrder(Vec<PathBuf>),
+    RemoveTracks(Vec<String>),
+    AddTracks(Vec<String>),
+    UpdateOrder(Vec<String>),
     RemoveMeta(String),
     AddMeta(String, String),
 }
@@ -62,7 +63,7 @@ impl PlaylistData {
     pub fn create<P>(
         audio_dir: P,
         metadata: PlaylistMetadata,
-        tracks: Vec<PathBuf>,
+        tracks: Vec<String>,
     ) -> io::Result<()>
     where
         P: AsRef<Path>,
@@ -79,7 +80,7 @@ impl PlaylistData {
             metadata,
             tracks,
             path_base64: URL_SAFE.encode(format!("{}", list_path.display()).as_bytes()),
-            path: list_path.clone(),
+            path: format!("{}", list_path.display()),
         };
 
         list.save(list_path)?;
@@ -98,7 +99,7 @@ impl PlaylistData {
 }
 
 impl PlaylistData {
-    pub fn parse(path: PathBuf) -> Self {
+    pub fn parse(path: String) -> Self {
         let mut f = std::fs::File::open(&path).unwrap();
         let mut input = String::new();
         let _ = f.read_to_string(&mut input);
@@ -110,21 +111,19 @@ impl PlaylistData {
             if !line.is_empty() {
                 if let Some((left, right)) = line.split_once(':') {
                     metadata.insert(left.trim().to_string(), right.trim().to_string());
-                } else {
-                    if let Ok(path) = PathBuf::from_str(line) {
-                        tracks.push(path)
-                    };
+                } else if let Ok(path) = PathBuf::from_str(line) {
+                    tracks.push(path)
                 }
             }
         }
 
-        let s_path = format!("{}", path.display());
+        let s_path = path.to_string();
 
         Self {
             metadata,
             path_base64: URL_SAFE.encode(s_path.as_bytes()),
             path,
-            tracks,
+            tracks: tracks.iter().map(|p| format!("{}", p.display())).collect(),
         }
     }
 
@@ -136,7 +135,7 @@ impl PlaylistData {
             metadata,
             tracks: p.tracks,
             path_base64: URL_SAFE.encode(p.path.as_bytes()),
-            path: PathBuf::from(p.path),
+            path: p.path,
         }
     }
 
@@ -149,7 +148,7 @@ impl PlaylistData {
         writeln!(&mut output)?;
 
         for file in &self.tracks {
-            writeln!(&mut output, "{}", file.display())?;
+            writeln!(&mut output, "{}", file)?;
         }
 
         let mut f = std::fs::File::create(path)?;
@@ -175,11 +174,12 @@ impl M3U8 {
                 .filter(|x| !x.is_empty() && !x.starts_with('#'))
                 .map(|x| Path::new(x).to_path_buf())
                 .filter(|p| p.exists())
+                .map(|x| format!("{}", x.display()))
                 .collect(),
         };
 
         let mut f = File::create(path.with_extension("m3u8.bak")).unwrap();
-        let _ = f.write(&text.as_bytes());
+        let _ = f.write(text.as_bytes());
 
         let playlist = PlaylistData::from_m3u8_playlist(playlist);
         if playlist.save(path.with_extension("playlist")).is_ok() {
