@@ -88,6 +88,10 @@
 		active = true;
 	};
 
+	manager.isPlayerActive = () => {
+		return active;
+	};
+
 	manager.onPlayerDeactivate = () => {
 		active = false;
 	};
@@ -486,7 +490,7 @@
 		width: 100vw;
 		height: 100vh;
 		position: fixed;
-		z-index: var(--player-z-index);
+		z-index: 100;
 		top: 0;
 		left: 0;
 		display: grid;

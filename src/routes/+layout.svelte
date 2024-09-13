@@ -34,6 +34,9 @@
 	import { setNav } from '$lib/nav.svelte';
 	import { fly } from 'svelte/transition';
 
+	import { ScrollArea } from 'bits-ui';
+	import { navigating } from '$app/stores';
+
 	// import { invoke } from '@tauri-apps/api/core';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
@@ -48,7 +51,7 @@
 	let search = setSearch();
 	let media = setMedia(search);
 
-	setManager();
+	const manager = setManager();
 	setCmds();
 	setCtx();
 	setLrc(conf, tm, evc);
@@ -57,13 +60,10 @@
 	setNav();
 	const ps = setPageScroll();
 
-	if (browser) {
-		// if (!dev) {
-		// 	window.addEventListener('contextmenu', (e) => e.preventDefault());
-		// }
-	}
-
 	onMount(() => {
+		if (!dev) {
+			window.addEventListener('contextmenu', (e) => e.preventDefault());
+		}
 		(async () => {
 			if (!media.loaded) {
 				await media.load();
@@ -78,7 +78,7 @@
 
 <div class="layout" class:first_run>
 	{#if !first_run}
-		<section class="__content">
+		<section class="__content" class:hide_scroll={manager.isPlayerActive?.()}>
 			<main
 				id="__main__"
 				onscroll={(e) => {
@@ -86,19 +86,13 @@
 				}}
 			>
 				{#key data.url}
-					<div
-						id="rr"
-						data-transition
-						in:fly={{ x: 200, duration: 300, delay: 300 }}
-						out:fly={{ x: -200, duration: 300 }}
-					>
-						{#if media.loaded}
-							{@render children()}
-						{/if}
-					</div>
+					{#if media.loaded}
+						{@render children()}
+					{/if}
 				{/key}
 			</main>
 			<Navigation />
+			<MiniPlayer />
 		</section>
 	{:else}
 		<FirstRun bind:first_run />
@@ -106,6 +100,7 @@
 </div>
 {#if !first_run}
 	<ContextMenu />
+	<Player />
 {/if}
 
 {#if !first_run && !media.loaded}
@@ -113,7 +108,8 @@
 {/if}
 
 <style>
-	.layout {
+	.layout,
+	main {
 		height: 100%;
 	}
 	.__content {
@@ -121,9 +117,12 @@
 		padding: 3vw;
 		height: 100%;
 	}
-	main,
-	[data-transition] {
-		height: 100%;
+
+	.hide_scroll {
 		overflow: hidden;
 	}
+
+	/* [data-transition] { */
+	/* 	height: 100%; */
+	/* } */
 </style>

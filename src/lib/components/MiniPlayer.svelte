@@ -24,175 +24,38 @@
 	let config = getAppConfig();
 </script>
 
-<div class="mp ns" class:dead={typeof manager.currentTrack === 'undefined'} data-tauri-drag-region>
-	{#if manager.currentTrack}
-		<section class="controls">
-			<button
-				class:active={manager.pmode === PlayingMode.Shuffle}
-				onclick={async () => {
-					await manager.toggleShuffle();
-				}}
-			>
-				<Shuffle size={'1.5em'} />
-			</button>
-			<div class="actions">
-				<button>
-					<Rewind
-						fill={'var(--fg)'}
-						size={'20px'}
-						onclick={async () => {
-							await manager.prev();
-						}}
-					/>
-				</button>
-				<button
-					class="playpause"
-					onclick={async () => {
-						await manager.togglepp();
-					}}
-				>
-					{#if manager.paused}
-						<Play fill={'var(--fg)'} size={'20px'} />
-					{:else}
-						<Pause fill={'var(--fg)'} size={'20px'} />
-					{/if}
-				</button>
-				<button>
-					<FastForward
-						fill={'var(--fg)'}
-						size={'20px'}
-						onclick={async () => {
-							await manager.next();
-						}}
-					/>
-				</button>
-			</div>
-			<button
-				data-mode={manager.qmode}
-				onclick={() => {
-					manager.cycleThroughQmode();
-				}}
-			>
-				<Repeat size={'20px'} />
-			</button>
-		</section>
-		<section
-			class="player"
-			style="--clr: {manager.currentTrack?.color
-				? `rgb(${manager.currentTrack?.color.r}, ${manager.currentTrack?.color.g}, ${manager.currentTrack?.color.b})`
-				: 'var(--bg)'};"
-		>
-			<div
-				class="cover"
-				style="background-image: url({getCoverUri(
-					manager.currentTrack.album_id,
-					manager.currentTrack.cover_ext,
-					config,
-					70
-				)});"
-			>
-				<div
-					class="expand"
-					onclick={() => {
-						manager.activatePlayer();
-					}}
-					role="button"
-					tabindex="0"
-					onkeydown={() => {}}
-				>
-					<Maximize2 />
-				</div>
-			</div>
-			<div class="details">
-				<div class="track-infos">
-					<Marquee width={'20vw'}>
-						<h4>{manager.currentTrack.title}</h4>
-					</Marquee>
-					<Marquee width={'14vw'}>
-						<p>
-							<span>{manager.currentTrack.artists.join(', ')}</span> <span>—</span>
-							<span
-								><a href="/album/{manager.currentTrack.album_id}">{manager.currentTrack.album}</a
-								></span
-							>
-						</p>
-					</Marquee>
-				</div>
-				<time class="currtime ns">{formatTime(manager.currentTime)}</time>
-				<div class="progressbar" style="--percent: {percentage.toFixed(0)}%;">
-					<Slider max={manager.duration} bind:value={manager.currentTime} style="minimal" />
-				</div>
-				<time class="remaintime ns">-{formatTime(manager.duration - manager.currentTime)}</time>
-			</div>
-		</section>
-		<section class="volume">
-			<div class="vol-icon">
-				{#if manager.volume === 0}
-					<Volume size={'20px'} />
-				{:else if manager.volume >= 0.7}
-					<Volume2 size={'20px'} />
-				{:else if manager.volume > 0}
-					<Volume1 size={'20px'} />
-				{/if}
-			</div>
-			<Slider bind:value={manager.volume} style="classic" />
-		</section>
-	{:else}
-		<section class="controls">
-			<button>
-				<Shuffle size={'1.5em'} />
-			</button>
-			<div class="actions">
-				<button>
-					<Rewind fill={'var(--fg)'} size={'20px'} />
-				</button>
-				<button class="playpause">
-					{#if manager.paused}
-						<Play fill={'var(--fg)'} size={'20px'} />
-					{:else}
-						<Pause fill={'var(--fg)'} size={'20px'} />
-					{/if}
-				</button>
-				<button>
-					<FastForward fill={'var(--fg)'} size={'20px'} />
-				</button>
-			</div>
-			<button>
-				<Repeat size={'20px'} />
-			</button>
-		</section>
-		<section class="player_shell">
-			<div class="fakecover">
-				<Music3 />
-			</div>
-			<div class="icon">{$_('no_media')}</div>
-		</section>
-		<section class="volume" style="opacity: .5;">
-			<div class="vol-icon">
-				{#if manager.volume === 0}
-					<Volume size={'20px'} />
-				{:else if manager.volume >= 0.7}
-					<Volume2 size={'20px'} />
-				{:else if manager.volume > 0}
-					<Volume1 size={'20px'} />
-				{/if}
-			</div>
-			<Slider value={manager.volume} style="classic" />
-		</section>
-	{/if}
-</div>
+<div
+	class="mp"
+	onclick={() => {
+		console.log('rferf');
+		manager.activatePlayer();
+	}}
+	role="presentation"
+	tabindex="-1"
+	onkeydown={() => {}}
+	class:dead={manager.currentTrack === null}
+></div>
 
 <style>
 	.mp {
-		width: 100%;
 		padding: 0.3em;
-		display: flex;
-		gap: 1em;
-		justify-content: space-evenly;
+		position: fixed;
+		bottom: 2vw;
+		right: 2vw;
+		width: 5em;
+		height: 5em;
+		border-radius: 12px;
+		border: 1px solid #404040;
+		background-color: #2f2f2f;
+		box-shadow: rgba(0, 0, 0, 0.25) 1px 1px 8px;
+	}
+
+	.mp:active {
+		transform: scale(0.98);
 	}
 
 	.mp.dead {
-		pointer-events: none;
+		display: none;
 	}
 
 	.volume {

@@ -55,6 +55,10 @@
 </div>
 
 <style>
+	.settings {
+		padding-bottom: 4em;
+	}
+
 	a {
 		text-decoration: none;
 		color: inherit;

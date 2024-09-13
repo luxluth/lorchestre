@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { getNav } from '$lib/nav.svelte';
+	import { _ } from 'svelte-i18n';
 
 	const n = getNav();
 	let active = $state(false);
 
 	const pages = [
 		{ path: '/', name: 'Recommendation' },
-		{ path: '/songs', name: 'Songs' },
+		{ path: '/songs', name: $_('songs') },
 		{ path: '/settings', name: 'Settings' }
 	];
 </script>
@@ -86,6 +87,10 @@
 		font-weight: 900;
 		color: rgba(255, 255, 255, 0.5);
 		transition: color 0.2s ease-in-out;
+	}
+
+	.btn:active {
+		transform: scale(0.995);
 	}
 
 	div.currentpage.active {

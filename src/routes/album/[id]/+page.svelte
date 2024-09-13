@@ -126,7 +126,7 @@
 
 	const nav = getNav();
 	$effect(() => {
-		nav.pageName = `Album • ${album ? album.name : 'Album not found'}`;
+		nav.pageName = `Album • ${album ? trim(album.name, 80) : 'Album not found'}`;
 	});
 
 	$effect(() => {
@@ -161,8 +161,7 @@
 </svelte:head>
 
 {#if album}
-	<h1>{trim(album.name, 60)}</h1>
-	<section class="page-grid head ns">
+	<section class="page-grid ns">
 		<div class="info">
 			<div
 				class="cover"
@@ -184,6 +183,8 @@
 				</button>
 			</div>
 			<div class="grid-container details">
+				<div class="grid-item label">NAME</div>
+				<div class="grid-item value">{album.name}</div>
 				<div class="grid-item label">ARTIST</div>
 				<div class="grid-item value">{album.artist}</div>
 				<div class="grid-item label">GENRES</div>
@@ -295,7 +296,7 @@
 		grid-template-columns: auto 1fr;
 		gap: 10px;
 		padding: 20px;
-		max-width: 25em;
+		max-width: 100%;
 	}
 
 	.grid-item {
@@ -314,18 +315,28 @@
 	.details {
 		font-family: var(--font-mono);
 	}
-	h1 {
-		font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem);
-		font-weight: 500;
-		letter-spacing: -6%;
-	}
 
 	.page-grid {
-		padding-top: 2em;
+		padding-bottom: 4em;
+	}
+
+	/* h1 { */
+	/* 	font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem); */
+	/* 	font-weight: 500; */
+	/* 	letter-spacing: -6%; */
+	/* } */
+
+	.page-grid {
+		display: grid;
+		grid-template-columns: 1.5fr 3fr;
+		gap: 1em;
+		width: 100%;
+		margin-bottom: 10em;
 	}
 
 	.songs {
 		width: 100%;
+		margin-bottom: 10em;
 	}
 
 	.track {
@@ -338,7 +349,7 @@
 	}
 
 	.track:nth-child(odd) {
-		background-color: var(--highlight);
+		background-color: #292929;
 	}
 
 	.track .title {
@@ -391,12 +402,6 @@
 		opacity: 0.6;
 	}
 
-	.head {
-		display: flex;
-		gap: 1em;
-		width: 100%;
-	}
-
 	.cover button.play {
 		position: absolute;
 		bottom: 1em;
@@ -424,8 +429,7 @@
 
 	.cover {
 		position: relative;
-		height: 25em;
-		width: 25em;
+		width: 100%;
 		aspect-ratio: 1/1;
 		background-color: var(--clr);
 		border-radius: 10px;

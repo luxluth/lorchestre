@@ -144,15 +144,10 @@
 	}
 
 	$effect(() => {
-		console.log(filteredTracks);
-	});
-	$effect(() => {
 		setTitle(`${$_('songs').toLowerCase()} — L'orchestre`);
 		nav.pageName = $_('songs');
 	});
 </script>
-
-<h1 class="ns">{$_('songs')}</h1>
 
 <div class="container">
 	<div
@@ -247,15 +242,14 @@
 		overflow: hidden;
 	}
 	.container {
-		padding-top: 0.5vh;
 		display: grid;
 		grid-template-columns: 3fr 1.5fr;
 		gap: 5vw;
 	}
 
-	h1 {
-		font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem);
-		font-weight: 500;
-		letter-spacing: -6%;
-	}
+	/* h1 { */
+	/* 	font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem); */
+	/* 	font-weight: 500; */
+	/* 	letter-spacing: -6%; */
+	/* } */
 </style>

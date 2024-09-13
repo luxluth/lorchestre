@@ -32,6 +32,7 @@ export default class Manager {
 	ontogglepp?: Func<Promise<void>>;
 	onplay?: OneArgFunc<QueueTrack, Promise<void>>;
 	onPlayerActivate?: VoidFunction;
+	isPlayerActive?: Func<boolean>;
 	onPlayerDeactivate?: VoidFunc;
 	onstop?: VoidFunc;
 	private onseektofuncs = new Set<TimeFunction>();
@@ -130,7 +131,10 @@ export default class Manager {
 						duration: t.duration,
 						bitrate: t.bitrate,
 						id: t.id,
-						path_base64: t.path_base64
+						path_base64: t.path_base64,
+						disc: t.disc,
+						encoder: t.encoder,
+						genres: t.genres
 					} as const;
 				});
 				this.queue = this.shuffle(this.queue);
@@ -338,6 +342,8 @@ export default class Manager {
 
 	constructor() {
 		onMount(() => {
+			//@ts-ignore
+			document.__manager = this;
 			let unlistens: UnlistenFn[] = [];
 			(async () => {
 				let currentVersion = await invoke<string>('version');
