@@ -21,6 +21,7 @@
 </script>
 
 <div class="search ns" class:active={search.query.length > 0}>
+	<!-- svelte-ignore a11y_autofocus -->
 	<input
 		type="search"
 		name="search"
