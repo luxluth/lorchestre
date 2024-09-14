@@ -2,10 +2,9 @@
 	import List from 'lucide-svelte/icons/list';
 	import MicVocal from 'lucide-svelte/icons/mic-vocal';
 	import { getManager } from '$lib/manager.svelte';
-	import { getCmds } from '$lib/commands.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 
-	let cmds = getCmds();
 	let manager = getManager();
 
 	type ToActivate = 'lrc' | 'queue';
@@ -13,13 +12,9 @@
 	function activate(t: ToActivate) {
 		switch (t) {
 			case 'lrc':
-				cmds.queue = false;
-				cmds.lrc = !cmds.lrc;
 				goto('/lrc');
 				break;
 			case 'queue':
-				cmds.lrc = false;
-				cmds.queue = !cmds.queue;
 				goto('/queue');
 				break;
 		}
@@ -29,7 +24,7 @@
 <div class="__commands" class:dead={typeof manager.currentTrack === 'undefined'}>
 	<button
 		class="lyrics"
-		class:active={cmds.lrc}
+		class:active={$page.route.id == '/lrc'}
 		onclick={() => {
 			activate('lrc');
 		}}
@@ -38,7 +33,7 @@
 	</button>
 	<button
 		class="queue"
-		class:active={cmds.queue}
+		class:active={$page.route.id == '/queue'}
 		onclick={() => {
 			activate('queue');
 		}}
@@ -54,7 +49,6 @@
 		justify-content: flex-end;
 		width: fit-content;
 		gap: 0.5em;
-		padding-inline: 1em;
 	}
 
 	.__commands button {
@@ -89,10 +83,5 @@
 
 	.__commands button:hover {
 		opacity: 1;
-	}
-
-	.__commands.dead {
-		opacity: 0.5;
-		/* pointer-events: none; */
 	}
 </style>

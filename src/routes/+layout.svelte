@@ -11,7 +11,6 @@
 	import { setManager } from '$lib/manager.svelte';
 	import { setCtx } from '$lib/ctx.svelte';
 	import ContextMenu from './ContextMenu.svelte';
-	import { setCmds } from '$lib/commands.svelte';
 	import Commands from '$lib/components/Commands.svelte';
 	import { setLrc } from '$lib/lrc.svelte';
 	import { setMedia } from '$lib/media.svelte';
@@ -45,7 +44,6 @@
 	let media = setMedia(search);
 
 	setManager();
-	setCmds();
 	setCtx();
 	setLrc(conf, tm, evc);
 	setFilter();
@@ -83,7 +81,6 @@
 		<section class="__content">
 			<header class="glass">
 				<MiniPlayer />
-				<Commands />
 				<WindowControls platform={data.platform} />
 			</header>
 			<main

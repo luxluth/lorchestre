@@ -20,6 +20,7 @@
 
 	import { _ } from 'svelte-i18n';
 	import Line from './Line.svelte';
+	import { onDestroy } from 'svelte';
 
 	let manager = getManager();
 	let lrcMngr = getLrc();
@@ -45,7 +46,7 @@
 	let playing = $state<boolean>(false);
 	let percentage = $derived((manager.currentTime * 100) / manager.duration);
 
-	lrcMngr.oncuechange(() => {
+	const hookRemove = lrcMngr.oncuechange(() => {
 		const activeLines = lrcMngr.activeLines;
 		if (activeLines.length > 0) {
 			let child = lyricsParent.children[activeLines[0].id];
@@ -128,13 +129,18 @@
 		}
 	};
 
-	manager.afterplay = () => {
+	const unregister = manager.afterplay(() => {
 		if (lyricsParent) {
 			setTimeout(() => {
 				lyricsParent.scrollTo({ behavior: 'smooth', top: 0 });
 			}, 70);
 		}
-	};
+	});
+
+	onDestroy(() => {
+		hookRemove();
+		unregister();
+	});
 
 	function afterSeek() {
 		setTimeout(() => {

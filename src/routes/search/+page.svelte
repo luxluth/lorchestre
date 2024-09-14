@@ -1,12 +1,10 @@
 <script lang="ts">
 	import SearchAlbum from '$lib/components/SearchAlbum.svelte';
-	import SearchPlaylist from '$lib/components/SearchPlaylist.svelte';
 	import Track from '$lib/components/SearchTrack.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
-	import { getList } from '$lib/playlist.svelte';
 	import { getSearch } from '$lib/search.svelte';
 	import { setTitle } from '$lib/utils';
 	import { _ } from 'svelte-i18n';
@@ -14,7 +12,6 @@
 	let search = getSearch();
 	let config = getAppConfig();
 	let media = getMedia();
-	let list = getList();
 	let manager = getManager();
 	let ctx = getCtx();
 
@@ -24,11 +21,23 @@
 </script>
 
 <div class="search ns" class:active={search.query.length > 0}>
-	<h1>{$_('search')}</h1>
+	<input
+		type="search"
+		name="search"
+		placeholder={$_('search_page.no_ipt')}
+		bind:value={search.query}
+		onkeyup={() => {
+			search.search();
+		}}
+		onkeydown={(e) => {
+			if (e.key.toLowerCase() === 'enter') {
+				search.search();
+			}
+		}}
+		autofocus
+	/>
 	{#if search.query.length > 0}
 		<p class="tip">{$_('search_page.res_msg')} <b>{search.query}</b></p>
-	{:else}
-		<p class="tip">{$_('search_page.no_ipt')}</p>
 	{/if}
 
 	<div class="searchres">
@@ -75,6 +84,19 @@
 		column-gap: 1em;
 		row-gap: 1em;
 		padding-bottom: 2em;
+	}
+
+	input[type='search'] {
+		-webkit-appearance: none;
+		appearance: none;
+		padding-inline: 0.5em;
+		padding-block: 0.7em;
+		border-radius: 4px;
+		border: 0px;
+		background: var(--highlight);
+		color: var(--fg);
+		width: 100%;
+		margin-bottom: 2em;
 	}
 
 	h1 {

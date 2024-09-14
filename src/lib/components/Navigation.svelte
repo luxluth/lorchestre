@@ -4,42 +4,30 @@
 	import ListMusic from 'lucide-svelte/icons/list-music';
 	import Flame from 'lucide-svelte/icons/flame';
 	import Plus from 'lucide-svelte/icons/plus';
+	import Search from 'lucide-svelte/icons/search';
 
 	let { pathId, platform }: { pathId: string; platform: string } = $props();
 	import { _ } from 'svelte-i18n';
 	import List from 'lucide-svelte/icons/list';
-	import { goto } from '$app/navigation';
 	import { getMedia } from '$lib/media.svelte';
 	import { getList } from '$lib/playlist.svelte';
-	import { getSearch } from '$lib/search.svelte';
+	import Commands from './Commands.svelte';
 
 	let media = getMedia();
 	let list = getList();
-	let search = getSearch();
 </script>
 
 <div class="nav ns">
 	{#if platform === 'macos'}
 		<div class="dragzone" data-tauri-drag-region></div>
 	{/if}
-	<section class="search" data-tauri-drag-region>
-		<input
-			type="search"
-			name="search"
-			placeholder={$_('search')}
-			bind:value={search.query}
-			onkeyup={() => {
-				search.search();
-			}}
-			onkeydown={(e) => {
-				if (e.key.toLowerCase() === 'enter') {
-					search.search();
-					goto('/search');
-				}
-			}}
-		/>
+	<section class="quick-actions" data-tauri-drag-region>
+		<Commands />
 		<a href="/stats" class:active={pathId == '/stats'}>
-			<Flame size={'1em'} />
+			<Flame size={'20px'} />
+		</a>
+		<a href="/search" class:active={pathId == '/search'}>
+			<Search size={'20px'} />
 		</a>
 	</section>
 	<section>
@@ -88,28 +76,40 @@
 </div>
 
 <style>
-	.search {
+	.quick-actions {
 		display: flex;
 		gap: 0.5em;
 	}
 
-	.search a {
+	.quick-actions a {
 		color: var(--fg);
-		opacity: 0.7;
-		text-decoration: none;
+		width: 2.5em;
+		height: 2.5em;
 		display: flex;
+		justify-content: center;
 		align-items: center;
-		gap: 0.5em;
-		padding-inline: 0.6em;
-		padding-block: 0.6em;
-		border-radius: 6px;
-		transition: all ease-in-out 0.1s;
+		opacity: 0.8;
+		transition: opacity 0.1s ease-in-out;
+		cursor: pointer;
+		padding: 0.2em;
+		background: none;
+		border: none;
+		border-radius: 4px;
+		border: 1px solid rgba(100, 100, 100, 0);
 	}
 
-	.search a.active {
-		background: var(--highlight);
+	.quick-actions a:active {
+		transform: scale(0.95);
+	}
+
+	.quick-actions a:hover {
 		opacity: 1;
-		color: var(--fg);
+	}
+
+	.quick-actions a.active {
+		opacity: 1;
+		border: 1px solid rgba(100, 100, 100, 0.18);
+		background: rgba(100, 100, 100, 0.18);
 	}
 
 	.dragzone {
@@ -123,18 +123,6 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-end;
-	}
-
-	input[type='search'] {
-		-webkit-appearance: none;
-		appearance: none;
-		padding-inline: 0.5em;
-		padding-block: 0.7em;
-		border-radius: 4px;
-		border: 0px;
-		background: var(--highlight);
-		color: var(--fg);
-		width: 100%;
 	}
 
 	.nav {

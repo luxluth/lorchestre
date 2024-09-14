@@ -1,6 +1,6 @@
 import { getContext, onMount, setContext } from 'svelte';
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
-import { toQueueTrack } from './utils';
+import { createSequenceGenerator, toQueueTrack } from './utils';
 import { invoke } from '@tauri-apps/api/core';
 import { TauriEvent, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -34,9 +34,10 @@ export default class Manager {
 	onPlayerActivate?: VoidFunction;
 	onPlayerDeactivate?: VoidFunc;
 	onstop?: VoidFunc;
+	idNext = createSequenceGenerator();
 	private onseektofuncs = new Set<TimeFunction>();
 	private ontimeupdatefuncs = new Set<TimeFunction>();
-	private afterplayfuncs = new Set<VoidFunc>();
+	private afterplayfuncs = new Set<[number, VoidFunc]>();
 
 	activatePlayer() {
 		if (this.onPlayerActivate) {
@@ -48,8 +49,21 @@ export default class Manager {
 		this.ontimeupdatefuncs.add(f);
 	}
 
-	set afterplay(f: VoidFunc) {
-		this.afterplayfuncs.add(f);
+	afterplay(f: VoidFunc) {
+		const id = this.idNext();
+		this.afterplayfuncs.add([id, f]);
+		return () => {
+			this.#removeAfterPlayEvent(id);
+		};
+	}
+
+	#removeAfterPlayEvent(id: number) {
+		this.afterplayfuncs.forEach((pair) => {
+			const [i, _] = pair;
+			if (i === id) {
+				this.afterplayfuncs.delete(pair);
+			}
+		});
 	}
 
 	set onseekto(f: TimeFunction) {
@@ -68,7 +82,7 @@ export default class Manager {
 			// 	this.paused = false;
 			// }
 
-			this.afterplayfuncs.forEach((func) => {
+			this.afterplayfuncs.forEach(([_, func]) => {
 				func();
 			});
 		}

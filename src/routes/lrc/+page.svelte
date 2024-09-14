@@ -4,42 +4,41 @@
 
 	import { _ } from 'svelte-i18n';
 	import { getManager } from '$lib/manager.svelte';
-	import { getCmds } from '$lib/commands.svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	let lrcParent: HTMLDivElement;
 
-	let cmds = getCmds();
 	let manager = getManager();
 	let lrcMngr = getLrc();
 
-	const id = lrcMngr.oncuechange(() => {
+	const hookRemove = lrcMngr.oncuechange(() => {
 		const activeLines = lrcMngr.activeLines;
 		if (activeLines.length > 0) {
 			let child = lrcParent.children[activeLines[0].id];
-			if (isElementVisible(child as HTMLElement) || !cmds.lrc) {
+			if (isElementVisible(child as HTMLElement)) {
 				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
 		}
 	});
 
-	onDestroy(() => {
-		lrcMngr.removeHook(id);
-	});
-
-	manager.afterplay = () => {
+	const unregister = manager.afterplay(() => {
 		if (lrcParent) {
 			setTimeout(() => {
 				lrcParent.scrollTo({ behavior: 'smooth', top: 0 });
 			}, 70);
 		}
-	};
+	});
+
+	onDestroy(() => {
+		unregister();
+		hookRemove();
+	});
 
 	onMount(() => {
 		const activeLines = lrcMngr.activeLines;
 		if (activeLines.length > 0) {
 			let child = lrcParent.children[activeLines[0].id];
-			if (isElementVisible(child as HTMLElement) || !cmds.lrc) {
+			if (isElementVisible(child as HTMLElement)) {
 				child.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
 		}

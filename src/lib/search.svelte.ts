@@ -25,7 +25,11 @@ export default class SearchSupervisor {
 	}
 	search() {
 		if (this.socket) {
-			this.socket.emit('search', this.query);
+			if (this.query.length > 0) {
+				this.socket.emit('search', this.query);
+			} else {
+				this.results = { albums: [], tracks: [] };
+			}
 		}
 	}
 }

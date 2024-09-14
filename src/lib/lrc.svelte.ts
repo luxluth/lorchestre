@@ -202,13 +202,15 @@ export default class LrcManager {
 		return this.currentActiveLines;
 	}
 
-	oncuechange(fn: HookFunc): number {
+	oncuechange(fn: HookFunc) {
 		const hookId = this.idNext();
 		this.chs.add([hookId, fn]);
-		return hookId;
+		return () => {
+			this.#removeHook(hookId);
+		};
 	}
 
-	removeHook(id: number) {
+	#removeHook(id: number) {
 		this.chs.forEach((pair) => {
 			const [i, _] = pair;
 			if (i === id) {
