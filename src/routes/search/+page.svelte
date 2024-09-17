@@ -99,11 +99,11 @@
 		width: 100%;
 		margin-bottom: 2em;
 	}
-
-	h1 {
-		font-size: clamp(2.5rem, 1.8333rem + 5.3333vw, 7.5rem);
-		font-family: var(--font-fantasy);
-	}
+	/**/
+	/* h1 { */
+	/* 	font-size: clamp(2.5rem, 1.8333rem + 5.3333vw, 7.5rem); */
+	/* 	font-family: var(--font-fantasy); */
+	/* } */
 
 	.tip {
 		font-style: italic;

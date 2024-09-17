@@ -28,6 +28,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		background: var(--bg);
 	}
 
 	.indicator {

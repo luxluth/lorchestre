@@ -16,6 +16,7 @@
 	import { getMedia } from '$lib/media.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { getFilter } from '$lib/filterq.svelte';
+	import VirtualScroll from 'svelte-virtual-scroll-list';
 
 	let manager = getManager();
 	let media = getMedia();
@@ -110,97 +111,118 @@
 	];
 
 	let searchInput = $state('');
-	let filteredTracks = $derived(applyFilters(media.getSongs()));
+	let filteredTracks = $derived(uniquefied(applyFilters(media.getSongs())));
+
 	$effect(() => {
 		setTitle(`${$_('songs').toLowerCase()} — L'orchestre`);
 	});
+
+	function uniquefied(xs: Track[]): (Track & { uniqueKey: number })[] {
+		let tracks: (Track & { uniqueKey: number })[] = [];
+		let i = 0;
+
+		for (const t of xs) {
+			tracks.push({
+				...t,
+				uniqueKey: i++
+			});
+		}
+
+		return tracks;
+	}
 </script>
 
-<h1 class="__page_title ns">{$_('songs')}</h1>
+{#snippet head()}
+	<div class="head">
+		<h1 class="__page_title ns">{$_('songs')}</h1>
 
-<div class="quick-actions">
-	<button
-		onclick={async () => {
-			await playAll();
-		}}
-	>
-		<div class="icon">
-			<Play fill={'var(--fg)'} size={'1em'} />
+		<div class="quick-actions">
+			<button
+				onclick={async () => {
+					await playAll();
+				}}
+			>
+				<div class="icon">
+					<Play fill={'var(--fg)'} size={'1em'} />
+				</div>
+				{$_('songs_page.listen')}
+			</button>
+			<button
+				onclick={async () => {
+					await playAllShuffle();
+				}}
+			>
+				<div class="icon">
+					<Shuffle size={'1em'} />
+				</div>
+				{$_('songs_page.shuffle')}
+			</button>
 		</div>
-		{$_('songs_page.listen')}
-	</button>
-	<button
-		onclick={async () => {
-			await playAllShuffle();
-		}}
-	>
-		<div class="icon">
-			<Shuffle size={'1em'} />
-		</div>
-		{$_('songs_page.shuffle')}
-	</button>
-</div>
 
-<div class="filters">
-	<div class="filter">
-		<Select.Root
-			items={filterTypes}
-			selected={filterTypes.find((l) => l.value === filterquery.type)}
-			onSelectedChange={(e) => {
-				if (e) {
-					filterquery.type = e.value;
-				}
-			}}
-		>
-			<Select.Trigger class="select-trigger" aria-label="Choisissez un type de filtre">
-				<Filter class="icon" />
-				<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
-			</Select.Trigger>
-			<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-				{#each filterTypes as filter}
-					<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-						{$_(filter.label)}
-						<Select.ItemIndicator class="ml-auto" asChild={false}>
-							<Check />
-						</Select.ItemIndicator>
-					</Select.Item>
-				{/each}
-			</Select.Content>
-			<Select.Input name="favoriteFruit" />
-		</Select.Root>
+		<div class="filters">
+			<div class="filter">
+				<Select.Root
+					items={filterTypes}
+					selected={filterTypes.find((l) => l.value === filterquery.type)}
+					onSelectedChange={(e) => {
+						if (e) {
+							filterquery.type = e.value;
+						}
+					}}
+				>
+					<Select.Trigger class="select-trigger" aria-label="Choisissez un type de filtre">
+						<Filter class="icon" />
+						<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
+					</Select.Trigger>
+					<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
+						{#each filterTypes as filter}
+							<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+								{$_(filter.label)}
+								<Select.ItemIndicator class="ml-auto" asChild={false}>
+									<Check />
+								</Select.ItemIndicator>
+							</Select.Item>
+						{/each}
+					</Select.Content>
+					<Select.Input name="favoriteFruit" />
+				</Select.Root>
+			</div>
+			<div class="filter">
+				<Select.Root
+					items={filterOrders}
+					selected={filterOrders.find((l) => l.value === filterquery.order)}
+					onSelectedChange={(e) => {
+						if (e) {
+							filterquery.order = e.value;
+						}
+					}}
+				>
+					<Select.Trigger class="select-trigger" aria-label="Choisissez l'ordre du tri">
+						<ArrowDown10 class="icon" />
+						<div class="text">{$_('songs_page.filter.sort_order')}</div>
+					</Select.Trigger>
+					<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
+						{#each filterOrders as filter}
+							<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+								{$_(filter.label)}
+								<Select.ItemIndicator class="ml-auto" asChild={false}>
+									<Check />
+								</Select.ItemIndicator>
+							</Select.Item>
+						{/each}
+					</Select.Content>
+					<Select.Input name="favoriteFruit" />
+				</Select.Root>
+			</div>
+			<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
+		</div>
 	</div>
-	<div class="filter">
-		<Select.Root
-			items={filterOrders}
-			selected={filterOrders.find((l) => l.value === filterquery.order)}
-			onSelectedChange={(e) => {
-				if (e) {
-					filterquery.order = e.value;
-				}
-			}}
-		>
-			<Select.Trigger class="select-trigger" aria-label="Choisissez l'ordre du tri">
-				<ArrowDown10 class="icon" />
-				<div class="text">{$_('songs_page.filter.sort_order')}</div>
-			</Select.Trigger>
-			<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-				{#each filterOrders as filter}
-					<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-						{$_(filter.label)}
-						<Select.ItemIndicator class="ml-auto" asChild={false}>
-							<Check />
-						</Select.ItemIndicator>
-					</Select.Item>
-				{/each}
-			</Select.Content>
-			<Select.Input name="favoriteFruit" />
-		</Select.Root>
-	</div>
-	<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
-</div>
+{/snippet}
+
+{@render head()}
 
 <div
-	class="songlist"
+	class="song"
 	style="--tracklist-index-column-width: {(media.getSongsCount().toString().length * 16) / 2}px"
 >
 	{#each filteredTracks as song, i}
@@ -209,6 +231,10 @@
 </div>
 
 <style>
+	.head {
+		padding-bottom: 2em;
+	}
+
 	.filters {
 		padding-top: 2em;
 		display: flex;
@@ -320,8 +346,7 @@
 		padding-bottom: 2em;
 	}
 
-	.songlist {
+	.song {
 		width: 100%;
-		padding-top: 2em;
 	}
 </style>

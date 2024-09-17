@@ -1,6 +1,6 @@
 use super::{
     config::{self, Dir},
-    global::{self, Color, Media, Track},
+    global::{self, Color, Media, SearchResults, Track},
     m3u8::{PlaylistAction, PlaylistData, PlaylistMetadata},
     utils,
 };
@@ -62,6 +62,18 @@ async fn on_connect(socket: SocketRef) {
             let res = m.search(dirs.cache, &q);
             let _ = sock.emit("searchresponse", res);
         },
+    );
+
+    socket.on(
+        "localsearch",
+        |sock: SocketRef,
+         Data::<String>(q),
+         data: socketioxide::extract::State<(Arc<RwLock<Media>>, Dir)>| async move {
+            let (media, dirs) = data.0;
+            let m = media.read().await;
+            let res = m.search(dirs.cache, &q);
+            let _ = sock.emit("localsr", res);
+        },
     )
 }
 
@@ -107,6 +119,7 @@ pub async fn start(
         .route("/", get(ping))
         // TODO: No cache
         .route("/media", get(media))
+        .route("/localsearch", get(search))
         .route("/audio", get(audio))
         .route("/lyrics", get(lyrics))
         .route("/album/:id", get(album))
@@ -233,6 +246,19 @@ struct Lrc {
 #[derive(serde::Serialize)]
 struct LyricsResponse {
     lyrics: Vec<Lrc>,
+}
+
+#[derive(serde::Deserialize)]
+struct SearchTerm {
+    term: String,
+}
+
+async fn search(State(state): State<AppData>, Query(q): Query<SearchTerm>) -> Json<SearchResults> {
+    let media = state.media.read().await;
+    let dirs = state.dirs.clone();
+    let res = media.search(dirs.cache, &q.term);
+
+    Json::from(res)
 }
 
 async fn search_lyrics(

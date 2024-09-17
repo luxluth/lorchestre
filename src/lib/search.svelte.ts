@@ -9,6 +9,10 @@ export default class SearchSupervisor {
 		albums: [],
 		tracks: []
 	});
+	local_results: SearchResults = $state({
+		albums: [],
+		tracks: []
+	});
 	initialized = $state(false);
 
 	isEmpty() {
@@ -20,15 +24,30 @@ export default class SearchSupervisor {
 			this.results = res;
 		});
 
+		socket.on('localsr', (res: SearchResults) => {
+			this.local_results = res;
+		});
+
 		this.socket = socket;
 		this.initialized = true;
 	}
+
 	search() {
 		if (this.socket) {
 			if (this.query.length > 0) {
 				this.socket.emit('search', this.query);
 			} else {
 				this.results = { albums: [], tracks: [] };
+			}
+		}
+	}
+
+	localSearch(term: string) {
+		if (this.socket) {
+			if (term.length > 0) {
+				this.socket.emit('localsearch', term);
+			} else {
+				this.local_results = { albums: [], tracks: [] };
 			}
 		}
 	}
