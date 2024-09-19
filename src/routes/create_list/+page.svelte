@@ -1,68 +1,75 @@
 <script lang="ts">
-	import { getMedia } from '$lib/media.svelte';
 	import ImagePlus from 'lucide-svelte/icons/image-plus';
 	import { open } from '@tauri-apps/plugin-dialog';
 	import { getAppConfig } from '$lib/config.svelte';
 	import type { Color } from '$lib/type';
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+	import Plus from 'lucide-svelte/icons/plus';
+	import { getListCreator } from '$lib/listCreate.svelte';
+	import { getSearch } from '$lib/search.svelte';
+	import { _ } from 'svelte-i18n';
+	import { getCoverUri } from '$lib/utils';
+	import Song from '$lib/components/Song.svelte';
+	import { getManager } from '$lib/manager.svelte';
+	import { getCtx } from '$lib/ctx.svelte';
+	import { getMedia } from '$lib/media.svelte';
 
-	let playlistData: {
-		metadata: Record<string, string>;
-		tracks: string[];
-	} = $state({
-		metadata: {},
-		tracks: []
-	});
-
+	const lc = getListCreator();
+	const search = getSearch();
+	let searchQuery = $state('');
+	const manager = getManager();
+	const ctx = getCtx();
 	const media = getMedia();
+
 	const config = getAppConfig();
-	let Name = $state(`Playlist N°${media.playlists.length + 1}`);
-	let Description = $state('');
-	let ImageData = $state('');
 	let color: Color | null = $state(null);
 	let loading = $state(false);
 
 	async function choose_image_cover() {
 		loading = true;
-		ImageData = '';
-		await open({
-			multiple: false,
-			directory: false,
-			filters: [
-				{
-					name: 'Choose the playlist cover',
-					extensions: ['png']
-				}
-			]
-		})
-			.then(async (file) => {
-				if (file) {
-					if (file.path) {
-						const endpoint = config.getDaemonEndpoint();
-						const response = await fetch(`http://${endpoint}/get_image`, {
-							body: JSON.stringify({
-								path: file?.path
-							}),
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							}
-						});
-
-						if (response.ok) {
-							const res = await response.json();
-							color = res.color as Color;
-							ImageData = `data:image/png;base64,${res.data}`;
-						}
+		lc.ImageData = '';
+		try {
+			let file = await open({
+				multiple: false,
+				directory: false,
+				filters: [
+					// TODO: localize here
+					{
+						name: 'Choose the playlist cover',
+						extensions: ['png']
 					}
-				}
-			})
-			.catch((e) => {
-				console.log(e);
-			})
-			.finally(() => {
-				loading = false;
+				]
 			});
+
+			if (file) {
+				lc.xCoverPath = file;
+				const endpoint = config.getDaemonEndpoint();
+				const response = await fetch(`http://${endpoint}/get_image`, {
+					body: JSON.stringify({
+						path: file
+					}),
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+
+				if (response.ok) {
+					const res = await response.json();
+					color = res.color as Color;
+					lc.ImageData = `data:image/png;base64,${res.data}`;
+				}
+			}
+		} catch (e) {
+			console.error(e);
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function play(id: number) {
+		const track = media.getTrack(lc.addedTracks[id]);
+		if (track) await manager.play(track);
 	}
 </script>
 
@@ -71,7 +78,7 @@
 	<div class="top">
 		<div
 			class="add_cover"
-			style={ImageData.length > 0 ? `background-image: url("${ImageData}")` : ''}
+			style={lc.ImageData.length > 0 ? `background-image: url("${lc.ImageData}")` : ''}
 			onclick={async () => {
 				await choose_image_cover();
 			}}
@@ -83,7 +90,7 @@
 			role="button"
 			tabindex="0"
 		>
-			{#if ImageData.length <= 0}
+			{#if lc.ImageData.length <= 0}
 				<div class="icon" class:loading>
 					{#if loading}
 						<LoaderCircle size="1.5em" />
@@ -94,13 +101,148 @@
 			{/if}
 		</div>
 		<div class="text_inputs">
-			<input type="text" class="list_name" bind:value={Name} />
-			<input type="text" class="desc" placeholder="playlist description" bind:value={Description} />
+			<input type="text" class="list_name" bind:value={lc.Name} />
+			<input
+				type="text"
+				class="desc"
+				placeholder="playlist description"
+				bind:value={lc.Description}
+			/>
 		</div>
 	</div>
+
+	<div class="selectedTracks">
+		{#each lc.addedTracks as track_path, i}
+			{@const song = media.getTrack(track_path)}
+			{#if song}
+				<Song
+					{song}
+					{i}
+					{ctx}
+					{manager}
+					searchq={''}
+					onPlay={play}
+					state="remove"
+					onRemove={(path) => {
+						lc.addedTracks = lc.addedTracks.filter((p) => p != path);
+					}}
+				/>
+			{/if}
+		{/each}
+	</div>
+
+	<div class="search">
+		<input
+			type="search"
+			name="search"
+			placeholder={$_('search_page.no_ipt')}
+			bind:value={searchQuery}
+			onkeyup={() => {
+				search.localSearch(searchQuery);
+			}}
+			onkeydown={(e) => {
+				if (e.key.toLowerCase() === 'enter') {
+					search.localSearch(searchQuery);
+				}
+			}}
+		/>
+	</div>
+	{#if search.local_results.tracks.length > 0}
+		<div class="search_response">
+			{#each search.local_results.tracks as track}
+				{#if !lc.addedTracks.includes(track.file_path)}
+					<div
+						class="track"
+						ondblclick={() => {
+							lc.addedTracks.push(track.file_path);
+						}}
+						onkeydown={(e) => {
+							if (e.key.toLowerCase() == 'enter') {
+								lc.addedTracks.push(track.file_path);
+							}
+						}}
+						role="button"
+						tabindex="0"
+					>
+						<div
+							class="cover"
+							style="background-image: url({getCoverUri(track.album_id, track.cover_ext, config)});"
+						></div>
+						<div class="infos">
+							<div class="title">{track.title}</div>
+							<div class="artist">{track.artists[0]}</div>
+						</div>
+						<button
+							tabindex="-1"
+							onclick={() => {
+								lc.addedTracks.push(track.file_path);
+							}}><Plus color={'var(--fg)'} /></button
+						>
+					</div>
+				{/if}
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style>
+	.selectedTracks {
+		padding-top: 2em;
+	}
+
+	input[type='search'] {
+		-webkit-appearance: none;
+		appearance: none;
+		padding-inline: 0.5em;
+		padding-block: 0.7em;
+		border-radius: 4px;
+		border: 0px;
+		background: var(--highlight);
+		color: var(--fg);
+		width: 100%;
+		margin-block: 2em;
+	}
+
+	.search_response {
+		width: 100%;
+	}
+
+	.track {
+		display: flex;
+		gap: 1em;
+		padding: 0.5em;
+		align-items: center;
+		border-radius: 8px;
+		padding-right: 1.5em;
+		margin-bottom: 1em;
+	}
+
+	.track:hover {
+		background: rgba(100, 100, 100, 0.18);
+	}
+
+	.track .cover {
+		min-width: 3em;
+		aspect-ratio: 1/1;
+		background-size: cover;
+		border-radius: 4px;
+	}
+
+	.track .infos {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.track button {
+		cursor: pointer;
+		background: none;
+		border: none;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
 	.add_cover {
 		width: 15vw;
 		height: 15vw;

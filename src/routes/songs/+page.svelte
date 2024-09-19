@@ -226,7 +226,7 @@
 	style="--tracklist-index-column-width: {(media.getSongsCount().toString().length * 16) / 2}px"
 >
 	{#each filteredTracks as song, i}
-		<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
+		<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} state="normal" />
 	{/each}
 </div>
 

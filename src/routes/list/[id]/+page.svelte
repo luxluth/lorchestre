@@ -281,7 +281,15 @@
 		>
 			{#if mode === 'normal'}
 				{#each filteredTracks as song, i}
-					<Song {song} {i} {ctx} {manager} bind:searchq={searchInput} onPlay={play} />
+					<Song
+						{song}
+						{i}
+						{ctx}
+						{manager}
+						bind:searchq={searchInput}
+						onPlay={play}
+						state="normal"
+					/>
 				{/each}
 			{:else if mode === 'edit'}
 				{#each tracks as song}

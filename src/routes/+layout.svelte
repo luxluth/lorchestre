@@ -28,6 +28,7 @@
 	import WindowControls from '$lib/components/WindowControls.svelte';
 	import StartingScreen from './StartingScreen.svelte';
 	import { setPageScroll } from '$lib/pageScroll.svelte';
+	import { setListCreator } from '$lib/listCreate.svelte';
 
 	// import { invoke } from '@tauri-apps/api/core';
 
@@ -43,6 +44,7 @@
 	let search = setSearch();
 	let media = setMedia(search);
 
+	setListCreator(media);
 	setManager();
 	setCtx();
 	setLrc(conf, tm, evc);

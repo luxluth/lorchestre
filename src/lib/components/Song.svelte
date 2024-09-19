@@ -14,6 +14,7 @@
 	import ListEnd from 'lucide-svelte/icons/list-end';
 	import ListStart from 'lucide-svelte/icons/list-start';
 	import Play from 'lucide-svelte/icons/play';
+	import Trash_2 from 'lucide-svelte/icons/trash-2';
 	import { _ } from 'svelte-i18n';
 
 	function trim(text: string, len = 20) {
@@ -64,20 +65,26 @@
 		ctx.visible = true;
 	}
 
+	type State = 'remove' | 'normal';
+
 	let {
 		song,
 		i,
 		ctx,
 		manager,
+		state = 'normal',
 		searchq = $bindable(),
-		onPlay
+		onPlay,
+		onRemove = (_) => {}
 	}: {
 		song: Track;
 		i: number;
 		ctx: Ctx;
 		manager: Manager;
 		searchq: string;
+		state?: State;
 		onPlay: (i: number) => Promise<void>;
+		onRemove?: (path: string) => void;
 	} = $props();
 
 	function replaceTextWithMarker(text: string) {
@@ -134,10 +141,37 @@
 	<div class="album" aria-colindex="4" role="gridcell">
 		<a href="/album/{song.album_id}">{@html replaceTextWithMarker(trim(song.album))}</a>
 	</div>
-	<div class="duration" aria-colindex="5" role="gridcell">{formatTime(song.duration)}</div>
+	{#if state == 'remove'}
+		<div class="remove" aria-colindex="5" role="gridcell">
+			<button
+				onclick={() => {
+					onRemove(song.file_path);
+				}}><Trash_2 /></button
+			>
+		</div>
+	{:else}
+		<div class="duration" aria-colindex="5" role="gridcell">{formatTime(song.duration)}</div>
+	{/if}
 </div>
 
 <style>
+	.remove {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.remove button {
+		cursor: pointer;
+		background: none;
+		border: none;
+		opacity: 0.5;
+		transition: opacity ease-in-out 0.15s;
+	}
+
+	.remove button:hover {
+		opacity: 1;
+	}
+
 	:global(mark) {
 		background-color: #1e90ff;
 		color: var(--bg);
