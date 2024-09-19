@@ -1,7 +1,7 @@
 use super::{
     config::{self, Dir},
     global::{self, Color, Media, SearchResults, Track},
-    m3u8::{PlaylistAction, PlaylistData, PlaylistMetadata},
+    m3u8::{PlaylistAction, PlaylistData},
     utils,
 };
 use axum::{
@@ -23,7 +23,7 @@ use socketioxide::{
     extract::{Data, SocketRef},
     SocketIo,
 };
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use std::{
     io::{BufWriter, Cursor, Read},
     path::PathBuf,
@@ -546,12 +546,17 @@ async fn list_add_meta(
 
 #[derive(serde::Deserialize)]
 struct CreateList {
-    meta: PlaylistMetadata,
+    meta: Vec<(String, String)>,
     tracks: Vec<String>,
 }
 
 async fn list_create(State(state): State<AppData>, Json(payload): Json<CreateList>) -> Response {
-    match PlaylistData::create(&state.dirs.audio, payload.meta, payload.tracks) {
+    let mut metamap = HashMap::new();
+    for (k, v) in payload.meta {
+        metamap.insert(k, v);
+    }
+
+    match PlaylistData::create(&state.dirs.audio, metamap, payload.tracks) {
         Ok(_) => {
             let mut response = "Unable to create a new palylist".into_response();
             *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
