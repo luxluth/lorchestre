@@ -15,7 +15,9 @@
     "core:menu:default",
     "core:tray:default",
     "shell:allow-open",
-    "dialog:default"
+    "dialog:default",
+    "process:allow-exit",
+    "process:allow-restart"
   ],
   "local": true
 }

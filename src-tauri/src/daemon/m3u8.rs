@@ -64,7 +64,7 @@ impl PlaylistData {
         audio_dir: P,
         metadata: PlaylistMetadata,
         tracks: Vec<String>,
-    ) -> io::Result<()>
+    ) -> io::Result<String>
     where
         P: AsRef<Path>,
     {
@@ -83,9 +83,11 @@ impl PlaylistData {
             path: format!("{}", list_path.display()),
         };
 
+        let base64_path = list.path_base64.clone();
+
         list.save(list_path)?;
 
-        Ok(())
+        Ok(base64_path)
     }
 
     pub fn delete(&self) -> io::Result<()> {

@@ -148,6 +148,26 @@ fn set_blur(app: tauri::AppHandle, state: bool) -> Config {
 }
 
 #[tauri::command]
+fn set_host(app: tauri::AppHandle, value: String) -> Config {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let mut config = Config::get(&path);
+    lorconf::update_conf!(config, network, host, Some(value));
+    Config::dump(&path, config.clone());
+
+    config
+}
+
+#[tauri::command]
+fn set_port(app: tauri::AppHandle, value: u32) -> Config {
+    let path = app.path().app_config_dir().unwrap().join("config.toml");
+    let mut config = Config::get(&path);
+    lorconf::update_conf!(config, network, port, Some(value));
+    Config::dump(&path, config.clone());
+
+    config
+}
+
+#[tauri::command]
 fn app_info(app: tauri::AppHandle) -> AppInfoExternal {
     let path = app.path().app_cache_dir().unwrap().join("__runned");
     AppInfoExternal {
@@ -186,7 +206,13 @@ struct AppInfoExternal {
 #[tauri::command]
 fn close(app: tauri::AppHandle) {
     let _ = app.save_window_state(StateFlags::all());
-    std::process::exit(0x00);
+    app.exit(0);
+}
+
+#[tauri::command]
+fn restart(app: tauri::AppHandle) {
+    let _ = app.save_window_state(StateFlags::all());
+    app.restart();
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -195,15 +221,15 @@ struct SingleInstanceArgs {
     cwd: String,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_decorum::init())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+        .plugin(tauri_plugin_single_instance::init(move |app, argv, cwd| {
             error!(
                 "An instance of l'orchestre is already running :: {}, {argv:?}, {cwd}",
                 app.package_info().name
@@ -217,6 +243,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_locale,
             set_theme,
             set_blur,
+            set_host,
+            set_port,
             config,
             default_config,
             daemon_endpoint,
@@ -227,6 +255,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             start_daemon,
             save_lyrics,
             close,
+            restart,
             cache_media,
             #[cfg(target_os = "linux")]
             desktop,
@@ -266,5 +295,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    start_app().await?;
     Ok(())
 }

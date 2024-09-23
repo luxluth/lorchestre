@@ -44,7 +44,7 @@
 	let search = setSearch();
 	let media = setMedia(search);
 
-	setListCreator(media);
+	setListCreator(media, conf, tm);
 	setManager();
 	setCtx();
 	setLrc(conf, tm, evc);

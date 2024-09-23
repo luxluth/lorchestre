@@ -550,6 +550,11 @@ struct CreateList {
     tracks: Vec<String>,
 }
 
+#[derive(serde::Serialize)]
+struct ResponsePath {
+    path: String,
+}
+
 async fn list_create(State(state): State<AppData>, Json(payload): Json<CreateList>) -> Response {
     let mut metamap = HashMap::new();
     for (k, v) in payload.meta {
@@ -557,12 +562,20 @@ async fn list_create(State(state): State<AppData>, Json(payload): Json<CreateLis
     }
 
     match PlaylistData::create(&state.dirs.audio, metamap, payload.tracks) {
-        Ok(_) => {
-            let mut response = "Unable to create a new palylist".into_response();
+        Err(e) => {
+            let error = format!("{e}");
+            let mut response = error.into_response();
             *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
             response
         }
-        Err(_) => "ok".into_response(),
+        Ok(path) => {
+            let m = utils::cache_resolve(&state.dirs.cache, None).await;
+            let mut binding = state.media.write().await;
+            binding.swap_with(m.clone());
+            let _ = state.io.emit("newmedia", m);
+
+            return Json(ResponsePath { path }).into_response();
+        }
     }
 }
 

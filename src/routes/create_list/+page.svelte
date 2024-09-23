@@ -73,7 +73,11 @@
 	}
 </script>
 
-<div class="page ns" style={color ? `--clr: rgb(${color.r}, ${color.g}, ${color.b})` : ''}>
+<div
+	class="page ns"
+	style={color ? `--clr: rgb(${color.r}, ${color.g}, ${color.b})` : ''}
+	class:creating={lc.creating}
+>
 	<h1>Create a new playlist</h1>
 	<div class="top">
 		<div
@@ -108,6 +112,16 @@
 				placeholder="playlist description"
 				bind:value={lc.Description}
 			/>
+			<!-- TODO: localize -->
+			<div class="submit">
+				<button
+					class="btn"
+					class:inactive={lc.addedTracks.length <= 0}
+					onclick={async () => {
+						await lc.create();
+					}}>Create</button
+				>
+			</div>
 		</div>
 	</div>
 
@@ -186,6 +200,16 @@
 </div>
 
 <style>
+	.submit {
+		display: flex;
+		justify-content: flex-end;
+		padding-top: 1em;
+	}
+
+	.creating {
+		pointer-events: none;
+		opacity: 0.5;
+	}
 	.selectedTracks {
 		padding-top: 2em;
 	}
