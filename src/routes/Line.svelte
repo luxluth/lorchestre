@@ -64,6 +64,9 @@
 </div>
 
 <style>
+	* {
+		--inactive-text-color: rgba(var(--rd), var(--gd), var(--bd), 0.2);
+	}
 	.line[data-alignment='1'] {
 		text-align: right;
 	}
@@ -123,7 +126,7 @@
 	}
 
 	.instrumental .dot {
-		background-color: var(--text);
+		background-color: var(--text, --fg);
 		opacity: 1;
 		height: 0.5em;
 		width: 0.5em;
@@ -142,7 +145,6 @@
 
 	.line:not(.blurActive):hover {
 		opacity: 0.5;
-		background: rgba(var(--rd), var(--gd), var(--bd), 0.2);
 	}
 
 	.line.active:hover {

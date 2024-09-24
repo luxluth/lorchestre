@@ -5,6 +5,7 @@
 	import { _ } from 'svelte-i18n';
 	import { getManager } from '$lib/manager.svelte';
 	import { onDestroy, onMount } from 'svelte';
+	import Line from '../Line.svelte';
 
 	let lrcParent: HTMLDivElement;
 
@@ -49,22 +50,8 @@
 	<div class="lines" bind:this={lrcParent}>
 		{#if manager.currentTrack}
 			{#if lrcMngr.lines.length > 0}
-				{#each lrcMngr.lines as { text, endTime, startTime, id }}
-					<div
-						role="button"
-						tabindex="0"
-						onkeydown={() => {}}
-						onclick={() => {
-							manager.currentTime = startTime;
-						}}
-						class="line ns"
-						id={id.toString()}
-						data-star={startTime}
-						data-end={endTime}
-						class:active={lrcMngr.activeLines.find((i) => i.id === id)}
-					>
-						{text}
-					</div>
+				{#each lrcMngr.lines as line, i}
+					<Line {line} {lrcMngr} {manager} idx={i} blurActive={false} />
 				{/each}
 			{:else}
 				{$_('cmds.lrc.empty')}
@@ -79,34 +66,5 @@
 	.__lrc {
 		margin-top: 5em;
 		padding: 1em;
-	}
-
-	.lines {
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-	}
-
-	.line {
-		opacity: 0.3;
-		font-weight: bold;
-		font-size: 2rem;
-		padding: 0.2em;
-		border-radius: 4px;
-		transition: all 0.2s ease-in-out;
-	}
-
-	.line:active {
-		transform: scale(0.98);
-	}
-
-	.line:hover {
-		opacity: 0.5;
-		background-color: rgba(100, 100, 100, 0.18);
-		cursor: pointer;
-	}
-
-	.line.active {
-		opacity: 1;
 	}
 </style>
