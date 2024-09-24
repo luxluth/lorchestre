@@ -72,11 +72,11 @@
 	}
 
 	.line:first-child {
-		margin-top: 50%;
+		margin-top: var(--top, 50%);
 	}
 
 	.line:last-child {
-		margin-bottom: 50%;
+		margin-bottom: var(--bottom, 50%);
 	}
 
 	@keyframes activeLineAnimation {

@@ -46,7 +46,7 @@
 	});
 </script>
 
-<div class="__lrc">
+<div class="__lrc" style="--top: 5%; --bottom: 5%;">
 	<div class="lines" bind:this={lrcParent}>
 		{#if manager.currentTrack}
 			{#if lrcMngr.lines.length > 0}
