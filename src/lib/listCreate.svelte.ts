@@ -5,7 +5,7 @@ import type ToastManager from './toast.svelte';
 import { ToastKind } from './type';
 import { goto } from '$app/navigation';
 
-type CreateListPayload = {
+export type ListPayload = {
 	meta: Array<[string, string]>;
 	tracks: string[];
 };
@@ -34,7 +34,7 @@ export default class ListCreate {
 		if (this.addedTracks.length > 0 && this.Name.length > 0) {
 			// TODO: localize
 			let loadingToastId = this.tm.new(ToastKind.Loading, 'Creating playlist `' + this.Name + '`');
-			const payload: CreateListPayload = {
+			const payload: ListPayload = {
 				meta: [],
 				tracks: []
 			};
@@ -65,7 +65,7 @@ export default class ListCreate {
 
 						// TODO: localize
 						this.tm.new(ToastKind.Simple, 'Playlist created with success');
-						goto(`/list/${p.path}`);
+						await goto(`/list/${p.path}`);
 					} else {
 						// TODO: localize
 						this.tm.new(

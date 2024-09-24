@@ -1,30 +1,46 @@
 <script lang="ts">
-	import { FilterOrder, FilterType, PlayingMode, type Playlist, type Track } from '$lib/type';
+	import {
+		FilterOrder,
+		FilterType,
+		PlayingMode,
+		ToastKind,
+		type Playlist,
+		type Track
+	} from '$lib/type';
 	import { _ } from 'svelte-i18n';
 	import Play from 'lucide-svelte/icons/play';
 	import Shuffle from 'lucide-svelte/icons/shuffle';
 	import { Select } from 'bits-ui';
 	import Filter from 'lucide-svelte/icons/filter';
 	import Check from 'lucide-svelte/icons/check';
-	import Plus from 'lucide-svelte/icons/list-plus';
+	import ListPlus from 'lucide-svelte/icons/list-plus';
+	import Plus from 'lucide-svelte/icons/plus';
 	import Bolt from 'lucide-svelte/icons/bolt';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
-	import { setTitle, sortTracksByDate } from '$lib/utils';
+	import { getCoverUri, setTitle, sortTracksByDate } from '$lib/utils';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
 	import { getList } from '$lib/playlist.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { page } from '$app/stores';
 	import ShallowSong from '$lib/components/ShallowSong.svelte';
+	import { getSearch } from '$lib/search.svelte';
+	import { getAppConfig } from '$lib/config.svelte';
+	import type { ListPayload } from '$lib/listCreate.svelte';
+	import { getToastManager } from '$lib/toast.svelte';
+	import { goto } from '$app/navigation';
 
 	type DisplayMode = 'normal' | 'edit';
 
-	let list = getList();
-	let manager = getManager();
-	let ctx = getCtx();
-	let media = getMedia();
+	const list = getList();
+	const manager = getManager();
+	const ctx = getCtx();
+	const media = getMedia();
+	const search = getSearch();
+	const config = getAppConfig();
+	const tm = getToastManager();
 	let filterquery = list.filters;
 	let mode: DisplayMode = $state('normal');
 
@@ -35,15 +51,17 @@
 		list.activeList = playlistData?.path_base64 ?? null;
 	});
 
-	let tracks = $derived(
-		playlistData
+	let tracks: Track[] = $state([]);
+
+	$effect(() => {
+		tracks = playlistData
 			? playlistData.tracks
 					.map((track) => {
 						return media.getTrack(track);
 					})
 					.filter((f) => typeof f != 'undefined')
-			: []
-	);
+			: [];
+	});
 
 	async function playAll() {
 		let songs = [...applyFilters(tracks)];
@@ -154,14 +172,80 @@
 		mode = 'normal';
 		selections = [];
 	});
+
+	/// /playlist/update/:path
+	async function saveChanges() {
+		const endpoint = config.getDaemonEndpoint();
+		let req_url = `http://${endpoint}/playlist/update/${playlistData?.path_base64}`;
+		if (listName.length > 0) {
+			updateting = true;
+			// TODO: localize
+			let loadingToastId = tm.new(ToastKind.Loading, 'Updating playlist `' + listName + '`');
+			const payload: ListPayload = {
+				meta: [],
+				tracks: []
+			};
+
+			payload.meta.push(['Name', listName]);
+			payload.meta.push(['Description', listDesc]);
+
+			for (const track of tracks) {
+				payload.tracks.push(track.file_path);
+			}
+
+			await fetch(req_url, {
+				method: 'PUT',
+				body: JSON.stringify(payload),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			})
+				.then(async (response) => {
+					if (response.ok) {
+						// TODO: localize
+						tm.new(ToastKind.Simple, 'Playlist updated');
+						await goto('/list/' + playlistData?.path_base64);
+					}
+				})
+
+				.catch((error) => {
+					tm.close(loadingToastId);
+					// TODO: localize
+					tm.new(
+						ToastKind.Error,
+						`Unable to update the playlist with the following error: ${error}`
+					);
+				})
+				.finally(() => {
+					tm.close(loadingToastId);
+					updateting = false;
+				});
+		}
+	}
+
+	let updateting = $state(false);
+	let listDesc = $state('');
+	let listName = $state('+£@&0m');
+
+	$effect(() => {
+		listDesc = playlistData?.metadata['Description'] ?? listDesc;
+		listName = playlistData?.metadata['Name'] ?? listName;
+	});
+
+	let searchQuery = $state('');
 </script>
 
 <div class="page ns">
 	<button
 		class="edit btn"
 		class:active={mode === 'edit'}
-		onclick={() => {
-			mode = mode == 'normal' ? 'edit' : 'normal';
+		onclick={async () => {
+			if (mode == 'edit') {
+				await saveChanges();
+				mode = 'normal';
+			} else {
+				mode = 'edit';
+			}
 		}}
 	>
 		<div class="icon">
@@ -178,13 +262,8 @@
 
 			<p class="description">{playlistData.metadata['Description'] ?? ''}</p>
 		{:else if mode === 'edit'}
-			<input type="text" class="list_name" value={playlistData.metadata['Name'] ?? '+£@&0m'} />
-			<input
-				type="text"
-				class="desc"
-				placeholder="playlist description"
-				value={playlistData.metadata['Description'] ?? ''}
-			/>
+			<input type="text" class="list_name" bind:value={listName} />
+			<input type="text" class="desc" placeholder="playlist description" bind:value={listDesc} />
 		{/if}
 		{#if mode === 'normal'}
 			<div class="quick-actions">
@@ -305,13 +384,124 @@
 		</div>
 		{#if mode === 'edit'}
 			<section class="adding_tracks">
-				<h3><Plus /> Add Tracks</h3>
+				<h3><ListPlus /> Add Tracks</h3>
+
+				<div class="search">
+					<input
+						type="search"
+						name="search"
+						class="search_tracks"
+						placeholder={$_('search_page.no_ipt')}
+						bind:value={searchQuery}
+						onkeyup={() => {
+							search.localSearch(searchQuery);
+						}}
+						onkeydown={(e) => {
+							if (e.key.toLowerCase() === 'enter') {
+								search.localSearch(searchQuery);
+							}
+						}}
+					/>
+				</div>
+				{#if search.local_results.tracks.length > 0}
+					<div class="search_response">
+						{#each search.local_results.tracks as track}
+							{#if typeof tracks.find((t) => t.file_path == track.file_path) == 'undefined'}
+								<div
+									class="track"
+									ondblclick={() => {
+										tracks.push(track);
+									}}
+									onkeydown={(e) => {
+										if (e.key.toLowerCase() == 'enter') {
+											tracks.push(track);
+										}
+									}}
+									role="button"
+									tabindex="0"
+								>
+									<div
+										class="cover"
+										style="background-image: url({getCoverUri(
+											track.album_id,
+											track.cover_ext,
+											config
+										)});"
+									></div>
+									<div class="infos">
+										<div class="title">{track.title}</div>
+										<div class="artist">{track.artists[0]}</div>
+									</div>
+									<button
+										tabindex="-1"
+										onclick={() => {
+											tracks.push(track);
+										}}><Plus color={'var(--fg)'} /></button
+									>
+								</div>
+							{/if}
+						{/each}
+					</div>
+				{/if}
 			</section>
 		{/if}
 	{/if}
 </div>
 
 <style>
+	input[type='search'].search_tracks {
+		-webkit-appearance: none;
+		appearance: none;
+		padding-inline: 0.5em;
+		padding-block: 0.7em;
+		border-radius: 4px;
+		border: 0px;
+		background: var(--highlight);
+		color: var(--fg);
+		width: 100%;
+		margin-block: 2em;
+	}
+
+	.search_response {
+		width: 100%;
+	}
+
+	.track {
+		display: flex;
+		gap: 1em;
+		padding: 0.5em;
+		align-items: center;
+		border-radius: 8px;
+		padding-right: 1.5em;
+		margin-bottom: 1em;
+	}
+
+	.track:hover {
+		background: rgba(100, 100, 100, 0.18);
+	}
+
+	.track .cover {
+		min-width: 3em;
+		aspect-ratio: 1/1;
+		background-size: cover;
+		border-radius: 4px;
+	}
+
+	.track .infos {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.track button {
+		cursor: pointer;
+		background: none;
+		border: none;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
 	.description {
 		opacity: 0.7;
 		padding-bottom: 2em;
