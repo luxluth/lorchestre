@@ -29,9 +29,11 @@ pub struct PlaylistData {
 
 impl PlaylistData {
     pub fn update(&mut self, meta: PlaylistMetadata, tracks: Vec<String>) -> io::Result<()> {
-        self.metadata = meta;
-        self.tracks = tracks;
+        for (k, v) in meta {
+            self.metadata.insert(k, v);
+        }
 
+        self.tracks = tracks;
         self.save(PathBuf::from(&self.path))
     }
 

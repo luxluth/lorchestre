@@ -124,9 +124,9 @@ pub async fn start(
         .route("/lyrics", get(lyrics))
         .route("/album/:id", get(album))
         // TODO: Do not cache this at all
-        .route("/playlist/:id", get(playlist))
+        .route("/playlist/:path", get(playlist))
         // ------ palylist action
-        .route("/playlist/:path", delete(list_remove))
+        .route("/playlist/delete/:path", delete(list_remove))
         .route("/playlist/create", post(list_create))
         .route("/playlist/update/:path", put(list_update))
         // ------ palylist action
@@ -361,11 +361,11 @@ async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response
     }
 }
 
-async fn playlist(State(state): State<AppData>, Path(id): Path<String>) -> Response {
-    if let Some(playlist) = state.media.read().await.get_playlist(id.clone()) {
+async fn playlist(State(state): State<AppData>, Path(path): Path<String>) -> Response {
+    if let Some(playlist) = state.media.read().await.get_playlist(path.clone()) {
         Json(playlist).into_response()
     } else {
-        let mut response = format!("no playlist found with the id of {id}").into_response();
+        let mut response = format!("no playlist found with the path of {path}").into_response();
         *response.status_mut() = StatusCode::NOT_FOUND;
         response
     }
