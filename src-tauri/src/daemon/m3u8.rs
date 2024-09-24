@@ -27,35 +27,10 @@ pub struct PlaylistData {
     pub path_base64: String,
 }
 
-pub enum PlaylistAction {
-    RemoveTracks(Vec<String>),
-    AddTracks(Vec<String>),
-    UpdateOrder(Vec<String>),
-    RemoveMeta(String),
-    AddMeta(String, String),
-}
-
 impl PlaylistData {
-    pub fn update(&mut self, action: PlaylistAction) -> io::Result<()> {
-        match action {
-            PlaylistAction::RemoveTracks(tracks) => {
-                for track in tracks {
-                    self.tracks.retain(|p| *p != track);
-                }
-            }
-            PlaylistAction::AddTracks(track) => {
-                self.tracks.extend(track);
-            }
-            PlaylistAction::UpdateOrder(tracks) => {
-                self.tracks = tracks;
-            }
-            PlaylistAction::RemoveMeta(k) => {
-                self.metadata.remove_entry(&k);
-            }
-            PlaylistAction::AddMeta(k, v) => {
-                self.metadata.insert(k, v);
-            }
-        }
+    pub fn update(&mut self, meta: PlaylistMetadata, tracks: Vec<String>) -> io::Result<()> {
+        self.metadata = meta;
+        self.tracks = tracks;
 
         self.save(PathBuf::from(&self.path))
     }
