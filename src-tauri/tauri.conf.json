@@ -22,7 +22,8 @@
         "center": true,
         "shadow": true,
         "minWidth": 1200,
-        "minHeight": 800
+        "minHeight": 800,
+        "transparent": true
       }
     ]
   },

@@ -11,7 +11,6 @@
 	import { setManager } from '$lib/manager.svelte';
 	import { setCtx } from '$lib/ctx.svelte';
 	import ContextMenu from './ContextMenu.svelte';
-	import Commands from '$lib/components/Commands.svelte';
 	import { setLrc } from '$lib/lrc.svelte';
 	import { setMedia } from '$lib/media.svelte';
 	import { setFilter } from '$lib/filterq.svelte';
@@ -29,6 +28,7 @@
 	import StartingScreen from './StartingScreen.svelte';
 	import { setPageScroll } from '$lib/pageScroll.svelte';
 	import { setListCreator } from '$lib/listCreate.svelte';
+	import { invoke } from '@tauri-apps/api/core';
 
 	// import { invoke } from '@tauri-apps/api/core';
 
@@ -55,6 +55,14 @@
 	if (browser) {
 		if (!dev) {
 			window.addEventListener('contextmenu', (e) => e.preventDefault());
+		}
+		if (data.platform == 'linux') {
+			(async () => {
+				let desktop = await invoke('desktop');
+				if (desktop == 'gnome') {
+					document.body.parentElement?.setAttribute('isGnome', 'true');
+				}
+			})();
 		}
 		document.body.setAttribute(
 			'data-theme',
