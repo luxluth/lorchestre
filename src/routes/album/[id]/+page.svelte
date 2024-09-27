@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Play from 'lucide-svelte/icons/play';
 	import ListEnd from 'lucide-svelte/icons/list-end';
-	import { setTitle } from '$lib/utils';
+	import { formatTime, setTitle } from '$lib/utils';
 
 	import { _ } from 'svelte-i18n';
 
@@ -17,6 +17,7 @@
 	} from '$lib/type';
 	import { getCoverUri } from '$lib/utils';
 	import ListStart from 'lucide-svelte/icons/list-start';
+	import Disc from 'lucide-svelte/icons/disc';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
@@ -38,22 +39,29 @@
 
 	let album = $derived($page.data.album);
 	let tracks = $derived(album ? sortTracks(getTracks(album)) : []);
+	let discs = $derived(putIntoDisks(tracks));
+
 	let ctx = getCtx();
 	let config = getAppConfig();
 
-	function sortTracks(t: Track[]) {
-		return t.sort((a, b) => a.track - b.track);
+	function putIntoDisks(tracks: Track[]) {
+		let diskMap = new Map<number, Track[]>();
+		for (const track of tracks) {
+			if (diskMap.has(track.disc)) {
+				let mapts = diskMap.get(track.disc) as Track[];
+				mapts.push(track);
+				mapts = sortTracks(mapts);
+				diskMap.set(track.disc, mapts);
+			} else {
+				diskMap.set(track.disc, [track]);
+			}
+		}
+
+		return diskMap;
 	}
 
-	function formatTime(time: number) {
-		if (isNaN(time)) {
-			return '--:--';
-		}
-		if (time >= 60 * 60) {
-			return new Date(time * 1000).toISOString().substring(11, 16);
-		} else {
-			return new Date(time * 1000).toISOString().substring(14, 19);
-		}
+	function sortTracks(t: Track[]) {
+		return t.sort((a, b) => a.track - b.track);
 	}
 
 	function trim(text: string, len = 40) {
@@ -115,6 +123,28 @@
 		}
 	}
 
+	$effect(() => {
+		console.log(discs);
+	});
+
+	function getDuration() {
+		return tracks.reduce((pt, track) => pt + track.duration, 0);
+	}
+
+	function avgbitrate() {
+		let d = tracks.length;
+		let sm = 0;
+		for (const track of tracks) {
+			sm += track.bitrate;
+		}
+
+		if (d > 0) {
+			return sm / d;
+		} else {
+			return 0;
+		}
+	}
+
 	onMount(() => {
 		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);
 	});
@@ -125,73 +155,182 @@
 </svelte:head>
 
 {#if album}
-	<section class="head ns">
-		<div
-			class="cover"
-			style="--clr: {getTrack(album.tracks[0])
-				? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
-				: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
-				album.id,
-				getTrack(album.tracks[0]).cover_ext,
-				config
-			)}');"
-		>
-			<button
-				class="play"
-				onclick={async () => {
-					await playAlbum();
-				}}
-			>
-				<Play size={'2em'} fill={'var(--fg)'} />
-			</button>
-		</div>
-		<div class="data">
-			<h1>{trim(album.name, 60)}</h1>
-			<h3>{album.artist}</h3>
-			<p>{album.year}</p>
-		</div>
-	</section>
-
-	<h2 class="section-title ns">{$_('album.page.songs')}</h2>
-	<section class="tracks ns">
-		{#each tracks as track, i}
+	<section class="page-grid ns">
+		<div class="info">
 			<div
-				class="track"
-				oncontextmenu={(e) => {
-					e.preventDefault();
-					showContext(e, track);
-				}}
-				role="button"
-				tabindex="0"
-				ondblclick={async () => {
-					await play(track);
-				}}
-				onkeydown={() => {}}
+				class="cover"
+				style="--clr: {getTrack(album.tracks[0])
+					? `rgb(${getTrack(album.tracks[0]).color?.r}, ${getTrack(album.tracks[0]).color?.g}, ${getTrack(album.tracks[0]).color?.b})`
+					: 'rgb(255, 255, 255)'}; background-image: url('{getCoverUri(
+					album.id,
+					getTrack(album.tracks[0]).cover_ext,
+					config
+				)}');"
 			>
-				<div class="trackn">
-					<div class="no">{track.track > 0 ? track.track : ''}</div>
-					<button
-						onclick={async () => {
-							await playfrom(i);
-						}}
-					>
-						<Play size={'1.5em'} fill={'var(--fg)'} />
-					</button>
-				</div>
-				<div class="title">{track.title}</div>
-				<div class="artists">{track.artists.join(', ')}</div>
-				<div class="duration">{formatTime(track.duration)}</div>
+				<button
+					class="play"
+					onclick={async () => {
+						await playAlbum();
+					}}
+				>
+					<Play size={'2em'} fill={'var(--fg)'} />
+				</button>
 			</div>
-		{/each}
+			<div class="grid-container details">
+				<div class="grid-item label">NAME</div>
+				<div class="grid-item value">{album.name}</div>
+				<div class="grid-item label">ARTIST</div>
+				<div class="grid-item value">{album.artist}</div>
+				<div class="grid-item label">GENRES</div>
+				<div class="grid-item value">{album.genres.join(', ')}</div>
+				<div class="grid-item label">TRACKS</div>
+				<div class="grid-item value">
+					{album.tracks_count >= 10 ? album.tracks_count : `0${album.tracks_count}`}
+				</div>
+				<div class="grid-item label">DISKS</div>
+				<div class="grid-item value disc_total">
+					{album.disc_total >= 10 ? album.disc_total : `0${album.disc_total}`}
+				</div>
+				<div class="grid-item label">DURATION</div>
+				<div class="grid-item value">{formatTime(getDuration())}</div>
+				<div class="grid-item label">ENCODER</div>
+				<div class="grid-item value">{album.encoder}</div>
+				<div class="grid-item label">AVG. BITRATE</div>
+				<div class="grid-item value">{avgbitrate()} kb/s</div>
+			</div>
+		</div>
+		<div class="songs">
+			{#if album.disc_total > 1}
+				{#each discs as [no, tracks]}
+					<h3 class="disc"><Disc /> disc {no}</h3>
+					<section class="tracks ns">
+						{#each tracks as track, i}
+							<div
+								class="track"
+								oncontextmenu={(e) => {
+									e.preventDefault();
+									showContext(e, track);
+								}}
+								role="button"
+								tabindex="0"
+								ondblclick={async () => {
+									await play(track);
+								}}
+								onkeydown={() => {}}
+							>
+								<div class="trackn">
+									<div class="no">{track.track > 0 ? track.track : ''}</div>
+									<button
+										onclick={async () => {
+											await playfrom(i);
+										}}
+									>
+										<Play size={'1.5em'} fill={'var(--fg)'} />
+									</button>
+								</div>
+								<div class="title">{track.title}</div>
+								<div class="artists">{track.artists.join(', ')}</div>
+								<div class="duration">{formatTime(track.duration)}</div>
+							</div>
+						{/each}
+					</section>
+				{/each}
+			{:else}
+				<section class="tracks ns">
+					{#each tracks as track, i}
+						<div
+							class="track"
+							oncontextmenu={(e) => {
+								e.preventDefault();
+								showContext(e, track);
+							}}
+							role="button"
+							tabindex="0"
+							ondblclick={async () => {
+								await play(track);
+							}}
+							onkeydown={() => {}}
+						>
+							<div class="trackn">
+								<div class="no">{track.track > 0 ? track.track : ''}</div>
+								<button
+									onclick={async () => {
+										await playfrom(i);
+									}}
+								>
+									<Play size={'1.5em'} fill={'var(--fg)'} />
+								</button>
+							</div>
+							<div class="title">{track.title}</div>
+							<div class="artists">{track.artists.join(', ')}</div>
+							<div class="duration">{formatTime(track.duration)}</div>
+						</div>
+					{/each}
+				</section>
+			{/if}
+		</div>
 	</section>
 {:else}
 	Album non-existant
 {/if}
 
 <style>
-	.section-title {
-		padding-top: 2em;
-		padding-bottom: 1em;
+	.disc {
+		padding-block: 1em;
+		opacity: 0.6;
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	.grid-container {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 10px;
+		padding: 20px;
+		max-width: 100%;
+	}
+
+	.grid-item {
+		padding: 0px 0;
+	}
+
+	.label {
+		text-transform: uppercase;
+		opacity: 0.7;
+	}
+
+	.value {
+		font-weight: bold;
+	}
+
+	.details {
+		font-family: var(--font-mono);
+	}
+
+	.page-grid {
+		padding-bottom: 4em;
+	}
+
+	/* h1 { */
+	/* 	font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem); */
+	/* 	font-weight: 500; */
+	/* 	letter-spacing: -6%; */
+	/* } */
+
+	.page-grid {
+		display: grid;
+		grid-template-columns: 1.5fr 3fr;
+		gap: 1em;
+		width: 100%;
+		margin-bottom: 10em;
+	}
+
+	.songs {
+		width: 100%;
+		margin-bottom: 10em;
 	}
 
 	.track {
@@ -204,7 +343,7 @@
 	}
 
 	.track:nth-child(odd) {
-		background-color: var(--highlight);
+		background-color: #292929;
 	}
 
 	.track .title {
@@ -257,29 +396,6 @@
 		opacity: 0.6;
 	}
 
-	.head {
-		display: flex;
-		gap: 1em;
-		width: 100%;
-	}
-
-	.head .data {
-		align-self: flex-end;
-	}
-
-	.head .data h1 {
-		font-size: 4rem;
-		font-family: var(--font-fantasy);
-		line-height: 1;
-		height: 100%;
-		padding-bottom: 0.1em;
-		word-break: break-word;
-	}
-
-	.head .data h3 {
-		opacity: 0.7;
-	}
-
 	.cover button.play {
 		position: absolute;
 		bottom: 1em;
@@ -307,8 +423,7 @@
 
 	.cover {
 		position: relative;
-		height: 25em;
-		width: 25em;
+		width: 100%;
 		aspect-ratio: 1/1;
 		background-color: var(--clr);
 		border-radius: 10px;
