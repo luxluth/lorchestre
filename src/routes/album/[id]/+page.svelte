@@ -196,7 +196,7 @@
 				<div class="grid-item label">ENCODER</div>
 				<div class="grid-item value">{album.encoder}</div>
 				<div class="grid-item label">AVG. BITRATE</div>
-				<div class="grid-item value">{avgbitrate()} kb/s</div>
+				<div class="grid-item value">{avgbitrate().toFixed(0)} kb/s</div>
 			</div>
 		</div>
 		<div class="songs">
