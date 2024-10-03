@@ -64,10 +64,6 @@
 		return t.sort((a, b) => a.track - b.track);
 	}
 
-	function trim(text: string, len = 40) {
-		return text.slice(0, len) + (text.length > len ? '...' : '');
-	}
-
 	async function play(t: Track) {
 		await manager.play(t);
 	}
@@ -104,23 +100,40 @@
 	async function playAlbum() {
 		manager.clearQueue();
 		manager.pmode = PlayingMode.Normal;
-		let track = tracks[0];
-		await manager.play(track);
-		let toAddToTheQue = [...tracks];
-		console.log(toAddToTheQue);
-		toAddToTheQue.shift();
-		manager.addManyToQueue(toAddToTheQue);
+
+		let needFirstTrack = false;
+		let track: Track | undefined;
+		let toAddToTheQueue: Track[] = [];
+
+		discs.forEach((tracks) => {
+			let diskTracks: Track[] = [...tracks];
+			if (needFirstTrack) {
+				track = diskTracks.shift();
+				needFirstTrack = false;
+			}
+
+			toAddToTheQueue = [...toAddToTheQueue, ...diskTracks];
+		});
+
+		if (track) await manager.play(track);
+		toAddToTheQueue.shift();
+		manager.addManyToQueue(toAddToTheQueue);
 	}
 
-	async function playfrom(i: number) {
-		manager.pmode = PlayingMode.Normal;
-		let songs = tracks.slice(i, tracks.length);
-		let song = songs.shift();
-		if (song) {
-			manager.play(song);
-			manager.clearQueue();
-			manager.addManyToQueue(songs);
-		}
+	async function playfrom(_disc: number, _i: number) {
+		// TODO: implement a better version
+		//
+		// let totalDiscs = album.disc_total;
+		// let tracks = discs.get(disc);
+		//
+		// manager.pmode = PlayingMode.Normal;
+		// let songs = tracks.slice(i, tracks.length);
+		// let song = songs.shift();
+		// if (song) {
+		// 	manager.play(song);
+		// 	manager.clearQueue();
+		// 	manager.addManyToQueue(songs);
+		// }
 	}
 
 	$effect(() => {
@@ -219,10 +232,10 @@
 								onkeydown={() => {}}
 							>
 								<div class="trackn">
-									<div class="no">{track.track > 0 ? track.track : ''}</div>
+									<div class="no">{track.track > 0 ? track.track : '-'}</div>
 									<button
 										onclick={async () => {
-											await playfrom(i);
+											await playfrom(no, i);
 										}}
 									>
 										<Play size={'1.5em'} fill={'var(--fg)'} />
@@ -252,10 +265,10 @@
 							onkeydown={() => {}}
 						>
 							<div class="trackn">
-								<div class="no">{track.track > 0 ? track.track : ''}</div>
+								<div class="no">{track.track > 0 ? track.track : '-'}</div>
 								<button
 									onclick={async () => {
-										await playfrom(i);
+										await playfrom(-1, i);
 									}}
 								>
 									<Play size={'1.5em'} fill={'var(--fg)'} />
