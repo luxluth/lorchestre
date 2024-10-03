@@ -101,23 +101,23 @@
 		manager.clearQueue();
 		manager.pmode = PlayingMode.Normal;
 
-		let needFirstTrack = false;
-		let track: Track | undefined;
-		let toAddToTheQueue: Track[] = [];
+		if (album.disc_total > 1) {
+			let toAddToTheQueue: Track[] = [];
+			discs.forEach((tx) => {
+				let diskTracks: Track[] = [...tx];
+				toAddToTheQueue = [...toAddToTheQueue, ...diskTracks];
+			});
 
-		discs.forEach((tracks) => {
-			let diskTracks: Track[] = [...tracks];
-			if (needFirstTrack) {
-				track = diskTracks.shift();
-				needFirstTrack = false;
-			}
+			let track = toAddToTheQueue.shift();
+			if (track) await manager.play(track);
+			manager.addManyToQueue(toAddToTheQueue);
+		} else {
+			let tx = [...tracks];
+			let firstTrack = tx.shift();
+			if (firstTrack) await manager.play(firstTrack);
 
-			toAddToTheQueue = [...toAddToTheQueue, ...diskTracks];
-		});
-
-		if (track) await manager.play(track);
-		toAddToTheQueue.shift();
-		manager.addManyToQueue(toAddToTheQueue);
+			manager.addManyToQueue(tx);
+		}
 	}
 
 	async function playfrom(_disc: number, _i: number) {
