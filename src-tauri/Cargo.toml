@@ -7,15 +7,15 @@ edition = "2021"
 license = "GPL-3.0"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.7", features = [] }
+tauri-build = { version = "2.0.1", features = [] }
 
 [dependencies]
 serde = { version = "1.0.209", features = ["derive"] }
 serde_json = "1.0.128"
-tauri-plugin-shell = "2.0.0-rc.0"
-tauri-plugin-window-state = "2.0.0-rc.2"
-tauri-plugin-single-instance = "2.0.0-rc.1"
-tauri = { version = "2.0.0-rc.15", features = [
+tauri-plugin-shell = "2.0.1"
+tauri-plugin-window-state = "2.0.1"
+tauri-plugin-single-instance = "2.0.1"
+tauri = { version = "2.0.1", features = [
   "macos-private-api",
 ] }
 lorconf = { path = "../conf" }
@@ -41,9 +41,9 @@ base64 = "0.22.1"
 alrc = { version = "0.1.0", features = ["serde"] }
 tauri-plugin-decorum = "1.1.1"
 tantivy = "0.22.0"
-tauri-plugin-dialog = "2.0.0-rc.3"
+tauri-plugin-dialog = "2.0.1"
 bitcode = "0.6.3"
-tauri-plugin-process = "2.0.0-rc.1"
+tauri-plugin-process = "2.0.1"
 
 [profile.release]
 lto = true
