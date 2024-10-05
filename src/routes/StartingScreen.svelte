@@ -31,6 +31,10 @@
 		background: var(--bg);
 	}
 
+	.icon {
+		color: var(--fg);
+	}
+
 	.indicator {
 		position: absolute;
 		bottom: 1em;

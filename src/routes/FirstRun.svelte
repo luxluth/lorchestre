@@ -68,6 +68,8 @@
 	});
 </script>
 
+<div class="move" data-tauri-drag-region></div>
+
 <div class="message">
 	<div class="icon ns">
 		{@html banner}
@@ -127,8 +129,16 @@
 		gap: 0.1em;
 	}
 
+	.move {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 10vh;
+	}
+
 	.icon {
-		color: white;
+		color: var(--fg);
 	}
 
 	.notice {
