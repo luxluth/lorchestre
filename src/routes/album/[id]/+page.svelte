@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Play from 'lucide-svelte/icons/play';
 	import ListEnd from 'lucide-svelte/icons/list-end';
-	import { formatTime, setTitle } from '$lib/utils';
+	import { createSequenceGenerator, formatTime, setTitle } from '$lib/utils';
 
 	import { _ } from 'svelte-i18n';
 
@@ -103,7 +103,15 @@
 
 		if (album.disc_total > 1) {
 			let toAddToTheQueue: Track[] = [];
-			discs.forEach((tx) => {
+
+			let discMap: [number, Track[]][] = [];
+			discs.forEach((tx, key) => {
+				discMap = [...discMap, [key, tx]];
+			});
+
+			discMap = discMap.sort(([a, _ts], [b, _bts]) => a - b);
+
+			discMap.forEach(([_, tx]) => {
 				let diskTracks: Track[] = [...tx];
 				toAddToTheQueue = [...toAddToTheQueue, ...diskTracks];
 			});
@@ -120,20 +128,33 @@
 		}
 	}
 
-	async function playfrom(_disc: number, _i: number) {
-		// TODO: implement a better version
-		//
-		// let totalDiscs = album.disc_total;
-		// let tracks = discs.get(disc);
-		//
-		// manager.pmode = PlayingMode.Normal;
-		// let songs = tracks.slice(i, tracks.length);
-		// let song = songs.shift();
-		// if (song) {
-		// 	manager.play(song);
-		// 	manager.clearQueue();
-		// 	manager.addManyToQueue(songs);
-		// }
+	async function playfrom(i: number) {
+		manager.clearQueue();
+		manager.pmode = PlayingMode.Normal;
+		if (album.disc_total > 1) {
+			let diskTracks: Track[] = [];
+			let discMap: [number, Track[]][] = [];
+			discs.forEach((tx, key) => {
+				discMap = [...discMap, [key, tx]];
+			});
+
+			discMap = discMap.sort(([a, _ts], [b, _bts]) => a - b);
+			discMap.forEach(([_, tx]) => {
+				diskTracks = [...diskTracks, ...tx];
+			});
+
+			console.log('dded', diskTracks, i, diskTracks.length);
+			let ts = diskTracks.slice(i);
+
+			let track = ts.shift();
+			if (track) await manager.play(track);
+			manager.addManyToQueue(ts);
+		} else {
+			let ts = tracks.slice(i);
+			let track = ts.shift();
+			if (track) await manager.play(track);
+			manager.addManyToQueue(ts);
+		}
 	}
 
 	$effect(() => {
@@ -214,11 +235,14 @@
 		</div>
 		<div class="songs">
 			{#if album.disc_total > 1}
+				{@const gen = createSequenceGenerator()}
 				{#each discs as [no, tracks]}
 					<h3 class="disc"><Disc /> disc {no}</h3>
 					<section class="tracks ns">
-						{#each tracks as track, i}
+						{#each tracks as track}
+							{@const i = gen()}
 							<div
+								data-idx={i}
 								class="track"
 								oncontextmenu={(e) => {
 									e.preventDefault();
@@ -235,7 +259,7 @@
 									<div class="no">{track.track > 0 ? track.track : '-'}</div>
 									<button
 										onclick={async () => {
-											await playfrom(no, i);
+											await playfrom(i);
 										}}
 									>
 										<Play size={'1.5em'} fill={'var(--fg)'} />
@@ -252,6 +276,7 @@
 				<section class="tracks ns">
 					{#each tracks as track, i}
 						<div
+							data-idx={i}
 							class="track"
 							oncontextmenu={(e) => {
 								e.preventDefault();
@@ -268,7 +293,7 @@
 								<div class="no">{track.track > 0 ? track.track : '-'}</div>
 								<button
 									onclick={async () => {
-										await playfrom(-1, i);
+										await playfrom(i);
 									}}
 								>
 									<Play size={'1.5em'} fill={'var(--fg)'} />
@@ -356,7 +381,7 @@
 	}
 
 	.track:nth-child(odd) {
-		background-color: #292929;
+		background-color: var(--highlight);
 	}
 
 	.track .title {
