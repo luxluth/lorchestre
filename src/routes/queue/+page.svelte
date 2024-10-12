@@ -131,7 +131,7 @@
 	}
 
 	.songs .track:hover {
-		background: rgba(100, 100, 100, 0.18);
+		background: var(--highlight);
 		cursor: pointer;
 	}
 
