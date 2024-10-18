@@ -53,7 +53,7 @@
 	const ps = setPageScroll();
 
 	if (browser) {
-		if (!dev) {
+		if (!dev || data.platform == 'windows') {
 			window.addEventListener('contextmenu', (e) => e.preventDefault());
 		}
 		if (data.platform == 'linux') {
