@@ -283,6 +283,7 @@ async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             let window = app.get_webview_window("main").unwrap();
+            let _ = window.set_shadow(true);
             let _ = window.restore_state(StateFlags::all());
             let _ = window.create_overlay_titlebar();
 
