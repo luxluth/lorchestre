@@ -37,11 +37,11 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       '@sveltejs/adapter-static':
-        specifier: ^3.0.5
-        version: 3.0.5(@sveltejs/kit@2.7.2(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))
+        specifier: ^3.0.6
+        version: 3.0.6(@sveltejs/kit@2.7.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))
       '@sveltejs/kit':
-        specifier: ^2.7.2
-        version: 2.7.2(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))
+        specifier: ^2.7.3
+        version: 2.7.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^4.0.0
         version: 4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))
@@ -548,13 +548,13 @@ packages:
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
 
-  '@sveltejs/adapter-static@3.0.5':
-    resolution: {integrity: sha512-kFJR7RxeB6FBvrKZWAEzIALatgy11ISaaZbcPup8JdWUdrmmfUHHTJ738YHJTEfnCiiXi6aX8Q6ePY7tnSMD6Q==}
+  '@sveltejs/adapter-static@3.0.6':
+    resolution: {integrity: sha512-MGJcesnJWj7FxDcB/GbrdYD3q24Uk0PIL4QIX149ku+hlJuj//nxUbb0HxUTpjkecWfHjVveSUnUaQWnPRXlpg==}
     peerDependencies:
       '@sveltejs/kit': ^2.0.0
 
-  '@sveltejs/kit@2.7.2':
-    resolution: {integrity: sha512-bFwrl+0bNr0/DHQZM0INwwSPNYqDjfsKRhUoa6rj9d8tDZzszBrJ3La6/HVFxWGONEigtG+SzHXa1BEa1BLdwA==}
+  '@sveltejs/kit@2.7.3':
+    resolution: {integrity: sha512-Vx7nq5MJ86I8qXYsVidC5PX6xm+uxt8DydvOdmJoyOK7LvGP18OFEG359yY+aa51t6pENvqZAMqAREQQx1OI2Q==}
     engines: {node: '>=18.13'}
     hasBin: true
     peerDependencies:
@@ -1464,11 +1464,11 @@ snapshots:
 
   '@socket.io/component-emitter@3.1.2': {}
 
-  '@sveltejs/adapter-static@3.0.5(@sveltejs/kit@2.7.2(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))':
+  '@sveltejs/adapter-static@3.0.6(@sveltejs/kit@2.7.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))':
     dependencies:
-      '@sveltejs/kit': 2.7.2(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))
+      '@sveltejs/kit': 2.7.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))
 
-  '@sveltejs/kit@2.7.2(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))':
+  '@sveltejs/kit@2.7.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7)))(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 4.0.0(svelte@5.1.2)(vite@5.4.10(@types/node@20.14.7))
       '@types/cookie': 0.6.0
