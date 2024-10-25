@@ -55,10 +55,11 @@
 		padding: 0.7em;
 		gap: 0.5em;
 
-		background: rgba(255, 255, 255, 0.25);
-		backdrop-filter: blur(4px);
-		-webkit-backdrop-filter: blur(4px);
+		background: var(--fg);
+		color: var(--bg);
+		box-shadow: rgba(17, 12, 46, 0.15) 0px 2px 10px 0px;
 		border-radius: 10px;
+		border: 1px solid var(--highlight);
 	}
 
 	.details {

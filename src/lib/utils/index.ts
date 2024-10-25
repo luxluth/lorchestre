@@ -98,7 +98,7 @@ export function searchLyricsUri(path: string, config: AppConfig) {
 	return `http://${endpoint}/search/lyrics?path=${path}`;
 }
 
-export function toQueueTrack(track: Track): QueueTrack {
+export function setRandomId(track: Track): QueueTrack {
 	return {
 		...track,
 		id: crypto.randomUUID()

@@ -1,6 +1,6 @@
 import { getContext, onMount, setContext } from 'svelte';
 import { type Track, type QueueTrack, QueueAddMode, QueueMode, PlayingMode } from './type';
-import { createSequenceGenerator, toQueueTrack } from './utils';
+import { createSequenceGenerator, setRandomId } from './utils';
 import { invoke } from '@tauri-apps/api/core';
 import { TauriEvent, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -76,7 +76,7 @@ export default class Manager {
 				await this.onplay?.(track as QueueTrack);
 			} else {
 				this.clearQueue();
-				await this.onplay?.(toQueueTrack(track));
+				await this.onplay?.(setRandomId(track));
 			}
 			// if (this.initialized) {
 			// 	this.paused = false;
@@ -216,16 +216,16 @@ export default class Manager {
 		switch (mode) {
 			case QueueAddMode.Top:
 				if (this.queue.length <= QUEUE_LIMIT) {
-					this.queue = [toQueueTrack(track), ...this.queue];
+					this.queue = [setRandomId(track), ...this.queue];
 				} else {
-					this.dormantQueue = [toQueueTrack(track), ...this.dormantQueue];
+					this.dormantQueue = [setRandomId(track), ...this.dormantQueue];
 				}
 				break;
 			case QueueAddMode.Bottom:
 				if (this.queue.length <= QUEUE_LIMIT) {
-					this.queue.push(toQueueTrack(track));
+					this.queue.push(setRandomId(track));
 				} else {
-					this.dormantQueue.push(toQueueTrack(track));
+					this.dormantQueue.push(setRandomId(track));
 				}
 				break;
 		}

@@ -17,7 +17,7 @@
 	}
 </script>
 
-<div class="edit_song" role="presentation" draggable>
+<div class="edit_song" role="presentation">
 	<div
 		class="checkbox"
 		role="gridcell"

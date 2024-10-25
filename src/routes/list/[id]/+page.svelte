@@ -5,6 +5,7 @@
 		PlayingMode,
 		ToastKind,
 		type Playlist,
+		type QueueTrack,
 		type Track
 	} from '$lib/type';
 	import { _ } from 'svelte-i18n';
@@ -19,7 +20,7 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
-	import { getCoverUri, setTitle, sortTracksByDate } from '$lib/utils';
+	import { getCoverUri, setRandomId, setTitle, sortTracksByDate } from '$lib/utils';
 	import { getManager } from '$lib/manager.svelte';
 	import { getMedia } from '$lib/media.svelte';
 	import { getList } from '$lib/playlist.svelte';
@@ -31,6 +32,8 @@
 	import type { ListPayload } from '$lib/listCreate.svelte';
 	import { getToastManager } from '$lib/toast.svelte';
 	import { goto } from '$app/navigation';
+	import { dndzone, type DndEvent } from 'svelte-dnd-action';
+	import { flip } from 'svelte/animate';
 
 	type DisplayMode = 'normal' | 'edit';
 
@@ -51,13 +54,13 @@
 		list.activeList = playlistData?.path_base64 ?? null;
 	});
 
-	let tracks: Track[] = $state([]);
+	let tracks: QueueTrack[] = $state([]);
 
 	$effect(() => {
 		tracks = playlistData
 			? playlistData.tracks
 					.map((track) => {
-						return media.getTrack(track);
+						return setRandomId(media.getTrack(track) as Track);
 					})
 					.filter((f) => typeof f != 'undefined')
 			: [];
@@ -76,6 +79,15 @@
 		let songs = applyFilters(tracks);
 		await manager.shufflePlay(songs);
 	}
+
+	function handleDndConsiderColumns(e: CustomEvent<DndEvent<QueueTrack>>) {
+		tracks = e.detail.items;
+	}
+	function handleDndFinalizeColumns(e: CustomEvent<DndEvent<QueueTrack>>) {
+		tracks = e.detail.items;
+	}
+
+	const flipDurationMs = 200;
 
 	function applySearchFilter(tracks: Track[], q: string): Track[] {
 		const lowerCaseQuery = q.toLowerCase();
@@ -371,15 +383,32 @@
 					/>
 				{/each}
 			{:else if mode === 'edit'}
-				{#each tracks as song}
-					<ShallowSong
-						{song}
-						selected={selections.includes(song.file_path)}
-						toggleSelection={(p) => {
-							toggleSelect(p);
-						}}
-					/>
-				{/each}
+				<section
+					style="width: 100%; height: 100%;"
+					use:dndzone={{
+						items: tracks,
+						flipDurationMs,
+						type: 'columns',
+						dropTargetStyle: {
+							backgroundColor: 'var(--bg)',
+							opacity: '0.5'
+						}
+					}}
+					onconsider={handleDndConsiderColumns}
+					onfinalize={handleDndFinalizeColumns}
+				>
+					{#each tracks as song (song.id)}
+						<div class="wrapper" style="width: 100%;" animate:flip={{ duration: flipDurationMs }}>
+							<ShallowSong
+								{song}
+								selected={selections.includes(song.file_path)}
+								toggleSelection={(p) => {
+									toggleSelect(p);
+								}}
+							/>
+						</div>
+					{/each}
+				</section>
 			{/if}
 		</div>
 		{#if mode === 'edit'}
@@ -410,11 +439,11 @@
 								<div
 									class="track"
 									ondblclick={() => {
-										tracks.push(track);
+										tracks.push(setRandomId(track));
 									}}
 									onkeydown={(e) => {
 										if (e.key.toLowerCase() == 'enter') {
-											tracks.push(track);
+											tracks.push(setRandomId(track));
 										}
 									}}
 									role="button"
@@ -435,7 +464,7 @@
 									<button
 										tabindex="-1"
 										onclick={() => {
-											tracks.push(track);
+											tracks.push(setRandomId(track));
 										}}><Plus color={'var(--fg)'} /></button
 									>
 								</div>
