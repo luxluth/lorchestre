@@ -7,7 +7,7 @@ import type SearchSupervisor from './search.svelte';
 import { getAppConfig } from './config.svelte';
 
 export default class MediaState {
-	albums: Album[] = $state([]);
+	albums: Album[] = [];
 	playlists: Playlist[] = $state([]);
 	tracks: Map<string, Track> = $state(new Map());
 	loaded = $state(false);
