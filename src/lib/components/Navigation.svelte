@@ -45,25 +45,23 @@
 	</section>
 	<section>
 		<h4>{$_('playlist')}</h4>
-		{#if media.playlists.length > 0}
-			<div class="links">
-				{#each media.playlists as playlist}
-					<a
-						href="/list/{playlist.path_base64}"
-						class:active={pathId == '/list/[id]' && list.activeList === playlist.path_base64}
-					>
-						<List size={'1em'} />
-						{playlist.metadata['Name'] ?? '+£@&0m'}
-					</a>
-				{/each}
-				<a class="create_list" href="/create_list">
-					<div class="icon">
-						<Plus size={'1em'} />
-					</div>
-					New playlist
+		<div class="links">
+			{#each media.playlists as playlist}
+				<a
+					href="/list/{playlist.path_base64}"
+					class:active={pathId == '/list/[id]' && list.activeList === playlist.path_base64}
+				>
+					<List size={'1em'} />
+					{playlist.metadata['Name'] ?? '+£@&0m'}
 				</a>
-			</div>
-		{/if}
+			{/each}
+			<a class="create_list" href="/create_list">
+				<div class="icon">
+					<Plus size={'1em'} />
+				</div>
+				New playlist
+			</a>
+		</div>
 	</section>
 	<section class="settings">
 		<div class="links">
