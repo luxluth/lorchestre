@@ -363,10 +363,18 @@ async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response
 
 async fn playlist(State(state): State<AppData>, Path(path): Path<String>) -> Response {
     if let Some(playlist) = state.media.read().await.get_playlist(path.clone()) {
-        Json(playlist).into_response()
+        let mut response = Json(playlist).into_response();
+        response
+            .headers_mut()
+            .insert(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+
+        response
     } else {
         let mut response = format!("no playlist found with the path of {path}").into_response();
         *response.status_mut() = StatusCode::NOT_FOUND;
+        response
+            .headers_mut()
+            .insert(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
         response
     }
 }
@@ -488,7 +496,7 @@ async fn audio(
 }
 
 async fn ping() -> String {
-    format!("OK lorchestrectl v{}", config::VERSION)
+    format!("OK lorchestre v{}", config::VERSION)
 }
 
 async fn media(State(state): State<AppData>) -> Json<Media> {
