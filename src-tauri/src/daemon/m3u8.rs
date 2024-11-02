@@ -90,8 +90,8 @@ impl PlaylistData {
             if !line.is_empty() {
                 if let Some((left, right)) = line.split_once(':') {
                     metadata.insert(left.trim().to_string(), right.trim().to_string());
-                } else if let Ok(path) = PathBuf::from_str(line) {
-                    tracks.push(path)
+                } else {
+                    tracks.push(PathBuf::from_str(line).unwrap());
                 }
             }
         }
