@@ -418,17 +418,17 @@ async fn list_update(
                 media.substitute_playlist(playlist);
                 media.cache(dirs.cache, None);
                 let _ = state.io.emit("newmedia", &media.clone());
-                return "ok".into_response();
+                "ok".into_response()
             }
             Err(e) => {
                 let error = format!("{e}");
                 let mut response = error.into_response();
                 *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
-                return response;
+                response
             }
         }
     } else {
-        return "Playlist not found".into_response();
+        "Playlist not found".into_response()
     }
 }
 
@@ -462,7 +462,7 @@ async fn list_create(State(state): State<AppData>, Json(payload): Json<List>) ->
             binding.swap_with(m.clone());
             let _ = state.io.emit("newmedia", &m);
 
-            return Json(ResponsePath { path }).into_response();
+            Json(ResponsePath { path }).into_response()
         }
     }
 }
