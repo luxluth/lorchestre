@@ -17,7 +17,7 @@ use tantivy::query::FuzzyTermQuery;
 use tantivy::schema::*;
 use tantivy::{doc, Index, IndexWriter, ReloadPolicy};
 use tauri::Emitter;
-use tracing::error;
+use tracing::{error, warn};
 
 #[derive(serde::Serialize, Debug)]
 pub struct Cover {
@@ -99,161 +99,164 @@ impl PartialEq for Track {
 impl Eq for Track {}
 
 impl Track {
-    pub fn from_file(covers_dir: &PathBuf, inode: PathBuf) -> Self {
-        // TODO: avoid unwraping when openning audio files
-        let tagged_file = Probe::open(&inode).unwrap().read().unwrap();
-        let properties = tagged_file.properties();
-        let bitrate = properties.audio_bitrate().unwrap_or(0);
-        let duration = properties.duration();
-        let mime = tagged_file.file_type();
+    pub fn from_file(covers_dir: &PathBuf, inode: PathBuf) -> Result<Self, ()> {
+        if let Ok(tagged_file) = Probe::open(&inode).unwrap().read() {
+            let properties = tagged_file.properties();
+            let bitrate = properties.audio_bitrate().unwrap_or(0);
+            let duration = properties.duration();
+            let mime = tagged_file.file_type();
 
-        let default_tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+            let default_tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
 
-        let tag = match tagged_file.primary_tag() {
-            Some(primary_tag) => primary_tag,
-            // If the "primary" tag doesn't exist, we just grab the
-            // first tag we can find. Realistically, a tag reader would likely
-            // iterate through the tags to find a suitable one.
-            None => tagged_file.first_tag().unwrap_or(&default_tag),
-        };
-
-        let path = inode.to_str().unwrap().to_string();
-        let mut audio: Track = Track {
-            path_base64: URL_SAFE.encode(path.as_bytes()),
-            file_path: path,
-            ..Default::default()
-        };
-
-        audio.mime = match mime {
-            lofty::file::FileType::Aac => "audio/aac",
-            lofty::file::FileType::Aiff => "audio/aiff",
-            lofty::file::FileType::Ape => "audio/ape",
-            lofty::file::FileType::Flac => "audio/flac",
-            lofty::file::FileType::Mpeg => "audio/mpeg",
-            lofty::file::FileType::Mp4 => "audio/mp4",
-            lofty::file::FileType::Mpc => "audio/mpc",
-            lofty::file::FileType::Opus => "audio/webm",
-            lofty::file::FileType::Vorbis => "audio/webm",
-            lofty::file::FileType::Speex => "audio/speex",
-            lofty::file::FileType::Wav => "audio/wav",
-            lofty::file::FileType::WavPack => "audio/wav",
-            _ => "application/octet-stream",
-        }
-        .to_string();
-
-        if let Ok(meta) = inode.metadata() {
-            if let Ok(tm) = meta.created() {
-                let epoch = SystemTime::UNIX_EPOCH;
-                audio.created_at = tm.duration_since(epoch).unwrap().as_secs();
-            }
-        };
-
-        if let Some(year) = tag.year() {
-            audio.album_year = Some(year);
-        } else if let Some(year) = tag.get_string(&ItemKey::Unknown("TDOR".into())) {
-            audio.album_year = Some(year.parse().unwrap_or(0));
-        }
-
-        if let Some(encoder) = tag.get_string(&ItemKey::EncoderSettings) {
-            audio.encoder = encoder.to_string();
-        }
-
-        if let Some(genres) = tag.genre() {
-            if genres.contains(';') {
-                audio.genres = genres.split(';').map(|x| x.trim().to_string()).collect();
-            } else {
-                audio.genres = genres.split(' ').map(|x| x.trim().to_string()).collect();
-            }
-        }
-
-        if let Some(title) = tag.title() {
-            audio.title = title.to_string();
-        }
-        if let Some(artists) = tag.get_string(&ItemKey::TrackArtist) {
-            audio.artists = artists
-                .split(';')
-                .filter(|x| !x.is_empty())
-                .map(|x| x.trim().to_string())
-                .collect();
-        };
-
-        if let Some(album) = tag.album() {
-            audio.album = album.to_string();
-        }
-
-        if let Some(album_artist) = tag.get_string(&ItemKey::OriginalArtist) {
-            audio.album_artist = Some(album_artist.to_string());
-        }
-
-        if let Some(no) = tag.track() {
-            audio.track = no;
-        }
-
-        if let Some(tt) = tag.track_total() {
-            audio.tracks_count = tt;
-        }
-
-        let mut bytes = audio.album.as_bytes().to_vec();
-        bytes.extend(
-            audio
-                .artists
-                .first()
-                .unwrap_or(&"@UNKNOWN@".to_string())
-                .as_bytes(),
-        );
-
-        let digest = md5::compute(bytes);
-
-        audio.album_id = format!("{digest:x}");
-
-        audio.disc = tag.disk().unwrap_or(1);
-        audio.disc_total = tag.disk_total().unwrap_or(1);
-
-        let cover = tag.get_picture_type(PictureType::CoverFront);
-        if let Some(cover) = cover {
-            let mime = cover.mime_type().unwrap();
-            let cover = Cover {
-                data: cover.data().to_vec(),
-                ext: match mime {
-                    MimeType::Png => ".png".to_string(),
-                    MimeType::Jpeg => ".jpeg".to_string(),
-                    MimeType::Tiff => ".tiff".to_string(),
-                    MimeType::Bmp => ".bmp".to_string(),
-                    MimeType::Gif => ".gif".to_string(),
-                    MimeType::Unknown(o) => format!(".{o}"),
-                    _ => ".png".to_string(),
-                },
+            let tag = match tagged_file.primary_tag() {
+                Some(primary_tag) => primary_tag,
+                // If the "primary" tag doesn't exist, we just grab the
+                // first tag we can find. Realistically, a tag reader would likely
+                // iterate through the tags to find a suitable one.
+                None => tagged_file.first_tag().unwrap_or(&default_tag),
             };
 
-            let pathstr = covers_dir.join(format!("{digest:x}{}", cover.ext));
-            let cover_path = std::path::Path::new(&pathstr);
-
-            if !cover_path.exists() {
-                check_dir(covers_dir);
-                let mut f = fs::File::create(cover_path).unwrap();
-                f.write_all(&cover.data).unwrap();
-            }
-
-            let img = image::open(cover_path).unwrap();
-            let pixels = utils::get_image_buffer(img);
-
-            let color = color_thief::get_palette(&pixels, ColorFormat::Rgb, 1, 2).unwrap();
-
-            let color = Color {
-                r: color[0].r,
-                g: color[0].g,
-                b: color[0].b,
+            let path = inode.to_str().unwrap().to_string();
+            let mut audio: Track = Track {
+                path_base64: URL_SAFE.encode(path.as_bytes()),
+                file_path: path,
+                ..Default::default()
             };
 
-            audio.is_light = Some(color.is_light_color());
-            audio.color = Some(color);
-            audio.cover_ext = cover.ext;
+            audio.mime = match mime {
+                lofty::file::FileType::Aac => "audio/aac",
+                lofty::file::FileType::Aiff => "audio/aiff",
+                lofty::file::FileType::Ape => "audio/ape",
+                lofty::file::FileType::Flac => "audio/flac",
+                lofty::file::FileType::Mpeg => "audio/mpeg",
+                lofty::file::FileType::Mp4 => "audio/mp4",
+                lofty::file::FileType::Mpc => "audio/mpc",
+                lofty::file::FileType::Opus => "audio/webm",
+                lofty::file::FileType::Vorbis => "audio/webm",
+                lofty::file::FileType::Speex => "audio/speex",
+                lofty::file::FileType::Wav => "audio/wav",
+                lofty::file::FileType::WavPack => "audio/wav",
+                _ => "application/octet-stream",
+            }
+            .to_string();
+
+            if let Ok(meta) = inode.metadata() {
+                if let Ok(tm) = meta.created() {
+                    let epoch = SystemTime::UNIX_EPOCH;
+                    audio.created_at = tm.duration_since(epoch).unwrap().as_secs();
+                }
+            };
+
+            if let Some(year) = tag.year() {
+                audio.album_year = Some(year);
+            } else if let Some(year) = tag.get_string(&ItemKey::Unknown("TDOR".into())) {
+                audio.album_year = Some(year.parse().unwrap_or(0));
+            }
+
+            if let Some(encoder) = tag.get_string(&ItemKey::EncoderSettings) {
+                audio.encoder = encoder.to_string();
+            }
+
+            if let Some(genres) = tag.genre() {
+                if genres.contains(';') {
+                    audio.genres = genres.split(';').map(|x| x.trim().to_string()).collect();
+                } else {
+                    audio.genres = genres.split(' ').map(|x| x.trim().to_string()).collect();
+                }
+            }
+
+            if let Some(title) = tag.title() {
+                audio.title = title.to_string();
+            }
+            if let Some(artists) = tag.get_string(&ItemKey::TrackArtist) {
+                audio.artists = artists
+                    .split(';')
+                    .filter(|x| !x.is_empty())
+                    .map(|x| x.trim().to_string())
+                    .collect();
+            };
+
+            if let Some(album) = tag.album() {
+                audio.album = album.to_string();
+            }
+
+            if let Some(album_artist) = tag.get_string(&ItemKey::OriginalArtist) {
+                audio.album_artist = Some(album_artist.to_string());
+            }
+
+            if let Some(no) = tag.track() {
+                audio.track = no;
+            }
+
+            if let Some(tt) = tag.track_total() {
+                audio.tracks_count = tt;
+            }
+
+            let mut bytes = audio.album.as_bytes().to_vec();
+            bytes.extend(
+                audio
+                    .artists
+                    .first()
+                    .unwrap_or(&"@UNKNOWN@".to_string())
+                    .as_bytes(),
+            );
+
+            let digest = md5::compute(bytes);
+
+            audio.album_id = format!("{digest:x}");
+
+            audio.disc = tag.disk().unwrap_or(1);
+            audio.disc_total = tag.disk_total().unwrap_or(1);
+
+            let cover = tag.get_picture_type(PictureType::CoverFront);
+            if let Some(cover) = cover {
+                let mime = cover.mime_type().unwrap();
+                let cover = Cover {
+                    data: cover.data().to_vec(),
+                    ext: match mime {
+                        MimeType::Png => ".png".to_string(),
+                        MimeType::Jpeg => ".jpeg".to_string(),
+                        MimeType::Tiff => ".tiff".to_string(),
+                        MimeType::Bmp => ".bmp".to_string(),
+                        MimeType::Gif => ".gif".to_string(),
+                        MimeType::Unknown(o) => format!(".{o}"),
+                        _ => ".png".to_string(),
+                    },
+                };
+
+                let pathstr = covers_dir.join(format!("{digest:x}{}", cover.ext));
+                let cover_path = std::path::Path::new(&pathstr);
+
+                if !cover_path.exists() {
+                    check_dir(covers_dir);
+                    let mut f = fs::File::create(cover_path).unwrap();
+                    f.write_all(&cover.data).unwrap();
+                }
+
+                let img = image::open(cover_path).unwrap();
+                let pixels = utils::get_image_buffer(img);
+
+                let color = color_thief::get_palette(&pixels, ColorFormat::Rgb, 1, 2).unwrap();
+
+                let color = Color {
+                    r: color[0].r,
+                    g: color[0].g,
+                    b: color[0].b,
+                };
+
+                audio.is_light = Some(color.is_light_color());
+                audio.color = Some(color);
+                audio.cover_ext = cover.ext;
+            }
+
+            audio.duration = duration.as_secs();
+            audio.bitrate = bitrate;
+
+            Ok(audio)
+        } else {
+            warn!("Unable to read {}", inode.display());
+            Err(())
         }
-
-        audio.duration = duration.as_secs();
-        audio.bitrate = bitrate;
-
-        audio
     }
 
     pub fn parse_lyrics(input: &str) -> alrc::AdvancedLrc {
@@ -532,8 +535,8 @@ impl Media {
             self.add_playlist(m3u8::M3U8::parse(path));
         } else if ext == "playlist" {
             self.add_playlist(PlaylistData::parse(format!("{}", path.display())));
-        } else {
-            self.add_song(Track::from_file(covers_dir, path));
+        } else if let Ok(song) = Track::from_file(covers_dir, path) {
+            self.add_song(song);
         }
     }
 
