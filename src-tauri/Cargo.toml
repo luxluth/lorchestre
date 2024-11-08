@@ -1,6 +1,6 @@
 [package]
 name = "lorchestre"
-version = "0.1.3"
+version = "0.2.0"
 description = "The only music player you'll ever need"
 authors = ["luxluth"]
 edition = "2021"
@@ -30,7 +30,7 @@ image = "0.25.2"
 lofty = "0.21.1"
 md5 = "0.7.0"
 mime_guess = "2.0.5"
-socketioxide = { version = "0.14.1", features = ["state"] }
+socketioxide = { version = "0.15.1", features = ["state"] }
 tokio = { version = "1.40.0", features = ["full"] }
 tower = "0.5.0"
 tower-http = { version = "0.6.1", features = ["cors"] }
