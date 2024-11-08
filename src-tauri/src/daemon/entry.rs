@@ -60,7 +60,7 @@ async fn on_connect(socket: SocketRef) {
             let (media, dirs) = data.0;
             let m = media.read().await;
             let res = m.search(dirs.cache, &q);
-            let _ = sock.emit("searchresponse", res);
+            let _ = sock.emit("searchresponse", &res);
         },
     );
 
@@ -72,7 +72,7 @@ async fn on_connect(socket: SocketRef) {
             let (media, dirs) = data.0;
             let m = media.read().await;
             let res = m.search(dirs.cache, &q);
-            let _ = sock.emit("localsr", res);
+            let _ = sock.emit("localsr", &res);
         },
     )
 }
@@ -348,7 +348,7 @@ async fn updatemusic(State(state): State<AppData>) {
     let m = utils::cache_resolve(&state.dirs.cache, None).await;
     let mut binding = state.media.write().await;
     binding.swap_with(m.clone());
-    let _ = state.io.emit("newmedia", m);
+    let _ = state.io.emit("newmedia", &m);
 }
 
 async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response {
@@ -417,7 +417,7 @@ async fn list_update(
             Ok(_) => {
                 media.substitute_playlist(playlist);
                 media.cache(dirs.cache, None);
-                let _ = state.io.emit("newmedia", media.clone());
+                let _ = state.io.emit("newmedia", &media.clone());
                 return "ok".into_response();
             }
             Err(e) => {
@@ -460,7 +460,7 @@ async fn list_create(State(state): State<AppData>, Json(payload): Json<List>) ->
             let m = utils::cache_resolve(&state.dirs.cache, None).await;
             let mut binding = state.media.write().await;
             binding.swap_with(m.clone());
-            let _ = state.io.emit("newmedia", m);
+            let _ = state.io.emit("newmedia", &m);
 
             return Json(ResponsePath { path }).into_response();
         }
