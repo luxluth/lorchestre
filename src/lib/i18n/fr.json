@@ -1,29 +1,29 @@
 {
 	"bib": "Bibliothèque",
-	"search": "Recherche",
-	"recent-added": "Ajouts récents",
+	"search": "Rechercher",
+	"recent-added": "Ajouté récemment",
 	"albums": "Albums",
-	"settings": "Réglages",
+	"settings": "Paramètres",
 	"songs": "Chansons",
 	"no_media": "Aucune chanson en cours de lecture",
 	"indexing_msg": "Indexation des fichiers locaux...",
-	"app_welcome": "Bienvenue dans l'orcheste",
-	"welcome_msg": "Un lecteur de musique qui se veut exceptionnel",
-	"notice_msg": "Cette operation peut prendre un certain temps",
-	"start_btn": "Commencer",
+	"app_welcome": "Bienvenue dans l'orchestre",
+	"welcome_msg": "Un lecteur de musique exceptionnel",
+	"notice_msg": "Cette opération peut prendre du temps",
+	"start_btn": "Démarrer",
 	"end_button": "Terminer",
-	"playlist": "Liste de lecture",
-	"playlists": "Listes de lecture",
-	"no_playlist_found": "Aucune liste de lecture trouvée",
+	"playlist": "Playlist",
+	"playlists": "Playlists",
+	"no_playlist_found": "Aucune playlist trouvée",
 	"search_page": {
 		"res_msg": "Résultat pour le terme",
-		"no_ipt": "Commencer à écrire pour chercher...",
+		"no_ipt": "Commencez à taper pour rechercher...",
 		"no_res": "Aucun résultat"
 	},
 	"ctx": {
-		"play": "Lancer la lecture",
-		"inqueue": "Ajouter la file d'attente",
-		"top_of_q": "Ajouter en haut de file"
+		"play": "Lire",
+		"inqueue": "Ajouter à la file d'attente",
+		"top_of_q": "Ajouter en haut de la file d'attente"
 	},
 	"cmds": {
 		"lrc": {
@@ -32,81 +32,104 @@
 		"waitlist": {
 			"title": "File d'attente",
 			"empty": "Aucune chanson dans la file d'attente",
-			"clear_queue": "Vider"
+			"clear_queue": "Effacer"
 		}
 	},
 	"album": {
 		"page": {
-			"songs": "Morceaux",
+			"songs": "Pistes",
 			"ctx": {
 				"add_queue": "Ajouter à la file d'attente"
 			}
 		}
 	},
 	"settings_page": {
+		"gh": "Accéder au code source",
 		"tip_top": "Gérer les paramètres de l'application",
 		"section_ui_ux": {
 			"title": "Interface",
 			"language": {
-				"title": "Langage de l'interface",
+				"title": "Langue de l'interface",
 				"choose_a_lang": "Choisissez une langue"
 			},
 			"theme": {
 				"title": "Apparence de l'application"
 			},
-			"blur": "Activer ou désactiver l'effet de flou sur la grande vue"
+			"blur": "Activer ou désactiver l'effet de flou en grand écran"
 		},
 		"section_mlib": {
-			"title": "Gestion de la librarie",
+			"title": "Gestion de la bibliothèque",
 			"sync": {
-				"title": "Synchroniser la librarie avec les fichiers locaux",
-				"sync_btn": "Commencer la synchronisation"
+				"title": "Synchroniser la bibliothèque avec les fichiers locaux",
+				"sync_btn": "Démarrer la synchronisation"
 			}
 		}
 	},
 	"songs_page": {
 		"listen": "Écouter",
-		"shuffle": "Aléatoire",
+		"shuffle": "Lecture aléatoire",
 
 		"filter": {
 			"filter_to_apply": "Filtre à appliquer",
 			"selection_area_label_type": "Choisissez un type de filtre",
-			"sort_order": "Ordre du tri",
-			"selection_area_label_order": "Choisissez l'ordre du tri",
+			"sort_order": "Ordre de tri",
+			"selection_area_label_order": "Choisissez l'ordre de tri",
 			"type": {
 				"alpha": "Alphabétique",
 				"date": "Date d'ajout",
-				"no_filter": "Sans filtre"
+				"no_filter": "Aucun filtre"
 			},
 			"order": {
-				"asc": "Ascendant",
-				"desc": "Descendant"
+				"asc": "Croissant",
+				"desc": "Décroissant"
 			}
 		}
 	},
 
 	"misc": {
-		"goto_album_page": "Accéder à l'album"
+		"goto_album_page": "Aller à l'album"
 	},
 
 	"stats_page": {
 		"total": "Vous avez un total de",
-		"song": "morceau",
-		"songs": "morceaux",
+		"song": "piste",
+		"songs": "pistes",
 		"latest_add": "Votre dernier ajout est"
 	},
 
 	"lrc_related": {
 		"no_lyrics": "Aucune parole trouvée",
-		"search_btn": "rechercher les paroles",
-		"searching": "recherche en cours...",
-		"fetch_error": "Impossible d'obtenir les paroles de la chanson sélectionnée",
+		"search_btn": "rechercher des paroles",
+		"searching": "recherche...",
+		"fetch_error": "Impossible d'obtenir les paroles pour la chanson sélectionnée",
 		"title_search": "Paroles trouvées",
-		"copy": "Ces paroles sont fournies par LRCLIB"
+		"copy": "Ces paroles sont fournies par lrclib"
 	},
 
 	"view": {
 		"btn_cancel": "Annuler",
-		"btn_save": "Enregistrer"
+		"btn_save": "Sauvegarder"
+	},
+
+	"nav": {
+		"new_playlist": "Nouvelle playlist"
+	},
+
+	"playlist_create_page": {
+		"create": "Créer",
+		"page_title": "Créer une nouvelle playlist",
+		"description": "description de la playlist",
+		"choose_cover": "Choisir la couverture de la playlist",
+		"creating_message": "Création de la playlist",
+		"success_creation": "Playlist créée avec succès",
+		"failed_creation": "Impossible de créer une nouvelle playlist en raison de l'erreur suivante"
+	},
+
+	"playlist_page": {
+		"updating_message": "Mise à jour de la playlist",
+		"success_update": "Playlist mise à jour",
+		"failed_update": "Impossible de mettre à jour la playlist en raison de l'erreur suivante",
+		"remove_selections": "Supprimer les éléments sélectionnés",
+		"add_tracks": "Ajouter des pistes"
 	}
 }

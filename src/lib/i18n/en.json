@@ -44,6 +44,7 @@
 		}
 	},
 	"settings_page": {
+		"gh": "Access the source code",
 		"tip_top": "Manage application settings",
 		"section_ui_ux": {
 			"title": "Interface",
@@ -102,11 +103,33 @@
 		"searching": "searching...",
 		"fetch_error": "Unable to get lyrics for the selected song",
 		"title_search": "Lyrics found",
-		"copy": "Those lyrics are provided by LRCLIB"
+		"copy": "Those lyrics are provided by lrclib"
 	},
 
 	"view": {
 		"btn_cancel": "Cancel",
 		"btn_save": "Save"
+	},
+
+	"nav": {
+		"new_playlist": "New Playlist"
+	},
+
+	"playlist_create_page": {
+		"create": "Create",
+		"page_title": "Create a new playlist",
+		"description": "playlist description",
+		"choose_cover": "Choose the playlist cover",
+		"creating_message": "Creating playlist",
+		"success_creation": "Playlist created with success",
+		"failed_creation": "Unable to create a new playlist with the following error"
+	},
+
+	"playlist_page": {
+		"updating_message": "Updating playlist",
+		"success_update": "Playlist updated",
+		"failed_update": "Unable to update the playlist with the following error",
+		"remove_selections": "Remove selected items",
+		"add_tracks": "Add tracks"
 	}
 }

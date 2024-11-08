@@ -5,7 +5,7 @@
 	"albums": "アルバム",
 	"settings": "設定",
 	"songs": "曲",
-	"no_media": "再生中の曲はありません",
+	"no_media": "現在再生中の曲はありません",
 	"indexing_msg": "ローカルファイルをインデックス中...",
 	"app_welcome": "オーケストラへようこそ",
 	"welcome_msg": "特別な音楽プレーヤー",
@@ -17,13 +17,13 @@
 	"no_playlist_found": "プレイリストが見つかりません",
 	"search_page": {
 		"res_msg": "検索結果",
-		"no_ipt": "検索を開始するには入力してください...",
+		"no_ipt": "検索するには入力を開始...",
 		"no_res": "結果がありません"
 	},
 	"ctx": {
-		"play": "再生する",
+		"play": "再生",
 		"inqueue": "キューに追加",
-		"top_of_q": "キューのトップに追加"
+		"top_of_q": "キューの先頭に追加"
 	},
 	"cmds": {
 		"lrc": {
@@ -44,23 +44,24 @@
 		}
 	},
 	"settings_page": {
-		"tip_top": "アプリケーションの設定を管理する",
+		"gh": "ソースコードにアクセス",
+		"tip_top": "アプリの設定を管理",
 		"section_ui_ux": {
 			"title": "インターフェース",
 			"language": {
 				"title": "インターフェースの言語",
-				"choose_a_lang": "言語を選択してください"
+				"choose_a_lang": "言語を選択"
 			},
 			"theme": {
-				"title": "アプリケーションの外観"
+				"title": "アプリの外観"
 			},
-			"blur": "大きなビューのぼかし効果を有効または無効にする"
+			"blur": "大きなビューでぼかし効果を有効または無効にする"
 		},
 		"section_mlib": {
 			"title": "ライブラリ管理",
 			"sync": {
-				"title": "ローカルファイルとライブラリを同期する",
-				"sync_btn": "同期を開始"
+				"title": "ローカルファイルとライブラリを同期",
+				"sync_btn": "同期開始"
 			}
 		}
 	},
@@ -69,10 +70,10 @@
 		"shuffle": "シャッフル",
 
 		"filter": {
-			"filter_to_apply": "適用するフィルタ",
-			"selection_area_label_type": "フィルタータイプを選択してください",
-			"sort_order": "並び替え順序",
-			"selection_area_label_order": "並び順を選択してください",
+			"filter_to_apply": "適用するフィルター",
+			"selection_area_label_type": "フィルタータイプを選択",
+			"sort_order": "並べ替え順",
+			"selection_area_label_order": "並べ替え順を選択",
 			"type": {
 				"alpha": "アルファベット順",
 				"date": "追加日",
@@ -90,7 +91,7 @@
 	},
 
 	"stats_page": {
-		"total": "合計で",
+		"total": "合計",
 		"song": "トラック",
 		"songs": "トラック",
 		"latest_add": "最新の追加は"
@@ -102,11 +103,33 @@
 		"searching": "検索中...",
 		"fetch_error": "選択した曲の歌詞を取得できません",
 		"title_search": "歌詞が見つかりました",
-		"copy": "これらの歌詞はLRCLIBによって提供されています"
+		"copy": "これらの歌詞は lrclib によって提供されています"
 	},
 
 	"view": {
 		"btn_cancel": "キャンセル",
 		"btn_save": "保存"
+	},
+
+	"nav": {
+		"new_playlist": "新しいプレイリスト"
+	},
+
+	"playlist_create_page": {
+		"create": "作成",
+		"page_title": "新しいプレイリストを作成",
+		"description": "プレイリストの説明",
+		"choose_cover": "プレイリストカバーを選択",
+		"creating_message": "プレイリストを作成中",
+		"success_creation": "プレイリストが正常に作成されました",
+		"failed_creation": "次のエラーにより新しいプレイリストを作成できませんでした"
+	},
+
+	"playlist_page": {
+		"updating_message": "プレイリストを更新中",
+		"success_update": "プレイリストが更新されました",
+		"failed_update": "次のエラーによりプレイリストを更新できませんでした",
+		"remove_selections": "選択した項目を削除",
+		"add_tracks": "トラックを追加"
 	}
 }
