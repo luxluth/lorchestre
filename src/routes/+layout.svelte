@@ -29,8 +29,8 @@
 	import { setPageScroll } from '$lib/pageScroll.svelte';
 	import { setListCreator } from '$lib/listCreate.svelte';
 	import { invoke } from '@tauri-apps/api/core';
-
-	// import { invoke } from '@tauri-apps/api/core';
+	import { listen } from '@tauri-apps/api/event';
+	import { requestUserAttention } from '$lib/utils';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
@@ -68,6 +68,11 @@
 			'data-theme',
 			conf.config?.global?.theme ?? conf.defaults.global.theme
 		);
+		(async () => {
+			await listen('single-instance', () => {
+				requestUserAttention();
+			});
+		})();
 	}
 
 	onMount(() => {
