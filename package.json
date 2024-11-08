@@ -32,6 +32,7 @@
 		"@tauri-apps/plugin-dialog": "2.0.0",
 		"@tauri-apps/plugin-shell": "2.0.0",
 		"@tauri-apps/plugin-window-state": "2.0.0",
+		"@tauri-apps/plugin-process": "2.0.0-rc.1",
 		"@types/howler": "^2.2.12",
 		"@types/uuid": "^9.0.8",
 		"bits-ui": "^0.21.16",
@@ -47,8 +48,5 @@
 		"tslib": "^2.8.1",
 		"typescript": "^5.6.3",
 		"vite": "^5.4.10"
-	},
-	"dependencies": {
-		"@tauri-apps/plugin-process": "2.0.0-rc.1"
 	}
 }

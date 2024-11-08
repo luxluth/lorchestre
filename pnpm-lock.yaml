@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@tauri-apps/plugin-process':
-        specifier: 2.0.0-rc.1
-        version: 2.0.0-rc.1
     devDependencies:
       '@fontsource-variable/inter':
         specifier: ^5.1.0
@@ -54,6 +50,9 @@ importers:
       '@tauri-apps/plugin-dialog':
         specifier: 2.0.0
         version: 2.0.0
+      '@tauri-apps/plugin-process':
+        specifier: 2.0.0-rc.1
+        version: 2.0.0-rc.1
       '@tauri-apps/plugin-shell':
         specifier: 2.0.0
         version: 2.0.0
