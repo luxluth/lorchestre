@@ -48,7 +48,7 @@
 		{@html banner}
 		<code>{version}</code>
 		<a class="btn" target="_blank" href="https://github.com/luxluth/lorchestre"
-			><Github size={14} /> Star On Github</a
+			><Github size={14} /> {$_('settings_page.gh')}</a
 		>
 	</div>
 </div>

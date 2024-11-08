@@ -17,7 +17,20 @@
 	}
 </script>
 
-<div class="edit_song" role="presentation">
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div
+	class="edit_song"
+	role="presentation"
+	tabindex="0"
+	onkeydown={(e) => {
+		if (e.key.toLowerCase() == 'enter') {
+			toggleSelection(song.file_path);
+		}
+	}}
+	onclick={() => {
+		toggleSelection(song.file_path);
+	}}
+>
 	<div
 		class="checkbox"
 		role="gridcell"

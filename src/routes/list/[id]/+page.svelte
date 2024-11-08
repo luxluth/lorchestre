@@ -17,6 +17,7 @@
 	import ListPlus from 'lucide-svelte/icons/list-plus';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Bolt from 'lucide-svelte/icons/bolt';
+	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import ArrowDown10 from 'lucide-svelte/icons/arrow-down-1-0';
 	import Song from '$lib/components/Song.svelte';
@@ -191,8 +192,10 @@
 		let req_url = `http://${endpoint}/playlist/update/${playlistData?.path_base64}`;
 		if (listName.length > 0) {
 			updateting = true;
-			// TODO: localize
-			let loadingToastId = tm.new(ToastKind.Loading, 'Updating playlist `' + listName + '`');
+			let loadingToastId = tm.new(
+				ToastKind.Loading,
+				`${$_('playlist_page.updating_message')} \`` + listName + '`'
+			);
 			const payload: ListPayload = {
 				meta: [],
 				tracks: []
@@ -214,25 +217,28 @@
 			})
 				.then(async (response) => {
 					if (response.ok) {
-						// TODO: localize
-						tm.new(ToastKind.Simple, 'Playlist updated');
-						await goto('/list/' + playlistData?.path_base64);
+						tm.new(ToastKind.Simple, $_('playlist_page.success_update'));
+						await goto('/list/' + playlistData?.path_base64, {
+							replaceState: true,
+							invalidateAll: true
+						});
 					}
 				})
 
 				.catch((error) => {
 					tm.close(loadingToastId);
-					// TODO: localize
-					tm.new(
-						ToastKind.Error,
-						`Unable to update the playlist with the following error: ${error}`
-					);
+					tm.new(ToastKind.Error, `${$_('playlist_page.failed_update')}: ${error}`);
 				})
 				.finally(() => {
 					tm.close(loadingToastId);
 					updateting = false;
 				});
 		}
+	}
+
+	function removeSelections() {
+		tracks = tracks.filter((t) => !selections.includes(t.file_path));
+		selections = [];
 	}
 
 	let updateting = $state(false);
@@ -276,6 +282,19 @@
 		{:else if mode === 'edit'}
 			<input type="text" class="list_name" bind:value={listName} />
 			<input type="text" class="desc" placeholder="playlist description" bind:value={listDesc} />
+		{/if}
+		{#if mode == 'edit'}
+			<button
+				data-kind="desctructive"
+				class="remove_selection btn"
+				class:inactive={selections.length == 0}
+				onclick={() => removeSelections()}
+			>
+				<div class="icon">
+					<Trash2 size={'1em'} />
+				</div>
+				{$_('playlist_page.remove_selections')} [{selections.length}]</button
+			>
 		{/if}
 		{#if mode === 'normal'}
 			<div class="quick-actions">
@@ -413,7 +432,7 @@
 		</div>
 		{#if mode === 'edit'}
 			<section class="adding_tracks">
-				<h3><ListPlus /> Add Tracks</h3>
+				<h3><ListPlus /> {$_('playlist_page.add_tracks')}</h3>
 
 				<div class="search">
 					<input
@@ -478,6 +497,10 @@
 </div>
 
 <style>
+	.remove_selection {
+		margin-top: 1em;
+	}
+
 	input[type='search'].search_tracks {
 		-webkit-appearance: none;
 		appearance: none;

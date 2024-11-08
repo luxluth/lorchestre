@@ -33,9 +33,8 @@
 				multiple: false,
 				directory: false,
 				filters: [
-					// TODO: localize here
 					{
-						name: 'Choose the playlist cover',
+						name: $_('playlist_create_page.choose_cover'),
 						extensions: ['png']
 					}
 				]
@@ -78,7 +77,7 @@
 	style={color ? `--clr: rgb(${color.r}, ${color.g}, ${color.b})` : ''}
 	class:creating={lc.creating}
 >
-	<h1>Create a new playlist</h1>
+	<h1>{$_('playlist_create_page.page_title')}</h1>
 	<div class="top">
 		<div
 			class="add_cover"
@@ -109,17 +108,16 @@
 			<input
 				type="text"
 				class="desc"
-				placeholder="playlist description"
+				placeholder={$_('playlist_create_page.description')}
 				bind:value={lc.Description}
 			/>
-			<!-- TODO: localize -->
 			<div class="submit">
 				<button
 					class="btn"
 					class:inactive={lc.addedTracks.length <= 0}
 					onclick={async () => {
 						await lc.create();
-					}}>Create</button
+					}}>{$_('playlist_create_page.create')}</button
 				>
 			</div>
 		</div>

@@ -59,7 +59,7 @@
 				<div class="icon">
 					<Plus size={'1em'} />
 				</div>
-				New playlist
+				{$_('nav.new_playlist')}
 			</a>
 		</div>
 	</section>

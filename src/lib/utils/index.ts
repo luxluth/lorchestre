@@ -1,5 +1,5 @@
-import type { Playlist, QueueTrack, RawTimestamp, Track } from '$lib/type';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import type { QueueTrack, RawTimestamp, Track } from '$lib/type';
+import { getCurrentWindow, UserAttentionType } from '@tauri-apps/api/window';
 import type AppConfig from '$lib/config.svelte';
 
 export function clickOutside(element: Element, callbackFunction: () => void) {
@@ -108,6 +108,13 @@ export function setRandomId(track: Track): QueueTrack {
 export function setTitle(text: string) {
 	(async () => {
 		await getCurrentWindow().setTitle(text);
+	})();
+}
+
+export function requestUserAttention() {
+	(async () => {
+		console.warn('User attention requested');
+		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
 	})();
 }
 

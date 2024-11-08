@@ -4,12 +4,15 @@ import type AppConfig from './config.svelte';
 import type ToastManager from './toast.svelte';
 import { ToastKind } from './type';
 import { goto } from '$app/navigation';
+import { _ as loc } from 'svelte-i18n';
+import { get } from 'svelte/store';
 
 export type ListPayload = {
 	meta: Array<[string, string]>;
 	tracks: string[];
 };
 
+const _ = (key: string) => get(loc)(key);
 export default class ListCreate {
 	addedTracks: string[] = $state([]);
 	Name: string = $state('');
@@ -25,15 +28,17 @@ export default class ListCreate {
 		this.media = media;
 		this.tm = tm;
 		this.conf = conf;
-		this.Name = `Playlist N°${media.playlists.length + 1}`;
+		this.Name = `${_('playlist')} #${media.playlists.length + 1}`;
 	}
 
 	async create() {
 		const endpoint = this.conf.getDaemonEndpoint();
 		let req_url = `http://${endpoint}/playlist/create`;
 		if (this.addedTracks.length > 0 && this.Name.length > 0) {
-			// TODO: localize
-			let loadingToastId = this.tm.new(ToastKind.Loading, 'Creating playlist `' + this.Name + '`');
+			let loadingToastId = this.tm.new(
+				ToastKind.Loading,
+				`${_('playlist_create_page.creating_message')} \`` + this.Name + '`'
+			);
 			const payload: ListPayload = {
 				meta: [],
 				tracks: []
@@ -63,24 +68,18 @@ export default class ListCreate {
 						this.xCoverPath = '';
 						this.ImageData = '';
 
-						// TODO: localize
-						this.tm.new(ToastKind.Simple, 'Playlist created with success');
+						this.tm.new(ToastKind.Simple, _('playlist_create_page.success_creation'));
 						await goto(`/list/${p.path}`);
 					} else {
-						// TODO: localize
 						this.tm.new(
 							ToastKind.Error,
-							`Unable to create a new playlist with the following error: ${await response.text()}`
+							`${_('playlist_create_page.failed_creation')}: ${await response.text()}`
 						);
 					}
 				})
 				.catch((error) => {
 					this.tm.close(loadingToastId);
-					// TODO: localize
-					this.tm.new(
-						ToastKind.Error,
-						`Unable to create a new playlist with the following error: ${error}`
-					);
+					this.tm.new(ToastKind.Error, `${_('playlist_create_page.failed_creation')}: ${error}`);
 				})
 				.finally(() => {
 					this.tm.close(loadingToastId);
