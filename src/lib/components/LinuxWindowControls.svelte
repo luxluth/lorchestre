@@ -15,8 +15,10 @@
 
 	(async () => {
 		desktop = await invoke('desktop');
+		console.log('desktop', desktop);
 		if (desktop === 'gnome') {
 			buttons = await invoke('gnome_window_controls');
+			console.log('menu:', buttons);
 		}
 	})();
 </script>

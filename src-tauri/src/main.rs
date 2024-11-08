@@ -4,13 +4,12 @@
 use daemon::{config::Dir, global::Media};
 use lorconf::Config;
 use tauri_plugin_decorum::WebviewWindowExt;
-use tracing::error;
+use tracing::warn;
 mod daemon;
 use crate::daemon::entry::start;
 use std::{env::consts::OS, fs::File, io::Write};
 use tauri::{Emitter, Manager};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
-use tracing_subscriber::FmtSubscriber;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -40,7 +39,7 @@ fn gnome_window_controls() -> Vec<String> {
         .replace('\'', "")
         .replace("appmenu:", "")
         .split(',')
-        .map(|x| x.trim().to_string())
+        .map(|x| x.trim().replace(":", "").to_string())
         .filter(|x| !x.is_empty())
         .collect()
 }
@@ -222,7 +221,11 @@ struct SingleInstanceArgs {
 }
 
 async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_thread_ids(true)
+        .with_timer(tracing_subscriber::fmt::time::time())
+        .init();
     tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
@@ -230,7 +233,7 @@ async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_decorum::init())
         .plugin(tauri_plugin_single_instance::init(move |app, argv, cwd| {
-            error!(
+            warn!(
                 "An instance of l'orchestre is already running :: {}, {argv:?}, {cwd}",
                 app.package_info().name
             );

@@ -3,6 +3,7 @@
 	import WindowsWindowControls from './WindowsWindowControls.svelte';
 
 	let { platform }: { platform: string } = $props();
+	console.log(platform);
 </script>
 
 {#if platform === 'linux'}
