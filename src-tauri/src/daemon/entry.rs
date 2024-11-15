@@ -23,7 +23,7 @@ use socketioxide::{
     extract::{Data, SocketRef},
     SocketIo,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use std::{
     io::{BufWriter, Cursor, Read},
     path::PathBuf,
@@ -98,7 +98,11 @@ pub async fn start(
     }
 
     let req_client = reqwest::Client::new();
-    let response = req_client.get(format!("http://{host}:{port}")).send().await;
+    let response = req_client
+        .get(format!("http://{host}:{port}"))
+        .timeout(Duration::from_secs(10))
+        .send()
+        .await;
     if response.is_ok() {
         tracing::error!("Daemon already running");
         return Err("Daemon already running".into());
@@ -274,6 +278,7 @@ async fn search_lyrics(
                 "User-Agent",
                 format!("L'orchestre v{VERSION} (https://github.com/luxluth/lorchestre)"),
             )
+            .timeout(Duration::from_secs(10))
             .send()
             .await
         {
