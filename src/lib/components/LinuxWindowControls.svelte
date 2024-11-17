@@ -15,10 +15,10 @@
 
 	(async () => {
 		desktop = await invoke('desktop');
-		console.log('desktop', desktop);
+		console.log('desktop', $state.snapshot(desktop));
 		if (desktop === 'gnome') {
 			buttons = await invoke('gnome_window_controls');
-			console.log('menu:', buttons);
+			console.log('menu:', $state.snapshot(buttons));
 		}
 	})();
 </script>

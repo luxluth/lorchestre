@@ -158,7 +158,7 @@
 	}
 
 	$effect(() => {
-		console.log(discs);
+		$inspect(discs).with(console.trace);
 	});
 
 	function getDuration() {

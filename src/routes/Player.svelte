@@ -30,11 +30,8 @@
 		config.config.global?.enable_blur ?? config.defaults.global.enable_blur
 	);
 
-	//@ts-ignore
-	let lyricsParent: HTMLElement = $state<HTMLElement>();
-
-	//@ts-ignore
-	let sound: HTMLAudioElement = $state<HTMLAudioElement>();
+	let lyricsParent: HTMLElement = $state<HTMLElement>()!;
+	let sound: HTMLAudioElement = $state<HTMLAudioElement>()!;
 	let hasLyrics = $derived(lrcMngr.lines.length > 0);
 
 	$effect(() => {
@@ -121,7 +118,7 @@
 		};
 
 		sound.ontimeupdate = () => {
-			lrcMngr.update(sound.currentTime);
+			lrcMngr.update(sound?.currentTime ?? 0);
 		};
 
 		if (manager.initialized) {
@@ -281,16 +278,18 @@
 				{/if}
 				<div class="volume">
 					<div class="vol-icon">
-						{#if manager.volume === 0}
+						{#if manager.sliderValue <= 0}
 							<Volume size={'1.5em'} />
-						{:else if manager.volume >= 0.7}
+						{:else if manager.sliderValue >= 0.7}
 							<Volume2 size={'1.5em'} />
-						{:else if manager.volume > 0}
+						{:else if manager.sliderValue > 0}
 							<Volume1 size={'1.5em'} />
+						{:else}
+							<Volume size={'1.5em'} />
 						{/if}
 					</div>
 					<Slider
-						bind:value={manager.volume}
+						bind:value={manager.sliderValue}
 						style="classic"
 						color={'var(--text)'}
 						thumbColor={'var(--text)'}

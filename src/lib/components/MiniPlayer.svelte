@@ -138,15 +138,17 @@
 		</section>
 		<section class="volume">
 			<div class="vol-icon">
-				{#if manager.volume === 0}
+				{#if manager.sliderValue <= 0}
 					<Volume size={'20px'} />
-				{:else if manager.volume >= 0.7}
+				{:else if manager.sliderValue >= 0.7}
 					<Volume2 size={'20px'} />
-				{:else if manager.volume > 0}
+				{:else if manager.sliderValue > 0}
 					<Volume1 size={'20px'} />
+				{:else}
+					<Volume size={'1.5em'} />
 				{/if}
 			</div>
-			<Slider bind:value={manager.volume} style="classic" />
+			<Slider bind:value={manager.sliderValue} style="classic" />
 		</section>
 	{:else}
 		<section class="controls">
@@ -180,15 +182,17 @@
 		</section>
 		<section class="volume" style="opacity: .5;">
 			<div class="vol-icon">
-				{#if manager.volume === 0}
+				{#if manager.sliderValue <= 0}
 					<Volume size={'20px'} />
-				{:else if manager.volume >= 0.7}
+				{:else if manager.sliderValue >= 0.7}
 					<Volume2 size={'20px'} />
-				{:else if manager.volume > 0}
+				{:else if manager.sliderValue > 0}
 					<Volume1 size={'20px'} />
+				{:else}
+					<Volume size={'1.5em'} />
 				{/if}
 			</div>
-			<Slider value={manager.volume} style="classic" />
+			<Slider value={manager.sliderValue} style="classic" />
 		</section>
 	{/if}
 </div>
