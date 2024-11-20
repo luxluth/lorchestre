@@ -31,6 +31,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { listen } from '@tauri-apps/api/event';
 	import { requestUserAttention } from '$lib/utils';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
@@ -71,6 +72,11 @@
 		(async () => {
 			await listen('single-instance', () => {
 				requestUserAttention();
+			});
+
+			await listen<String>('open', async (e) => {
+				console.log(e.payload);
+				await goto(e.payload.toString(), { replaceState: true, invalidateAll: true });
 			});
 		})();
 	}

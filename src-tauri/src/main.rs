@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use daemon::{config::Dir, global::Media};
 use lorconf::Config;
 use tauri_plugin_decorum::WebviewWindowExt;
@@ -220,7 +221,7 @@ struct SingleInstanceArgs {
     cwd: String,
 }
 
-async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
+async fn start_app(args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .with_thread_ids(true)
@@ -237,7 +238,15 @@ async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
                 "An instance of l'orchestre is already running :: {}, {argv:?}, {cwd}",
                 app.package_info().name
             );
-            app.emit("single-instance", SingleInstanceArgs { args: argv, cwd })
+            let mut args = argv.into_iter();
+            args.next();
+            let args: Vec<String> = args.collect();
+
+            if args.len() > 0 {
+                let url = format!("/open/{}", URL_SAFE.encode(args[0].as_bytes()));
+                let _ = app.emit("open", url);
+            }
+            app.emit("single-instance", SingleInstanceArgs { args, cwd })
                 .unwrap();
         }))
         .invoke_handler(tauri::generate_handler![
@@ -279,13 +288,18 @@ async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
                 audio: app.path().audio_dir().unwrap(),
             };
 
+            let window = app.get_webview_window("main").unwrap();
+            let win_clone = window.clone();
             tokio::task::spawn(async move {
                 if !is_first_run {
+                    if args.len() > 0 {
+                        let url = format!("/open/{}", URL_SAFE.encode(args[0].as_bytes()));
+                        let _ = win_clone.emit("open", url);
+                    }
                     let _ = start(None, dirs).await;
                 }
             });
 
-            let window = app.get_webview_window("main").unwrap();
             let _ = window.set_shadow(true);
             let _ = window.restore_state(StateFlags::all());
             let _ = window.create_overlay_titlebar();
@@ -305,6 +319,9 @@ async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    start_app().await?;
+    let mut args = std::env::args();
+    args.next()
+        .expect("No program name provided by the binary executor");
+    start_app(args.collect()).await?;
     Ok(())
 }
