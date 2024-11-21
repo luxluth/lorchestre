@@ -1,7 +1,7 @@
 use super::{
     config::{self, Dir},
     global::{self, Color, Media, SearchResults, Track},
-    m3u8::PlaylistData,
+    list::PlaylistData,
     utils,
 };
 use axum::{

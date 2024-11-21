@@ -207,12 +207,16 @@ export default class Manager {
 	}
 
 	async prev() {
-		let track = this.history.pop();
-		if (track) {
-			if (this.currentTrack) {
-				this.queue = [this.currentTrack, ...this.queue];
+		if (this.currentTime > 5) {
+			this.currentTime = 0;
+		} else {
+			let track = this.history.pop();
+			if (track) {
+				if (this.currentTrack) {
+					this.queue = [this.currentTrack, ...this.queue];
+				}
+				this.play(track);
 			}
-			this.play(track);
 		}
 	}
 
