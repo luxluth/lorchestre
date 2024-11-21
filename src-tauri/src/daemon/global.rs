@@ -1,11 +1,11 @@
-use crate::daemon::m3u8;
+use crate::daemon::list;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use bitcode::{Decode, Encode};
 use color_thief::ColorFormat;
+use list::PlaylistData;
 use lofty::picture::{MimeType, PictureType};
 use lofty::prelude::*;
 use lofty::probe::Probe;
-use m3u8::PlaylistData;
 use mime_guess::{self, mime};
 use std::collections::HashMap;
 use std::fs;
@@ -531,9 +531,7 @@ impl Media {
 
     pub fn add_media(&mut self, path: PathBuf, covers_dir: &PathBuf) {
         let ext = path.extension().unwrap().to_str().unwrap();
-        if ext == "m3u8" {
-            self.add_playlist(m3u8::M3U8::parse(path));
-        } else if ext == "playlist" {
+        if ext == "playlist" {
             self.add_playlist(PlaylistData::parse(format!("{}", path.display())));
         } else if let Ok(song) = Track::from_file(covers_dir, path) {
             self.add_song(song);

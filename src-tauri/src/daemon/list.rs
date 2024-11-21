@@ -2,20 +2,10 @@ use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use bitcode::{Decode, Encode};
 use std::{
     collections::HashMap,
-    fs::File,
     io::{self, Read, Write},
     path::{Path, PathBuf},
     str::FromStr,
 };
-
-pub struct M3U8;
-
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
-pub struct M3u8Playlist {
-    pub name: String,
-    pub tracks: Vec<String>,
-    pub path: String,
-}
 
 pub type PlaylistMetadata = HashMap<String, String>;
 
@@ -106,18 +96,6 @@ impl PlaylistData {
         }
     }
 
-    pub fn from_m3u8_playlist(p: M3u8Playlist) -> Self {
-        let mut metadata = PlaylistMetadata::new();
-        metadata.insert("Name".to_string(), p.name.clone());
-
-        Self {
-            metadata,
-            tracks: p.tracks,
-            path_base64: URL_SAFE.encode(p.path.as_bytes()),
-            path: p.path,
-        }
-    }
-
     pub fn save(&self, path: PathBuf) -> io::Result<()> {
         let mut output = Vec::new();
         for (meta_k, meta_v) in &self.metadata {
@@ -134,37 +112,5 @@ impl PlaylistData {
         f.write_all(&output)?;
 
         Ok(())
-    }
-}
-
-impl M3U8 {
-    pub fn parse(path: PathBuf) -> PlaylistData {
-        let p = path.clone();
-        let name = p.file_stem().unwrap().to_str().unwrap_or("@UNKNOWN@");
-        let mut text = String::new();
-        let mut f = File::open(path.clone()).unwrap();
-        let _ = f.read_to_string(&mut text);
-
-        let playlist = M3u8Playlist {
-            name: name.to_string(),
-            path: format!("{}", path.display()),
-            tracks: text
-                .lines()
-                .filter(|x| !x.is_empty() && !x.starts_with('#'))
-                .map(|x| Path::new(x).to_path_buf())
-                .filter(|p| p.exists())
-                .map(|x| format!("{}", x.display()))
-                .collect(),
-        };
-
-        let mut f = File::create(path.with_extension("m3u8.bak")).unwrap();
-        let _ = f.write(text.as_bytes());
-
-        let playlist = PlaylistData::from_m3u8_playlist(playlist);
-        if playlist.save(path.with_extension("playlist")).is_ok() {
-            let _ = std::fs::remove_file(&path);
-        }
-
-        playlist
     }
 }
