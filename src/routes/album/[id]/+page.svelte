@@ -179,6 +179,10 @@
 		}
 	}
 
+	function trim(text: string, len = 20) {
+		return text.slice(0, len) + (text.length > len ? '...' : '');
+	}
+
 	onMount(() => {
 		setTitle(`${album ? album.name : 'Album not found'} — L'orchestre`);
 	});
@@ -215,8 +219,10 @@
 				<div class="grid-item value">{album.name}</div>
 				<div class="grid-item label">ARTIST</div>
 				<div class="grid-item value">{album.artist}</div>
-				<div class="grid-item label">GENRES</div>
-				<div class="grid-item value">{album.genres.join(', ')}</div>
+				{#if album.genres.length > 0}
+					<div class="grid-item label">GENRES</div>
+					<div class="grid-item value">{album.genres.join(', ')}</div>
+				{/if}
 				<div class="grid-item label">TRACKS</div>
 				<div class="grid-item value">
 					{album.tracks_count >= 10 ? album.tracks_count : `0${album.tracks_count}`}
@@ -265,8 +271,8 @@
 										<Play size={'1.5em'} fill={'var(--fg)'} />
 									</button>
 								</div>
-								<div class="title">{track.title}</div>
-								<div class="artists">{track.artists.join(', ')}</div>
+								<div class="title">{trim(track.title)}</div>
+								<div class="artists">{trim(track.artists.join(', '))}</div>
 								<div class="duration">{formatTime(track.duration)}</div>
 							</div>
 						{/each}
@@ -299,9 +305,9 @@
 									<Play size={'1.5em'} fill={'var(--fg)'} />
 								</button>
 							</div>
-							<div class="title">{track.title}</div>
-							<div class="artists">{track.artists.join(', ')}</div>
-							<div class="duration">{formatTime(track.duration)}</div>
+							<div class="title">{trim(track.title)}</div>
+							<div class="artists">{trim(track.artists.join(', '))}</div>
+							<div class="duration">{trim(formatTime(track.duration))}</div>
 						</div>
 					{/each}
 				</section>
@@ -351,12 +357,6 @@
 	.page-grid {
 		padding-bottom: 4em;
 	}
-
-	/* h1 { */
-	/* 	font-size: clamp(2.8125rem, 0.9375rem + 3.75vw, 3.75rem); */
-	/* 	font-weight: 500; */
-	/* 	letter-spacing: -6%; */
-	/* } */
 
 	.page-grid {
 		display: grid;
