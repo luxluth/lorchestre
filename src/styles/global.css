@@ -20,7 +20,7 @@ html {
 }
 
 code {
-	font-family: var(--font-mono);
+	font-family: var(--font-mono), monospace;
 }
 
 body[data-theme='dark'] {
