@@ -95,6 +95,62 @@
 		sound.src = '';
 	};
 
+	const defaultSkipTime = 5;
+
+	const actionHandlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+		[
+			'play',
+			async () => {
+				await manager.togglepp();
+			}
+		],
+		[
+			'pause',
+			async () => {
+				await manager.togglepp();
+			}
+		],
+		[
+			'previoustrack',
+			async () => {
+				await manager.prev();
+			}
+		],
+		[
+			'nexttrack',
+			async () => {
+				await manager.next();
+			}
+		],
+		[
+			'seekbackward',
+			(details) => {
+				const skipTime = details.seekOffset || defaultSkipTime;
+				manager.currentTime = Math.max(manager.currentTime - skipTime, 0);
+				updatePositionState();
+			}
+		],
+		[
+			'seekforward',
+			(details) => {
+				const skipTime = details.seekOffset || defaultSkipTime;
+				manager.currentTime = Math.min(sound.currentTime + skipTime, manager.duration);
+				updatePositionState();
+			}
+		],
+		[
+			'seekto',
+			(details) => {
+				if (details.fastSeek && 'fastSeek' in sound) {
+					sound.fastSeek(details.seekTime as number);
+					return;
+				}
+				manager.currentTime = details.seekTime || 0;
+				updatePositionState();
+			}
+		]
+	];
+
 	manager.onplay = async (track: QueueTrack) => {
 		await lrcMngr.reset(track.duration, track);
 		manager.currentTrack = track;
@@ -111,10 +167,12 @@
 		sound.onpause = () => {
 			playing = false;
 			manager.paused = true;
+			navigator.mediaSession.playbackState = 'paused';
 		};
 
 		sound.onplay = () => {
 			manager.paused = false;
+			navigator.mediaSession.playbackState = 'playing';
 		};
 
 		sound.ontimeupdate = () => {
@@ -124,7 +182,64 @@
 		if (manager.initialized) {
 			await sound.play();
 		}
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.metadata = new MediaMetadata({
+				title: track.title,
+				artist: track.album_artist ?? track.artists[0],
+				album: track.album,
+				artwork: [
+					{
+						src: getCoverUri(track.album_id, track.cover_ext, config, 96),
+						sizes: '96x96',
+						type: 'image/png'
+					},
+					{
+						src: getCoverUri(track.album_id, track.cover_ext, config, 128),
+						sizes: '128x128',
+						type: 'image/png'
+					},
+					{
+						src: getCoverUri(track.album_id, track.cover_ext, config, 192),
+						sizes: '192x192',
+						type: 'image/png'
+					},
+					{
+						src: getCoverUri(track.album_id, track.cover_ext, config, 256),
+						sizes: '256x256',
+						type: 'image/png'
+					},
+					{
+						src: getCoverUri(track.album_id, track.cover_ext, config, 384),
+						sizes: '384x384',
+						type: 'image/png'
+					},
+					{
+						src: getCoverUri(track.album_id, track.cover_ext, config, 512),
+						sizes: '512x512',
+						type: 'image/png'
+					}
+				]
+			});
+
+			for (const [action, handler] of actionHandlers) {
+				try {
+					navigator.mediaSession.setActionHandler(action, handler);
+				} catch (error) {
+					console.log(`The media session action "${action}" is not supported yet.`);
+				}
+			}
+		}
 	};
+
+	function updatePositionState() {
+		if ('setPositionState' in navigator.mediaSession) {
+			navigator.mediaSession.setPositionState({
+				duration: manager.duration,
+				playbackRate: sound.playbackRate,
+				position: manager.currentTime
+			});
+		}
+	}
 
 	const unregister = manager.afterplay(() => {
 		if (lyricsParent) {
@@ -211,10 +326,6 @@
 			.map(([key, value]) => `--${key}: ${value}`)
 			.join(';')
 	);
-
-	function mediaNotifictionApi() {
-		// TODO: Move this logic to ctrl side using mpris
-	}
 </script>
 
 <div
@@ -364,7 +475,6 @@
 	bind:currentTime={manager.currentTime}
 	bind:volume={manager.volume}
 	onseeked={afterSeek}
-	onloadedmetadata={mediaNotifictionApi}
 	hidden
 ></audio>
 
