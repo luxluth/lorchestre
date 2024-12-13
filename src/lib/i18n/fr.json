@@ -40,6 +40,16 @@
 			"songs": "Pistes",
 			"ctx": {
 				"add_queue": "Ajouter à la file d'attente"
+			},
+			"details": {
+				"t_album_name": "nom",
+				"t_album_artist": "artiste",
+				"t_album_genres": "genres",
+				"t_album_track_count": "pistes",
+				"t_disk_count": "disques",
+				"t_album_duration": "durée",
+				"t_album_encoder": "encodeur",
+				"t_album_avg_bitrate": "débit moy."
 			}
 		}
 	},

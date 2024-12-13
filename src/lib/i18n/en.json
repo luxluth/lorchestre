@@ -39,7 +39,17 @@
 		"page": {
 			"songs": "Tracks",
 			"ctx": {
-				"add_queue": "Add to queue"
+				"add_queue": "Add to Queue"
+			},
+			"details": {
+				"t_album_name": "Name",
+				"t_album_artist": "Artist",
+				"t_album_genres": "Genres",
+				"t_album_track_count": "Tracks",
+				"t_disk_count": "Disks",
+				"t_album_duration": "Duration",
+				"t_album_encoder": "Encoder",
+				"t_album_avg_bitrate": "Avg. Bitrate"
 			}
 		}
 	},

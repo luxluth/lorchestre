@@ -40,6 +40,16 @@
 			"songs": "トラック",
 			"ctx": {
 				"add_queue": "キューに追加"
+			},
+			"details": {
+				"t_album_name": "名前",
+				"t_album_artist": "アーティスト",
+				"t_album_genres": "ジャンル",
+				"t_album_track_count": "トラック数",
+				"t_disk_count": "ディスク数",
+				"t_album_duration": "再生時間",
+				"t_album_encoder": "エンコーダー",
+				"t_album_avg_bitrate": "平均ビットレート"
 			}
 		}
 	},

@@ -215,27 +215,27 @@
 				</button>
 			</div>
 			<div class="grid-container details">
-				<div class="grid-item label">NAME</div>
+				<div class="grid-item label">{$_('album.page.details.t_album_name')}</div>
 				<div class="grid-item value">{album.name}</div>
-				<div class="grid-item label">ARTIST</div>
+				<div class="grid-item label">{$_('album.page.details.t_album_artist')}</div>
 				<div class="grid-item value">{album.artist}</div>
 				{#if album.genres.length > 0}
-					<div class="grid-item label">GENRES</div>
+					<div class="grid-item label">{$_('album.page.details.t_album_genres')}</div>
 					<div class="grid-item value">{album.genres.join(', ')}</div>
 				{/if}
-				<div class="grid-item label">TRACKS</div>
+				<div class="grid-item label">{$_('album.page.details.t_album_track_count')}</div>
 				<div class="grid-item value">
 					{album.tracks_count >= 10 ? album.tracks_count : `0${album.tracks_count}`}
 				</div>
-				<div class="grid-item label">DISKS</div>
+				<div class="grid-item label">{$_('album.page.details.t_disk_count')}</div>
 				<div class="grid-item value disc_total">
 					{album.disc_total >= 10 ? album.disc_total : `0${album.disc_total}`}
 				</div>
-				<div class="grid-item label">DURATION</div>
+				<div class="grid-item label">{$_('album.page.details.t_album_duration')}</div>
 				<div class="grid-item value">{formatTime(getDuration())}</div>
-				<div class="grid-item label">ENCODER</div>
+				<div class="grid-item label">{$_('album.page.details.t_album_encoder')}</div>
 				<div class="grid-item value">{album.encoder}</div>
-				<div class="grid-item label">AVG. BITRATE</div>
+				<div class="grid-item label">{$_('album.page.details.t_album_avg_bitrate')}</div>
 				<div class="grid-item value">{avgbitrate().toFixed(0)} kb/s</div>
 			</div>
 		</div>
