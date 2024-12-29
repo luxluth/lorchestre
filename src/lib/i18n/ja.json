@@ -55,6 +55,7 @@
 	},
 	"settings_page": {
 		"gh": "ソースコードにアクセス",
+		"credits": "謝辞",
 		"tip_top": "アプリの設定を管理",
 		"section_ui_ux": {
 			"title": "インターフェース",

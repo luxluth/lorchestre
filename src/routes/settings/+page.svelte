@@ -4,6 +4,7 @@
 	import Lang from './Lang.svelte';
 	import Refresh from './Refresh.svelte';
 	import Blur from './Blur.svelte';
+	import Credits from './Credits.svelte';
 	import { setTitle } from '$lib/utils';
 
 	import banner from '$lib/assets/banner-bw.svg?raw';
@@ -51,6 +52,9 @@
 			><Github size={14} /> {$_('settings_page.gh')}</a
 		>
 	</div>
+	<section id="block">
+		<Credits />
+	</section>
 </div>
 
 <style>

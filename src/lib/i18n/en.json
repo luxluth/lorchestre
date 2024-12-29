@@ -55,6 +55,7 @@
 	},
 	"settings_page": {
 		"gh": "Access the source code",
+		"credits": "Credits",
 		"tip_top": "Manage application settings",
 		"section_ui_ux": {
 			"title": "Interface",

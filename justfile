@@ -1,6 +1,8 @@
 dev:
   pnpm tauri dev
 
+credits:
+
 build:
   pnpm install
   just _build-{{os()}}

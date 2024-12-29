@@ -7,4 +7,6 @@ import '@fontsource-variable/inter';
 import '@fontsource/calistoga';
 
 // Supports weights 100-800
-import '@fontsource-variable/jetbrains-mono';
+import '@fontsource/iosevka/400.css';
+import '@fontsource/iosevka/500.css';
+import '@fontsource/iosevka/600.css';

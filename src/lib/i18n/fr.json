@@ -55,6 +55,7 @@
 	},
 	"settings_page": {
 		"gh": "Accéder au code source",
+		"credits": "Crédits",
 		"tip_top": "Gérer les paramètres de l'application",
 		"section_ui_ux": {
 			"title": "Interface",

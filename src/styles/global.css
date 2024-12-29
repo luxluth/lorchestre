@@ -8,7 +8,7 @@ html {
 	--light-highlight: #f4f4f5;
 
 	--font-fantasy: 'Calistoga', 'Noto Serif JP Variable', serif;
-	--font-mono: 'JetBrains Mono Variable', monospace;
+	--font-mono: 'Iosevka', monospace;
 
 	--toast-z-index: 140;
 	--starting-screen-z-index: 135;

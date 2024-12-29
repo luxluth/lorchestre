@@ -407,7 +407,7 @@ export default class Manager {
 						localStorage.setItem('history', JSON.stringify(this.history));
 						localStorage.setItem('dormantQueue', JSON.stringify(this.dormantQueue));
 						localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
-						localStorage.setItem('volume', JSON.stringify(this.volume));
+						localStorage.setItem('volume', JSON.stringify(this.sliderValue));
 						localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
 						await invoke('close');
 					})
