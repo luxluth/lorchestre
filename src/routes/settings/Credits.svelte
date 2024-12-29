@@ -31,7 +31,7 @@
 
 <style>
 	details {
-		user-select: all;
+		user-select: auto;
 	}
 
 	a {
