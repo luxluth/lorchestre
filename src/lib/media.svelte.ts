@@ -1,10 +1,10 @@
 import type { Album, Media, Playlist, Track } from './type';
-import { io } from 'socket.io-client';
 import { getContext, setContext } from 'svelte';
 import { listen } from '@tauri-apps/api/event';
 import { unionToMap } from './utils';
 import type SearchSupervisor from './search.svelte';
 import { getAppConfig } from './config.svelte';
+import Ws from './utils/websocket';
 
 export default class MediaState {
 	albums: Album[] = [];
@@ -47,7 +47,7 @@ export default class MediaState {
 			});
 
 			try {
-				const socket = io(`ws://${endpoint}`);
+				const socket = new Ws(`ws://${endpoint}/ws`);
 				if (!this.search.initialized) {
 					this.search.init(socket);
 				}
@@ -80,7 +80,7 @@ export default class MediaState {
 							});
 
 							try {
-								const socket = io(`ws://${endpoint}`);
+								const socket = new Ws(`ws://${endpoint}/ws`);
 								if (!this.search.initialized) {
 									this.search.init(socket);
 								}

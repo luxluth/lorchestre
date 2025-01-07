@@ -1,10 +1,10 @@
-import type { Socket } from 'socket.io-client';
 import type { SearchResults } from './type';
 import { getContext, setContext } from 'svelte';
+import type Ws from './utils/websocket';
 
 export default class SearchSupervisor {
 	query: string = $state('');
-	socket: Socket | null = $state(null);
+	socket: Ws | null = $state(null);
 	results: SearchResults = $state({
 		albums: [],
 		tracks: []
@@ -19,7 +19,7 @@ export default class SearchSupervisor {
 		return this.results.albums.length === 0 && this.results.tracks.length === 0;
 	}
 
-	init(socket: Socket) {
+	init(socket: Ws) {
 		socket.on('searchresponse', (res: SearchResults) => {
 			this.results = res;
 		});

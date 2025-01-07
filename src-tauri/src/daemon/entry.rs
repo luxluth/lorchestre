@@ -6,32 +6,42 @@ use super::{
 };
 use axum::{
     body::Body,
-    extract::{Path, Query, State},
+    extract::{
+        ws::{Message, WebSocket, WebSocketUpgrade},
+        Path, Query, State,
+    },
     http::{header::CACHE_CONTROL, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    routing::{delete, get, post, put},
+    routing::{any, delete, get, post, put},
     Json, Router,
 };
-use axum_extra::{extract::OptionalQuery, headers::Range, TypedHeader};
-use axum_range::{KnownSize, Ranged};
+use axum_extra::{
+    extract::OptionalQuery,
+    headers::{AcceptRanges, HeaderMapExt, Range},
+    TypedHeader,
+};
+use axum_range::{KnownSize, Ranged, RangedStream};
 use base64::{
     engine::general_purpose::{STANDARD, URL_SAFE},
     Engine as _,
 };
+use futures::{sink::SinkExt, stream::StreamExt};
 use image::ImageReader;
-use socketioxide::{
-    extract::{Data, SocketRef},
-    SocketIo,
-};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use std::{
     io::{BufWriter, Cursor, Read},
     path::PathBuf,
 };
-use tokio::fs::File;
 use tokio::sync::RwLock;
+use tokio::{
+    fs::File,
+    sync::mpsc::{channel, Receiver, Sender},
+};
 use tower::ServiceBuilder;
-use tower_http::cors::CorsLayer;
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::TraceLayer,
+};
 use tracing::{info, warn};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -41,7 +51,14 @@ const LRCLIB: &str = "https://lrclib.net/api";
 struct AppData {
     media: Arc<RwLock<Media>>,
     dirs: Dir,
-    io: SocketIo,
+    sx: Sender<AppMessage>,
+    tx: Arc<RwLock<Receiver<AppMessage>>>,
+}
+
+enum AppMessage {
+    NewMedia(Media),
+    Search(String),
+    LocalSearch(String),
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -49,32 +66,66 @@ struct SearchQuery {
     q: String,
 }
 
-async fn on_connect(socket: SocketRef) {
-    info!("socket connected: {}", socket.id);
+async fn on_connect(ws: WebSocketUpgrade, State(state): State<AppData>) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| handle_socket(socket, state))
+}
 
-    socket.on(
-        "search",
-        |sock: SocketRef,
-         Data::<String>(q),
-         data: socketioxide::extract::State<(Arc<RwLock<Media>>, Dir)>| async move {
-            let (media, dirs) = data.0;
-            let m = media.read().await;
-            let res = m.search(dirs.cache, &q);
-            let _ = sock.emit("searchresponse", &res);
-        },
-    );
+async fn handle_socket(socket: WebSocket, state: AppData) {
+    let sx = state.sx.clone();
+    let tx = state.tx.clone();
+    let (mut sender, mut receiver) = socket.split();
+    tokio::spawn(async move {
+        while let Some(msg) = tx.write().await.recv().await {
+            match msg {
+                AppMessage::NewMedia(media) => {
+                    let _ = sender
+                        .send(Message::Text(
+                            format!("newmedia\n{}", serde_json::to_string(&media).unwrap()).into(),
+                        ))
+                        .await;
+                }
+                AppMessage::Search(query) => {
+                    let media = state.media.read().await.clone();
+                    let dirs = state.dirs.clone();
+                    let res = media.search(dirs.cache, &query);
+                    let _ = sender
+                        .send(Message::Text(
+                            format!("searchresponse\n{}", serde_json::to_string(&res).unwrap())
+                                .into(),
+                        ))
+                        .await;
+                }
+                AppMessage::LocalSearch(query) => {
+                    let media = state.media.read().await.clone();
+                    let dirs = state.dirs.clone();
+                    let res = media.search(dirs.cache, &query);
+                    let _ = sender
+                        .send(Message::Text(
+                            format!("localsr\n{}", serde_json::to_string(&res).unwrap()).into(),
+                        ))
+                        .await;
+                }
+            }
+        }
+    });
 
-    socket.on(
-        "localsearch",
-        |sock: SocketRef,
-         Data::<String>(q),
-         data: socketioxide::extract::State<(Arc<RwLock<Media>>, Dir)>| async move {
-            let (media, dirs) = data.0;
-            let m = media.read().await;
-            let res = m.search(dirs.cache, &q);
-            let _ = sock.emit("localsr", &res);
-        },
-    )
+    while let Some(Ok(msg)) = receiver.next().await {
+        if let Message::Text(text) = msg {
+            if let Some((event, body)) = text.split_once('\n') {
+                match event {
+                    "localsearch" => {
+                        let _ = sx
+                            .send(AppMessage::LocalSearch(body.trim().to_string()))
+                            .await;
+                    }
+                    "search" => {
+                        let _ = sx.send(AppMessage::Search(body.trim().to_string())).await;
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 pub async fn start(
@@ -113,41 +164,41 @@ pub async fn start(
 
     let m = utils::cache_resolve(&dirs.cache, win).await;
     let media_data = Arc::new(RwLock::new(m));
+    let (sx, tx) = channel(10);
 
-    let (layer, io) = SocketIo::builder()
-        .with_state((Arc::clone(&media_data), dirs.clone()))
-        .build_layer();
-    io.ns("/", on_connect);
+    let cors_layer = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_headers(Any)
+        .allow_methods(Any);
 
     let app = Router::new()
+        .route("/ws", any(on_connect))
         .route("/", get(ping))
         // TODO: No cache
         .route("/media", get(media))
         .route("/localsearch", get(search))
         .route("/audio", get(audio))
         .route("/lyrics", get(lyrics))
-        .route("/album/:id", get(album))
+        .route("/album/{id}", get(album))
         // TODO: Do not cache this at all
-        .route("/playlist/:path", get(playlist))
+        .route("/playlist/{path}", get(playlist))
         // ------ palylist action
-        .route("/playlist/delete/:path", delete(list_remove))
+        .route("/playlist/delete/{path}", delete(list_remove))
         .route("/playlist/create", post(list_create))
-        .route("/playlist/update/:path", put(list_update))
+        .route("/playlist/update/{path}", put(list_update))
         // ------ palylist action
-        .route("/cover/:handle", get(cover))
+        .route("/cover/{handle}", get(cover))
         .route("/updatemusic", put(updatemusic))
         .route("/search/lyrics", get(search_lyrics))
         .route("/get_image", post(get_image))
         .with_state(AppData {
             media: media_data,
             dirs: dirs.clone(),
-            io,
+            sx,
+            tx: Arc::new(RwLock::new(tx)),
         })
-        .layer(
-            ServiceBuilder::new()
-                .layer(CorsLayer::permissive())
-                .layer(layer),
-        );
+        .layer(ServiceBuilder::new().layer(cors_layer))
+        .layer(TraceLayer::new_for_http());
 
     let listener = tokio::net::TcpListener::bind(format!("{host}:{port}")).await?;
     info!("lorchestre daemon started on http://{host}:{port}");
@@ -353,7 +404,7 @@ async fn updatemusic(State(state): State<AppData>) {
     let m = utils::cache_resolve(&state.dirs.cache, None).await;
     let mut binding = state.media.write().await;
     binding.swap_with(m.clone());
-    let _ = state.io.emit("newmedia", &m);
+    let _ = state.sx.clone().send(AppMessage::NewMedia(m)).await;
 }
 
 async fn album(State(state): State<AppData>, Path(id): Path<String>) -> Response {
@@ -422,7 +473,11 @@ async fn list_update(
             Ok(_) => {
                 media.substitute_playlist(playlist);
                 media.cache(dirs.cache, None);
-                let _ = state.io.emit("newmedia", &media.clone());
+                let _ = state
+                    .sx
+                    .clone()
+                    .send(AppMessage::NewMedia(media.clone()))
+                    .await;
                 "ok".into_response()
             }
             Err(e) => {
@@ -465,38 +520,44 @@ async fn list_create(State(state): State<AppData>, Json(payload): Json<List>) ->
             let m = utils::cache_resolve(&state.dirs.cache, None).await;
             let mut binding = state.media.write().await;
             binding.swap_with(m.clone());
-            let _ = state.io.emit("newmedia", &m);
+            let _ = state.sx.clone().send(AppMessage::NewMedia(m)).await;
 
             Json(ResponsePath { path }).into_response()
         }
     }
 }
-
 async fn audio(
     range: Option<TypedHeader<Range>>,
     State(state): State<AppData>,
     Query(music_path): Query<MusicPath>,
-) -> Response {
+) -> Result<Response<RangedStream<KnownSize<File>>>, Response<Body>> {
     let path = String::from_utf8_lossy(&URL_SAFE.decode(music_path.path).unwrap()).to_string();
     if let Some(track) = state.media.read().await.get_song(&path) {
         let file = File::open(&track.file_path).await.unwrap();
         let body = KnownSize::file(file).await.unwrap();
         let r = range.clone().map(|TypedHeader(range)| range);
-        let response = Ranged::new(r, body).try_respond();
-        if let Ok(response) = response {
-            response.into_response()
-        } else {
-            let mut response =
-                format!("An error occured while satisfying the request for path `{path}`")
-                    .into_response();
-            *response.status_mut() = StatusCode::NOT_FOUND;
-            response
-        }
+        let body = Ranged::new(r, body).try_respond().unwrap();
+        let content_range = body.content_range.map(TypedHeader);
+        let content_length = TypedHeader(body.content_length);
+        let accept_ranges = TypedHeader(AcceptRanges::bytes());
+        let stream = body.stream;
+        let status = match content_range {
+            Some(_) => StatusCode::PARTIAL_CONTENT,
+            None => StatusCode::OK,
+        };
+
+        let mut resp = Response::new(stream);
+        *resp.status_mut() = status;
+        resp.headers_mut().typed_insert(content_range.unwrap().0);
+        resp.headers_mut().typed_insert(content_length.0);
+        resp.headers_mut().typed_insert(accept_ranges.0);
+
+        Ok(resp)
     } else {
         warn!("{path} not founded");
         let mut response = format!("no song found with the id of {path}").into_response();
         *response.status_mut() = StatusCode::NOT_FOUND;
-        response
+        Err(response)
     }
 }
 
