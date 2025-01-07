@@ -13,6 +13,7 @@ use tauri::{Emitter, Manager};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const GIT_HASH: &str = env!("GIT_HASH");
 
 #[tauri::command]
 fn platform() -> String {
@@ -87,6 +88,11 @@ fn daemon_endpoint(app: tauri::AppHandle) -> String {
 #[tauri::command]
 fn version() -> String {
     VERSION.to_string()
+}
+
+#[tauri::command]
+fn git_hash() -> String {
+    GIT_HASH.to_string()
 }
 
 #[tauri::command]
@@ -262,6 +268,7 @@ async fn start_app(args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> 
             daemon_endpoint,
             sync_music,
             version,
+            git_hash,
             app_info,
             runned,
             start_daemon,

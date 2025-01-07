@@ -16,11 +16,14 @@
 
 	let appConf = getAppConfig();
 	let version = $state('vx.x.x');
+	let git_hash = $state('rev.xxxx');
 
 	if (browser) {
 		(async () => {
 			const v = await invoke('version');
+			const hash = await invoke('git_hash');
 			version = `v${v}`;
+			git_hash = `rev.${hash}`;
 		})();
 	}
 
@@ -47,7 +50,7 @@
 	</section>
 	<div class="banner">
 		{@html banner}
-		<code>{version}</code>
+		<code class="verev">{version} {git_hash}</code>
 		<a class="btn" target="_blank" href="https://github.com/luxluth/lorchestre"
 			><Github size={14} /> {$_('settings_page.gh')}</a
 		>
@@ -58,6 +61,9 @@
 </div>
 
 <style>
+	.verev {
+		opacity: 0.3;
+	}
 	.banner {
 		margin-top: 8em;
 		width: 100%;

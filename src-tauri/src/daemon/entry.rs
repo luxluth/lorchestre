@@ -548,7 +548,9 @@ async fn audio(
 
         let mut resp = Response::new(stream);
         *resp.status_mut() = status;
-        resp.headers_mut().typed_insert(content_range.unwrap().0);
+        if content_range.is_some() {
+            resp.headers_mut().typed_insert(content_range.unwrap().0);
+        }
         resp.headers_mut().typed_insert(content_length.0);
         resp.headers_mut().typed_insert(accept_ranges.0);
 
