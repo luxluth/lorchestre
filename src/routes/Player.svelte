@@ -13,7 +13,7 @@
 	import Volume2 from 'lucide-svelte/icons/volume-2';
 	import Search from 'lucide-svelte/icons/search';
 
-	import { getAudioUri, getCoverUri } from '$lib/utils';
+	import { formatTime, getAudioUri, getCoverUri } from '$lib/utils';
 	import Marquee from '$lib/components/Marquee.svelte';
 	import { getManager } from '$lib/manager.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
@@ -332,7 +332,7 @@
 	class:active
 	class:playing
 	class:no_lyrics={!hasLyrics}
-	class="__player"
+	class="__player ns"
 	style={styleString}
 	class:blurActive
 >
@@ -373,6 +373,35 @@
 				>
 					<X size={'3em'} />
 				</button>
+				<div class="controls">
+					<button>
+						<Rewind
+							fill={'var(--text)'}
+							color={'var(--text)'}
+							size={'5em'}
+							onclick={async () => {
+								await manager.prev();
+							}}
+						/>
+					</button>
+					<button class="playpause" onclick={toggleMediaPlayState}>
+						{#if manager.paused}
+							<Play fill={'var(--text)'} color={'var(--text)'} size={'5em'} />
+						{:else}
+							<Pause fill={'var(--text)'} color={'var(--text)'} size={'5em'} />
+						{/if}
+					</button>
+					<button>
+						<FastForward
+							fill={'var(--text)'}
+							color={'var(--text)'}
+							size={'5em'}
+							onclick={async () => {
+								await manager.next();
+							}}
+						/>
+					</button>
+				</div>
 				{#if !hasLyrics}
 					<button
 						class="search"
@@ -410,56 +439,28 @@
 			</div>
 		</div>
 		<div class="infos">
+			<div class="playing_info">
+				<time class="currtime ns">{formatTime(manager.currentTime)}</time>
+				<div class="progress-area">
+					<div class="progressbar">
+						<Slider
+							max={manager.duration}
+							bind:value={manager.currentTime}
+							color={'var(--text)'}
+							thumbColor={'var(--text)'}
+							style="thick"
+							backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
+						/>
+					</div>
+				</div>
+				<time class="remaintime ns">-{formatTime(manager.duration - manager.currentTime)}</time>
+			</div>
 			<Marquee width={'40vw'}>
 				<h2 class="ns">{manager.currentTrack?.title ?? 'Titre inconnu'}</h2>
 			</Marquee>
-
 			<Marquee width={'40vw'}>
 				<p class="artist ns">{manager.currentTrack?.artists.join(', ') ?? 'Artiste inconnu'}</p>
 			</Marquee>
-		</div>
-		<div class="controls">
-			<div class="actions">
-				<button>
-					<Rewind
-						fill={'var(--text)'}
-						color={'var(--text)'}
-						size={'2.5em'}
-						onclick={async () => {
-							await manager.prev();
-						}}
-					/>
-				</button>
-				<button class="playpause" onclick={toggleMediaPlayState}>
-					{#if manager.paused}
-						<Play fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
-					{:else}
-						<Pause fill={'var(--text)'} color={'var(--text)'} size={'2.5em'} />
-					{/if}
-				</button>
-				<button>
-					<FastForward
-						fill={'var(--text)'}
-						color={'var(--text)'}
-						size={'2.5em'}
-						onclick={async () => {
-							await manager.next();
-						}}
-					/>
-				</button>
-			</div>
-			<div class="progress-area">
-				<div class="progressbar">
-					<Slider
-						max={manager.duration}
-						bind:value={manager.currentTime}
-						color={'var(--text)'}
-						thumbColor={'var(--text)'}
-						style="thick"
-						backgroundColor="rgba(var(--rd), var(--gd), var(--bd), 0.2);"
-					/>
-				</div>
-			</div>
 		</div>
 	</section>
 	{#if hasLyrics}
@@ -482,12 +483,29 @@
 	.__player .controls {
 		display: flex;
 		align-items: center;
-		flex-direction: column;
-		gap: 1em;
+		justify-content: center;
+		gap: 2em;
+		height: 100%;
 		width: 100%;
 	}
 
-	.__player .controls .progress-area {
+	.__player .playing_info {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 1em;
+	}
+
+	.__player .playing_info time {
+		font-family: var(--font-mono);
+		opacity: 0.5;
+		user-select: none;
+		display: flex;
+		justify-content: space-between;
+	}
+
+	.__player .playing_info .progress-area {
 		width: 100%;
 		height: 100%;
 		display: flex;
@@ -496,33 +514,30 @@
 		align-items: center;
 	}
 
-	.__player .controls .progressbar {
-		flex-grow: 1;
+	.__player .playing_info .progressbar {
 		width: 100%;
-		padding-inline: 1em;
 	}
 
-	.__player .controls .actions {
-		display: flex;
-		gap: 1em;
-	}
-
-	.__player .controls .actions button {
+	.__player .controls button {
 		background: none;
 		border: none;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		opacity: 0.5;
-		transition: all 0.1s ease-in-out;
+		opacity: 0.7;
+		transition: all 0.2s ease-in-out;
 		cursor: pointer;
 	}
 
-	.__player .controls .actions button:hover {
+	.__player .controls button:hover {
 		opacity: 1;
 	}
 
-	.__player .controls .actions button:active {
+	.__player .controls:has(button:hover) button:not(:hover) {
+		opacity: 0.3;
+	}
+
+	.__player .controls button:active {
 		opacity: 1;
 		transform: scale(0.98);
 	}
@@ -750,7 +765,7 @@
 	}
 
 	.__player.blurActive .cover .actions {
-		background: rgba(0, 0, 0, 0.2);
+		background: rgba(0, 0, 0, 0.6);
 	}
 
 	.__player:not(.blurActive) .cover .actions {
@@ -772,7 +787,6 @@
 	}
 
 	.__player .infos {
-		padding-top: 1em;
 		text-align: center;
 		display: flex;
 		align-items: center;

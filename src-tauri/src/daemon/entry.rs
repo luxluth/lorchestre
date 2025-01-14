@@ -535,8 +535,8 @@ async fn audio(
     if let Some(track) = state.media.read().await.get_song(&path) {
         let file = File::open(&track.file_path).await.unwrap();
         let body = KnownSize::file(file).await.unwrap();
-        let r = range.clone().map(|TypedHeader(range)| range);
-        let body = Ranged::new(r, body).try_respond().unwrap();
+        let range = range.map(|TypedHeader(range)| range);
+        let body = Ranged::new(range, body).try_respond().unwrap();
         let content_range = body.content_range.map(TypedHeader);
         let content_length = TypedHeader(body.content_length);
         let accept_ranges = TypedHeader(AcceptRanges::bytes());

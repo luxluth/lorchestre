@@ -155,6 +155,7 @@
 		top: 0;
 		left: 0;
 		background-color: var(--v-color);
+		opacity: 0.7;
 		border-radius: 1em;
 	}
 
