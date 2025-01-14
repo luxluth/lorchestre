@@ -1,6 +1,6 @@
 [package]
 name = "lorchestre"
-version = "0.2.2"
+version = "0.2.3"
 description = "The only music player you'll ever need"
 authors = ["luxluth"]
 edition = "2021"
