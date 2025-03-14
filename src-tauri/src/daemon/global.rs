@@ -208,45 +208,57 @@ impl Track {
             audio.disc = tag.disk().unwrap_or(1);
             audio.disc_total = tag.disk_total().unwrap_or(1);
 
-            let cover = tag.get_picture_type(PictureType::CoverFront);
-            if let Some(cover) = cover {
-                let mime = cover.mime_type().unwrap();
-                let cover = Cover {
-                    data: cover.data().to_vec(),
-                    ext: match mime {
-                        MimeType::Png => ".png".to_string(),
-                        MimeType::Jpeg => ".jpeg".to_string(),
-                        MimeType::Tiff => ".tiff".to_string(),
-                        MimeType::Bmp => ".bmp".to_string(),
-                        MimeType::Gif => ".gif".to_string(),
-                        MimeType::Unknown(o) => format!(".{o}"),
-                        _ => ".png".to_string(),
-                    },
-                };
+            let possible_covers = [
+                PictureType::CoverFront,
+                PictureType::Media,
+                PictureType::Other,
+                PictureType::CoverBack,
+            ];
 
-                let pathstr = covers_dir.join(format!("{digest:x}{}", cover.ext));
-                let cover_path = std::path::Path::new(&pathstr);
+            'cover_loop: for picture_type in possible_covers {
+                let cover = tag.get_picture_type(picture_type);
 
-                if !cover_path.exists() {
-                    check_dir(covers_dir);
-                    let mut f = fs::File::create(cover_path).unwrap();
-                    f.write_all(&cover.data).unwrap();
+                if let Some(cover) = cover {
+                    let mime = cover.mime_type().unwrap();
+                    let cover = Cover {
+                        data: cover.data().to_vec(),
+                        ext: match mime {
+                            MimeType::Png => ".png".to_string(),
+                            MimeType::Jpeg => ".jpeg".to_string(),
+                            MimeType::Tiff => ".tiff".to_string(),
+                            MimeType::Bmp => ".bmp".to_string(),
+                            MimeType::Gif => ".gif".to_string(),
+                            MimeType::Unknown(o) => format!(".{o}"),
+                            _ => ".png".to_string(),
+                        },
+                    };
+
+                    let pathstr = covers_dir.join(format!("{digest:x}{}", cover.ext));
+                    let cover_path = std::path::Path::new(&pathstr);
+
+                    if !cover_path.exists() {
+                        check_dir(covers_dir);
+                        let mut f = fs::File::create(cover_path).unwrap();
+                        f.write_all(&cover.data).unwrap();
+                    }
+
+                    let img = image::open(cover_path).unwrap();
+                    let pixels = utils::get_image_buffer(img);
+
+                    let color = color_thief::get_palette(&pixels, ColorFormat::Rgb, 1, 2).unwrap();
+
+                    let color = Color {
+                        r: color[0].r,
+                        g: color[0].g,
+                        b: color[0].b,
+                    };
+
+                    audio.is_light = Some(color.is_light_color());
+                    audio.color = Some(color);
+                    audio.cover_ext = cover.ext;
+
+                    break 'cover_loop;
                 }
-
-                let img = image::open(cover_path).unwrap();
-                let pixels = utils::get_image_buffer(img);
-
-                let color = color_thief::get_palette(&pixels, ColorFormat::Rgb, 1, 2).unwrap();
-
-                let color = Color {
-                    r: color[0].r,
-                    g: color[0].g,
-                    b: color[0].b,
-                };
-
-                audio.is_light = Some(color.is_light_color());
-                audio.color = Some(color);
-                audio.cover_ext = cover.ext;
             }
 
             audio.duration = duration.as_secs();
