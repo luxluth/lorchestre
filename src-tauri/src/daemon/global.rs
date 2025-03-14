@@ -86,6 +86,7 @@ pub struct Track {
     pub encoder: String,
     pub genres: Vec<String>,
     pub tracks_count: u32,
+    pub embeded_lyrics: Option<String>,
 
     pub created_at: u64,
 }
@@ -264,6 +265,11 @@ impl Track {
             audio.duration = duration.as_secs();
             audio.bitrate = bitrate;
 
+            let lyrics = tag.get_string(&ItemKey::Lyrics);
+            if lyrics.is_some() {
+                audio.embeded_lyrics = Some(lyrics.unwrap().to_string());
+            }
+
             Ok(audio)
         } else {
             warn!("Unable to read {}", inode.display());
@@ -271,11 +277,19 @@ impl Track {
         }
     }
 
-    pub fn parse_lyrics(input: &str) -> alrc::AdvancedLrc {
-        alrc::AdvancedLrc::parse(input).unwrap()
+    pub fn parse_lyrics(input: &str) -> Result<alrc::AdvancedLrc, String> {
+        alrc::AdvancedLrc::parse(input)
     }
 
     pub fn get_lyrics(&self) -> Vec<alrc::Line> {
+        if self.embeded_lyrics.is_some() {
+            if let Ok(parsed_lyrics) =
+                alrc::AdvancedLrc::parse(&self.embeded_lyrics.clone().unwrap())
+            {
+                return parsed_lyrics.lines;
+            }
+        }
+
         let lrc_path = PathBuf::from(&self.file_path).with_extension("lrc");
         if lrc_path.exists() {
             let mut f = fs::File::open(&lrc_path).unwrap();
@@ -283,7 +297,13 @@ impl Track {
             f.read_to_end(&mut buf).unwrap();
             let buf = String::from_utf8(buf);
             match buf {
-                Ok(buf) => Track::parse_lyrics(&buf).lines,
+                Ok(buf) => match Track::parse_lyrics(&buf) {
+                    Ok(parsed_lyrics) => parsed_lyrics.lines,
+                    Err(e) => {
+                        error!("{}", e);
+                        vec![]
+                    }
+                },
                 Err(e) => {
                     error!("{}", e);
                     vec![]
@@ -318,6 +338,7 @@ impl Default for Track {
             created_at: 0,
             encoder: "Unknown".into(),
             genres: vec![],
+            embeded_lyrics: None,
             tracks_count: 0,
         }
     }

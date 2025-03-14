@@ -338,7 +338,7 @@ async fn search_lyrics(
                 for lyric in e.json::<Vec<LyricsSearchResponse>>().await.unwrap() {
                     if let Some(synched) = lyric.syncedLyrics {
                         lyrics.push(Lrc {
-                            parsed: Track::parse_lyrics(&synched).lines,
+                            parsed: Track::parse_lyrics(&synched).unwrap().lines,
                             raw: synched,
                         });
                     }

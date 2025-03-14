@@ -107,6 +107,7 @@ export type Track = {
 	bitrate: u32;
 	disc: number;
 	encoder: string;
+	embeded_lyrics: Option<string>;
 	genres: string[];
 };
 
