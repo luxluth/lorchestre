@@ -282,14 +282,6 @@ impl Track {
     }
 
     pub fn get_lyrics(&self) -> Vec<alrc::Line> {
-        if self.embeded_lyrics.is_some() {
-            if let Ok(parsed_lyrics) =
-                alrc::AdvancedLrc::parse(&self.embeded_lyrics.clone().unwrap())
-            {
-                return parsed_lyrics.lines;
-            }
-        }
-
         let lrc_path = PathBuf::from(&self.file_path).with_extension("lrc");
         if lrc_path.exists() {
             let mut f = fs::File::open(&lrc_path).unwrap();
@@ -308,6 +300,14 @@ impl Track {
                     error!("{}", e);
                     vec![]
                 }
+            }
+        } else if self.embeded_lyrics.is_some() {
+            if let Ok(parsed_lyrics) =
+                alrc::AdvancedLrc::parse(&self.embeded_lyrics.clone().unwrap())
+            {
+                return parsed_lyrics.lines;
+            } else {
+                vec![]
             }
         } else {
             vec![]
