@@ -33,7 +33,6 @@ svelte-i18n v4.0.1 (MIT) ### https://github.com/kaisermann/svelte-i18n
 @sveltejs/kit v2.19.0 (MIT) ### https://svelte.dev
 @sveltejs/vite-plugin-svelte v4.0.4 (MIT) ### https://github.com/sveltejs/vite-plugin-svelte#readme
 svelte v5.23.0 (MIT) ### https://svelte.dev
-svelte-virtual-scroll-list v1.3.0 (null) ### git+https://github.com/v1ack/svelte-virtual-scroll-list.git
 tantivy v0.22.0 (MIT) ### https://github.com/quickwit-oss/tantivy
 @tauri-apps/api v2.3.0 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/tauri#readme
 @tauri-apps/cli v2.3.1 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/tauri#readme

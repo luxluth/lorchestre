@@ -16,7 +16,6 @@
 	import { getMedia } from '$lib/media.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
 	import { getFilter } from '$lib/filterq.svelte';
-	import VirtualScroll from 'svelte-virtual-scroll-list';
 
 	let manager = getManager();
 	let media = getMedia();
