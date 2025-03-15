@@ -4,7 +4,7 @@ axum-range v0.5.0 (MIT) ### https://github.com/haileys/axum-range
 axum v0.8.1 (MIT) ### https://github.com/tokio-rs/axum
 base64 v0.22.1 (MIT OR Apache-2.0) ### https://github.com/marshallpierce/rust-base64
 bitcode v0.6.5 (MIT OR Apache-2.0) ### https://github.com/SoftbearStudios/bitcode
-bits-ui v0.22.0 (MIT) ### github:huntabyte/bits-ui
+bits-ui v1.3.12 (MIT) ### github:huntabyte/bits-ui
 color-thief v0.2.2 (MIT) ### https://github.com/RazrFalcon/color-thief-rs
 dirs v6.0.0 (MIT OR Apache-2.0) ### https://github.com/soc/dirs-rs
 @fontsource/calistoga v5.2.5 (OFL-1.1) ### https://fontsource.org/fonts/calistoga

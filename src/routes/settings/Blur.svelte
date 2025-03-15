@@ -14,19 +14,17 @@
 			aria-labelledby="setting-desc"
 			class="checkbox"
 			onCheckedChange={(e) => {
-				if (e != 'indeterminate') {
-					(async () => {
-						await appConf.setBlurTo(e);
-					})();
-				}
+				(async () => {
+					await appConf.setBlurTo(e);
+				})();
 			}}
 			checked={appConf.config.global?.enable_blur ?? appConf.defaults.global.enable_blur}
 		>
-			<Checkbox.Indicator let:isChecked>
-				{#if isChecked}
+			{#snippet children({ checked, indeterminate: _ })}
+				{#if checked}
 					<Check size={'15px'} />
 				{/if}
-			</Checkbox.Indicator>
+			{/snippet}
 		</Checkbox.Root>
 
 		<Label.Root id="setting-desc" for="blur" class="label">

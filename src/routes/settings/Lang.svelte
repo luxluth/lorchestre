@@ -10,19 +10,29 @@
 	import type AppConfig from '$lib/config.svelte';
 
 	let { appConf }: { appConf: AppConfig } = $props();
+	let value = $state(appConf.config.global?.lang);
+
+	const selectedLang = $derived(
+		value
+			? langs.find((lang) => lang.value === value)?.label
+			: $_('settings_page.section_ui_ux.language.choose_a_lang')
+	);
 </script>
 
 <section class="lang ns">
 	<h4>{$_('settings_page.section_ui_ux.language.title')}</h4>
 
 	<Select.Root
+		type="single"
 		items={langs}
-		selected={langs.find((l) => l.value === $locale?.split('-')[0])}
-		onSelectedChange={(e) => {
-			locale.set(e?.value);
+		{value}
+		onValueChange={(e: string) => {
+			console.log(e);
+			locale.set(e);
 			(async () => {
-				await appConf.setLocale(e?.value as string);
+				await appConf.setLocale(e as string);
 			})();
+			value = e;
 		}}
 	>
 		<Select.Trigger
@@ -30,23 +40,26 @@
 			aria-label={$_('settings_page.section_ui_ux.language.choose_a_lang')}
 		>
 			<Languages class="icon" />
-			<Select.Value
-				class="text"
-				placeholder={$_('settings_page.section_ui_ux.language.choose_a_lang')}
-			/>
+			<div class="text">
+				{selectedLang}
+			</div>
 			<CaretUpDown class="icon caret" />
 		</Select.Trigger>
-		<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-			{#each langs as lang}
-				<Select.Item class="select-item" value={lang.value} label={lang.label}>
-					{lang.label}
-					<Select.ItemIndicator class="ml-auto" asChild={false}>
-						<Check />
-					</Select.ItemIndicator>
-				</Select.Item>
-			{/each}
-		</Select.Content>
-		<Select.Input name="favoriteFruit" />
+		<Select.Portal>
+			<!-- transition:flyAndScale -->
+			<Select.Content class="select-content" sideOffset={8}>
+				{#each langs as lang}
+					<Select.Item class="select-item" value={lang.value} label={lang.label}>
+						{#snippet children({ selected })}
+							{lang.label}
+							{#if selected}
+								<Check />
+							{/if}
+						{/snippet}
+					</Select.Item>
+				{/each}
+			</Select.Content>
+		</Select.Portal>
 	</Select.Root>
 </section>
 
@@ -72,8 +85,13 @@
 		background: var(--highlight);
 	}
 
+	:global(.select-item[data-highlighted]) {
+		background: var(--highlight);
+	}
+
 	:global(.select-content) {
-		width: 100%;
+		width: var(--bits-select-anchor-width);
+		min-width: var(--bits-select-anchor-width);
 		border-radius: 9px;
 		border: 2px solid rgba(100, 100, 100, 0.18);
 		background: var(--bg);

@@ -19,7 +19,7 @@
 	import { setSearch } from '$lib/search.svelte';
 	import { browser, dev } from '$app/environment';
 	import { setPage } from '$lib/page.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import FirstRun from './FirstRun.svelte';
 	import { setToastManager } from '$lib/toast.svelte';
 	import { setEvc } from '$lib/editviewController.svelte';
@@ -31,7 +31,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { listen } from '@tauri-apps/api/event';
 	import { requestUserAttention } from '$lib/utils';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
@@ -90,7 +90,7 @@
 	});
 
 	$effect(() => {
-		p.currentAddr = $page.url.pathname;
+		p.currentAddr = page.url.pathname;
 	});
 </script>
 
@@ -107,7 +107,7 @@
 			<main
 				id="__main__"
 				onscroll={(e) => {
-					ps.save(e, $page.url.pathname);
+					ps.save(e, page.url.pathname);
 				}}
 			>
 				{@render children()}

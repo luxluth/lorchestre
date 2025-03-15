@@ -177,14 +177,14 @@ export type ContextMenuEvent =
 	  });
 
 export enum FilterType {
-	Alphabetic,
-	TimeBased,
-	NoFilter
+	Alphabetic = 'Alphabetic',
+	TimeBased = 'TimeBased',
+	NoFilter = 'NoFilter'
 }
 
 export enum FilterOrder {
-	Ascendant,
-	Descendant
+	Ascendant = 'Ascendant',
+	Descendant = 'Descendant'
 }
 
 export type Network = {

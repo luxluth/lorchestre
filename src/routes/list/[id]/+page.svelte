@@ -26,7 +26,7 @@
 	import { getMedia } from '$lib/media.svelte';
 	import { getList } from '$lib/playlist.svelte';
 	import { getCtx } from '$lib/ctx.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ShallowSong from '$lib/components/ShallowSong.svelte';
 	import { getSearch } from '$lib/search.svelte';
 	import { getAppConfig } from '$lib/config.svelte';
@@ -48,7 +48,7 @@
 	let filterquery = list.filters;
 	let mode: DisplayMode = $state('normal');
 
-	let playlistData: Playlist | null = $derived($page.data.list);
+	let playlistData: Playlist | null = $derived(page.data.list);
 	let selections: string[] = $state([]);
 
 	$effect(() => {
@@ -323,62 +323,62 @@
 			<div class="filters">
 				<div class="filter">
 					<Select.Root
+						type="single"
 						items={filterTypes}
-						selected={filterTypes.find((l) => l.value === filterquery.type)}
-						onSelectedChange={(e) => {
+						value={filterquery.type}
+						onValueChange={(e: any) => {
 							if (e) {
-								filterquery.type = e.value;
+								filterquery.type = e;
 							}
 						}}
 					>
-						<Select.Trigger
-							class="select-trigger"
-							aria-label={$_('songs_page.filter.selection_area_label_type')}
-						>
+						<Select.Trigger class="select-trigger" aria-label="Choisissez un type de filtre">
 							<Filter class="icon" />
 							<div class="text">{$_('songs_page.filter.filter_to_apply')}</div>
 						</Select.Trigger>
-						<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-							{#each filterTypes as filter}
-								<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-									{$_(filter.label)}
-									<Select.ItemIndicator class="ml-auto" asChild={false}>
-										<Check />
-									</Select.ItemIndicator>
-								</Select.Item>
-							{/each}
-						</Select.Content>
-						<Select.Input name="favoriteFruit" />
+						<Select.Portal>
+							<Select.Content class="select-content" sideOffset={8}>
+								{#each filterTypes as filter}
+									<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+										{#snippet children({ selected })}
+											{$_(filter.label)}
+											{#if selected}
+												<Check />
+											{/if}
+										{/snippet}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Portal>
 					</Select.Root>
 				</div>
 				<div class="filter">
 					<Select.Root
+						type="single"
 						items={filterOrders}
-						selected={filterOrders.find((l) => l.value === filterquery.order)}
-						onSelectedChange={(e) => {
-							if (e) {
-								filterquery.order = e.value;
-							}
+						value={filterquery.order}
+						onValueChange={(e: any) => {
+							if (e) filterquery.order = e;
 						}}
 					>
-						<Select.Trigger
-							class="select-trigger"
-							aria-label={$_('songs_page.filter.selection_area_label_order')}
-						>
+						<Select.Trigger class="select-trigger" aria-label="Choisissez l'ordre du tri">
 							<ArrowDown10 class="icon" />
 							<div class="text">{$_('songs_page.filter.sort_order')}</div>
 						</Select.Trigger>
-						<Select.Content class="select-content" sideOffset={8} transition={flyAndScale}>
-							{#each filterOrders as filter}
-								<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
-									{$_(filter.label)}
-									<Select.ItemIndicator class="ml-auto" asChild={false}>
-										<Check />
-									</Select.ItemIndicator>
-								</Select.Item>
-							{/each}
-						</Select.Content>
-						<Select.Input name="favoriteFruit" />
+						<Select.Portal>
+							<Select.Content class="select-content" sideOffset={8}>
+								{#each filterOrders as filter}
+									<Select.Item class="select-item" value={filter.value} label={$_(filter.label)}>
+										{#snippet children({ selected })}
+											{$_(filter.label)}
+											{#if selected}
+												<Check />
+											{/if}
+										{/snippet}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Portal>
 					</Select.Root>
 				</div>
 				<input bind:value={searchInput} type="search" name="search" placeholder={$_('search')} />
@@ -663,12 +663,17 @@
 		border-radius: 4px;
 	}
 
+	:global(.select-item[data-highlighted]) {
+		background: var(--highlight);
+	}
+
 	:global(.select-item:hover) {
 		background: var(--highlight);
 	}
 
 	:global(.select-content) {
-		width: fit-content;
+		width: var(--bits-select-anchor-width);
+		min-width: var(--bits-select-anchor-width);
 		border-radius: 9px;
 		border: 2px solid rgba(100, 100, 100, 0.18);
 		background: var(--bg);

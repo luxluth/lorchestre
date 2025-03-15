@@ -1,4 +1,4 @@
-import { page } from '$app/stores';
+import { page } from '$app/state';
 import { getContext, onMount, setContext } from 'svelte';
 
 type Ev = UIEvent & {
@@ -10,27 +10,21 @@ class PageScroll {
 	prevPath: string = $state('');
 
 	constructor() {
-		onMount(() => {
-			const unsub = page.subscribe((page) => {
-				const path = page.url.pathname;
-				const main = document.getElementById('__main__') as HTMLElement;
-				if (path !== this.prevPath) {
-					const ev = new CustomEvent('pagechanged');
-					document.dispatchEvent(ev);
-					const scrollTop = this.scrollPositions.get(path);
-					if (scrollTop) {
-						main.scrollTo({ top: scrollTop });
-					} else {
-						main.scrollTo({ top: 0 });
-					}
-
-					this.prevPath = path;
+		$effect(() => {
+			const path = page.url.pathname;
+			const main = document.getElementById('__main__') as HTMLElement;
+			if (path !== this.prevPath) {
+				const ev = new CustomEvent('pagechanged');
+				document.dispatchEvent(ev);
+				const scrollTop = this.scrollPositions.get(path);
+				if (scrollTop) {
+					main.scrollTo({ top: scrollTop });
+				} else {
+					main.scrollTo({ top: 0 });
 				}
-			});
 
-			return () => {
-				unsub();
-			};
+				this.prevPath = path;
+			}
 		});
 	}
 

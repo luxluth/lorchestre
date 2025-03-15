@@ -3,7 +3,7 @@
 	import MicVocal from 'lucide-svelte/icons/mic-vocal';
 	import { getManager } from '$lib/manager.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let manager = getManager();
 
@@ -24,7 +24,7 @@
 <div class="__commands" class:dead={typeof manager.currentTrack === 'undefined'}>
 	<button
 		class="lyrics"
-		class:active={$page.route.id == '/lrc'}
+		class:active={page.route.id == '/lrc'}
 		onclick={() => {
 			activate('lrc');
 		}}
@@ -33,7 +33,7 @@
 	</button>
 	<button
 		class="queue"
-		class:active={$page.route.id == '/queue'}
+		class:active={page.route.id == '/queue'}
 		onclick={() => {
 			activate('queue');
 		}}

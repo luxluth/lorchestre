@@ -5,7 +5,7 @@
 
 	import { _ } from 'svelte-i18n';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import {
 		type Track,
 		type ContextMenuItem,
@@ -37,7 +37,7 @@
 		return tracks;
 	}
 
-	let album = $derived($page.data.album);
+	let album = $derived(page.data.album);
 	let tracks = $derived(album ? sortTracks(getTracks(album)) : []);
 	let discs = $derived(putIntoDisks(tracks));
 
