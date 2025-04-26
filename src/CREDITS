@@ -4,7 +4,7 @@ axum-range v0.5.0 (MIT) ### https://github.com/haileys/axum-range
 axum v0.8.1 (MIT) ### https://github.com/tokio-rs/axum
 base64 v0.22.1 (MIT OR Apache-2.0) ### https://github.com/marshallpierce/rust-base64
 bitcode v0.6.5 (MIT OR Apache-2.0) ### https://github.com/SoftbearStudios/bitcode
-bits-ui v1.3.12 (MIT) ### github:huntabyte/bits-ui
+bits-ui v1.3.19 (MIT) ### github:huntabyte/bits-ui
 color-thief v0.2.2 (MIT) ### https://github.com/RazrFalcon/color-thief-rs
 dirs v6.0.0 (MIT OR Apache-2.0) ### https://github.com/soc/dirs-rs
 @fontsource/calistoga v5.2.5 (OFL-1.1) ### https://fontsource.org/fonts/calistoga
@@ -27,19 +27,19 @@ reqwest v0.12.14 (MIT OR Apache-2.0) ### https://github.com/seanmonstar/reqwest
 serde_json v1.0.140 (MIT OR Apache-2.0) ### https://github.com/serde-rs/json
 serde v1.0.219 (MIT OR Apache-2.0) ### https://github.com/serde-rs/serde
 svelte-check v3.8.6 (MIT) ### https://github.com/sveltejs/language-tools#readme
-svelte-dnd-action v0.9.60 (MIT) ### https://github.com/isaacHagoel/svelte-dnd-action#readme
+svelte-dnd-action v0.9.61 (MIT) ### https://github.com/isaacHagoel/svelte-dnd-action#readme
 svelte-i18n v4.0.1 (MIT) ### https://github.com/kaisermann/svelte-i18n
 @sveltejs/adapter-static v3.0.8 (MIT) ### https://svelte.dev
-@sveltejs/kit v2.19.0 (MIT) ### https://svelte.dev
+@sveltejs/kit v2.20.7 (MIT) ### https://svelte.dev
 @sveltejs/vite-plugin-svelte v4.0.4 (MIT) ### https://github.com/sveltejs/vite-plugin-svelte#readme
-svelte v5.23.0 (MIT) ### https://svelte.dev
-tantivy v0.22.0 (MIT) ### https://github.com/quickwit-oss/tantivy
-@tauri-apps/api v2.3.0 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/tauri#readme
-@tauri-apps/cli v2.3.1 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/tauri#readme
-@tauri-apps/plugin-dialog v2.2.0 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
-@tauri-apps/plugin-process v2.2.0 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
-@tauri-apps/plugin-shell v2.2.0 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
-@tauri-apps/plugin-window-state v2.2.1 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
+svelte v5.28.2 (MIT) ### https://svelte.dev
+tantivy v0.24.1 (MIT) ### https://github.com/quickwit-oss/tantivy
+@tauri-apps/api v2.5.0 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/tauri#readme
+@tauri-apps/cli v2.5.0 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/tauri#readme
+@tauri-apps/plugin-dialog v2.2.1 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
+@tauri-apps/plugin-process v2.2.1 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
+@tauri-apps/plugin-shell v2.2.1 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
+@tauri-apps/plugin-window-state v2.2.2 (MIT OR Apache-2.0) ### https://github.com/tauri-apps/plugins-workspace
 tauri-plugin-decorum v1.1.1 (MIT) ### https://github.com/clearlysid/tauri-plugin-decorum
 tauri-plugin-dialog v2.2.0 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/plugins-workspace
 tauri-plugin-process v2.2.0 (Apache-2.0 OR MIT) ### https://github.com/tauri-apps/plugins-workspace
@@ -53,6 +53,6 @@ tower v0.5.2 (MIT) ### https://github.com/tower-rs/tower
 tracing-subscriber v0.3.19 (MIT) ### https://github.com/tokio-rs/tracing
 tracing v0.1.41 (MIT) ### https://github.com/tokio-rs/tracing
 tslib v2.8.1 (0BSD) ### https://www.typescriptlang.org/
-typescript v5.8.2 (Apache-2.0) ### https://www.typescriptlang.org/
+typescript v5.8.3 (Apache-2.0) ### https://www.typescriptlang.org/
 uuid v1.16.0 (Apache-2.0 OR MIT) ### https://github.com/uuid-rs/uuid
-vite v5.4.14 (MIT) ### https://vite.dev
+vite v5.4.18 (MIT) ### https://vite.dev
