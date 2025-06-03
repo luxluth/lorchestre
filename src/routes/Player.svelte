@@ -418,18 +418,18 @@
 				{/if}
 				<div class="volume">
 					<div class="vol-icon">
-						{#if manager.sliderValue <= 0}
+						{#if manager.volume <= 0}
 							<Volume size={'1.5em'} />
-						{:else if manager.sliderValue >= 0.7}
+						{:else if manager.volume >= 0.7}
 							<Volume2 size={'1.5em'} />
-						{:else if manager.sliderValue > 0}
+						{:else if manager.volume > 0}
 							<Volume1 size={'1.5em'} />
 						{:else}
 							<Volume size={'1.5em'} />
 						{/if}
 					</div>
 					<Slider
-						bind:value={manager.sliderValue}
+						bind:value={manager.volume}
 						style="classic"
 						color={'var(--text)'}
 						thumbColor={'var(--text)'}

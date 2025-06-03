@@ -15,7 +15,7 @@ todos:
 
 _build-linux:
   NO_STRIP=true pnpm tauri build -v --no-bundle
-  notify-send ghostty "Compilation ended" --urgency=critical --app-name ghostty
+  notify-send kitty "Compilation ended" --urgency=critical --app-name kitty
 
 _build-macos:
   pnpm tauri build -v

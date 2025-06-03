@@ -11,22 +11,18 @@ type OneArgFunc<In, Out> = (arg: In) => Out;
 type TimeFunction = OneArgFunc<number, void>;
 
 const QUEUE_LIMIT = 70;
-const VOLUME_PROGRESSION_FACTOR = 9;
 
 /**
  * The player Manager
  * That big man
  */
 export default class Manager {
-	volumeFirstAssignement = true;
-
 	queue: QueueTrack[] = $state([]);
 	dormantQueue: QueueTrack[] = $state([]);
 	currentTrack: QueueTrack | null = $state(null);
 	private lastQueueOrder: QueueTrack[] = [];
 	history: QueueTrack[] = $state([]);
-	#innerSliderValue: number = $state(1);
-	#realVolume: number = 1;
+	volume: number = $state(1);
 	paused: boolean = $state(true);
 	#realCurrentTime = $state(0);
 	initialized = false;
@@ -111,32 +107,6 @@ export default class Manager {
 		return this.#realCurrentTime;
 	}
 
-	get sliderValue() {
-		return this.#innerSliderValue;
-	}
-
-	set sliderValue(v: number) {
-		this.#innerSliderValue = v;
-	}
-
-	get volume() {
-		const slider = this.#innerSliderValue;
-		this.#realVolume =
-			Math.log(slider * (VOLUME_PROGRESSION_FACTOR - 1) + 1) / Math.log(VOLUME_PROGRESSION_FACTOR);
-		return this.#realVolume;
-	}
-
-	set volume(v: number) {
-		if (this.#realVolume != v) {
-			if (this.volumeFirstAssignement) {
-				this.#innerSliderValue =
-					(Math.pow(VOLUME_PROGRESSION_FACTOR, v) - 1) / VOLUME_PROGRESSION_FACTOR - 1;
-				this.volumeFirstAssignement = false;
-			}
-			this.#realVolume = v;
-		}
-	}
-
 	async togglepp() {
 		await this.ontogglepp?.();
 	}
@@ -173,7 +143,8 @@ export default class Manager {
 						path_base64: t.path_base64,
 						disc: t.disc,
 						encoder: t.encoder,
-						genres: t.genres
+						genres: t.genres,
+						embeded_lyrics: t.embeded_lyrics
 					} as const;
 				});
 				this.queue = this.shuffle(this.queue);
@@ -395,7 +366,7 @@ export default class Manager {
 				if (data.history) this.history = JSON.parse(data.history);
 				if (data.qmode) this.qmode = JSON.parse(data.qmode);
 				if (data.pmode) this.pmode = JSON.parse(data.pmode);
-				if (data.volume) this.sliderValue = JSON.parse(data.volume);
+				if (data.volume) this.volume = JSON.parse(data.volume);
 				if (data.currentTime) this.currentTime = JSON.parse(data.currentTime);
 
 				let win = getCurrentWindow();
@@ -407,7 +378,7 @@ export default class Manager {
 						localStorage.setItem('history', JSON.stringify(this.history));
 						localStorage.setItem('dormantQueue', JSON.stringify(this.dormantQueue));
 						localStorage.setItem('currentTrack', JSON.stringify(this.currentTrack));
-						localStorage.setItem('volume', JSON.stringify(this.sliderValue));
+						localStorage.setItem('volume', JSON.stringify(this.volume));
 						localStorage.setItem('currentTime', JSON.stringify(this.currentTime));
 						await invoke('close');
 					})
