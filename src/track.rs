@@ -184,7 +184,7 @@ impl MusicCollectionIndexer {
             if let Some(album) = tag.album() {
                 let mut bytes = album.as_bytes().to_vec();
                 let album_artist = {
-                    if let Some(album_artist) = tag.get_string(&ItemKey::OriginalArtist) {
+                    if let Some(album_artist) = tag.get_string(&ItemKey::AlbumArtist) {
                         album_artist
                     } else {
                         if let Some(id) = audio.artists.first() {
@@ -244,7 +244,7 @@ impl MusicCollectionIndexer {
 
                     if let Some(year) = tag.year() {
                         album.year = Some(year);
-                    } else if let Some(year) = tag.get_string(&ItemKey::Unknown("TDOR".into())) {
+                    } else if let Some(year) = tag.get_string(&ItemKey::Unknown("date".into())) {
                         album.year = Some(year.parse().unwrap_or(0));
                     }
 
