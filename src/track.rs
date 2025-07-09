@@ -1,6 +1,8 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
+    fs,
+    io::Write,
     path::PathBuf,
     time::{Duration, SystemTime},
 };
@@ -9,9 +11,12 @@ use bincode::{Decode, Encode};
 use glob::glob;
 use lofty::{
     file::{AudioFile, TaggedFileExt},
+    picture::{MimeType, PictureType},
     probe::Probe,
     tag::{Accessor, ItemKey},
 };
+
+use crate::Lorch;
 
 #[derive(PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
 pub struct Digest(pub [u8; 16]);
@@ -30,6 +35,15 @@ pub enum Id {
     Unresolved,
 }
 
+impl Id {
+    pub fn digest(&self) -> Option<md5::Digest> {
+        match self {
+            Id::Digest(Digest(data)) => Some(md5::Digest(data.clone())),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Decode, Encode)]
 pub struct Artist {
     pub id: Id,
@@ -44,6 +58,7 @@ pub struct Song {
     pub artists: Vec<Id>,
     pub track: u32,
     pub disc: u32,
+    pub embeded_lyrics: Option<String>,
     pub album: Option<Id>,
     pub duration: Duration,
     pub bitrate: u32,
@@ -61,6 +76,7 @@ impl Song {
             artists: vec![],
             track: 0,
             disc: 1,
+            embeded_lyrics: None,
             album: None,
             duration: Duration::default(),
             bitrate: 0,
@@ -79,6 +95,7 @@ pub struct Album {
     pub songs: Vec<Id>,
     pub disc_total: u32,
     pub songs_count: u32,
+    pub cover: Option<Id>,
 }
 impl Album {
     fn new(id: Id) -> Self {
@@ -90,7 +107,34 @@ impl Album {
             songs: vec![],
             disc_total: 0,
             songs_count: 0,
+            cover: None,
         }
+    }
+}
+
+#[derive(Default, Debug, Decode, Encode)]
+pub struct Cover {
+    id: Id,
+    pub ext: String,
+}
+
+impl Cover {
+    pub fn new(id: Id, mime: &MimeType) -> Cover {
+        Cover {
+            id,
+            ext: match mime {
+                MimeType::Png => ".png".to_string(),
+                MimeType::Jpeg => ".jpeg".to_string(),
+                MimeType::Tiff => ".tiff".to_string(),
+                MimeType::Bmp => ".bmp".to_string(),
+                MimeType::Gif => ".gif".to_string(),
+                MimeType::Unknown(o) => format!(".{o}"),
+                _ => ".png".to_string(),
+            },
+        }
+    }
+    pub fn get_path(&self) -> PathBuf {
+        Lorch::covers_dir().join(&format!("{:x}{}", self.id.digest().unwrap(), self.ext))
     }
 }
 
@@ -115,6 +159,7 @@ pub struct MusicCollection {
     pub artists: HashMap<Id, Artist>,
     pub albums: HashMap<Id, Album>,
     pub songs: HashMap<Id, Song>,
+    pub covers: HashMap<Id, Cover>,
 }
 
 #[derive(Default)]
@@ -179,6 +224,10 @@ impl MusicCollectionIndexer {
             audio.disc = tag.disk().unwrap_or(1);
             if let Some(no) = tag.track() {
                 audio.track = no;
+            }
+
+            if let Some(lyrics) = tag.get_string(&ItemKey::Lyrics) {
+                audio.embeded_lyrics = Some(lyrics.to_string());
             }
 
             if let Some(album) = tag.album() {
@@ -254,6 +303,32 @@ impl MusicCollectionIndexer {
                     }
 
                     album.disc_total = tag.disk_total().unwrap_or(1);
+                    let cover_id = album.id;
+
+                    let possible_covers = [
+                        PictureType::CoverFront,
+                        PictureType::Media,
+                        PictureType::Other,
+                        PictureType::CoverBack,
+                    ];
+
+                    'cover_loop: for picture_type in possible_covers {
+                        if let Some(cover) = tag.get_picture_type(picture_type) {
+                            let mime = cover.mime_type().unwrap();
+                            let data = cover.data().to_vec();
+
+                            let cover = Cover::new(cover_id, mime);
+                            let cover_path = cover.get_path();
+
+                            let mut f = fs::File::create(cover_path).unwrap();
+                            f.write_all(&data).unwrap();
+
+                            album.cover = Some(cover.id);
+                            self.collection.covers.insert(cover_id, cover);
+
+                            break 'cover_loop;
+                        }
+                    }
 
                     self.collection.albums.insert(album_id, album);
                 }
