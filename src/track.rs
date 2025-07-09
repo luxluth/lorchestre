@@ -1,9 +1,11 @@
 use std::{
     collections::{HashMap, HashSet},
+    fmt::Debug,
     path::PathBuf,
     time::{Duration, SystemTime},
 };
 
+use bincode::{Decode, Encode};
 use glob::glob;
 use lofty::{
     file::{AudioFile, TaggedFileExt},
@@ -11,20 +13,30 @@ use lofty::{
     tag::{Accessor, ItemKey},
 };
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
+pub struct Digest(pub [u8; 16]);
+
+impl Debug for Digest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", md5::Digest(self.0))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
 pub enum Id {
-    Digest(md5::Digest),
+    Digest(Digest),
     Number(usize),
+    #[default]
     Unresolved,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Decode, Encode)]
 pub struct Artist {
     pub id: Id,
     pub name: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Decode, Encode)]
 pub struct Song {
     pub id: Id,
     pub title: String,
@@ -58,7 +70,7 @@ impl Song {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Decode, Encode)]
 pub struct Album {
     pub id: Id,
     pub genres: HashSet<String>,
@@ -94,22 +106,27 @@ impl IdStore {
     }
 
     pub fn digest<T: AsRef<[u8]>>(&self, data: T) -> Id {
-        return Id::Digest(md5::compute(data));
+        return Id::Digest(Digest(md5::compute(data).0));
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Decode, Encode)]
 pub struct MusicCollection {
     pub artists: HashMap<Id, Artist>,
     pub albums: HashMap<Id, Album>,
     pub songs: HashMap<Id, Song>,
+}
+
+#[derive(Default)]
+pub struct MusicCollectionIndexer {
+    pub collection: MusicCollection,
 
     artist_id_store: IdStore,
     album_id_store: IdStore,
     song_id_store: IdStore,
 }
 
-impl MusicCollection {
+impl MusicCollectionIndexer {
     pub fn index_file(&mut self, file_path: PathBuf) {
         let id = self
             .song_id_store
@@ -180,9 +197,9 @@ impl MusicCollection {
                 .as_bytes();
                 bytes.extend(album_artist);
 
-                let id = self.album_id_store.digest(bytes);
-                if let Some(album) = self.albums.get_mut(&id) {
-                    audio.album = Some(id);
+                let album_id = self.album_id_store.digest(bytes);
+                if let Some(album) = self.collection.albums.get_mut(&album_id) {
+                    audio.album = Some(album_id);
                     if let Some(genres) = tag.genre() {
                         if genres.contains(';') {
                             let genres: Vec<String> =
@@ -198,7 +215,8 @@ impl MusicCollection {
                     album.songs.push(audio.id);
                 } else {
                     // let Album { id, genres, artist, year, songs, disc_total, songs_count }
-                    let mut album = Album::new(id);
+                    let mut album = Album::new(album_id);
+                    audio.album = Some(album_id);
 
                     if let Some(genres) = tag.genre() {
                         if genres.contains(';') {
@@ -236,13 +254,17 @@ impl MusicCollection {
                     }
 
                     album.disc_total = tag.disk_total().unwrap_or(1);
+
+                    self.collection.albums.insert(album_id, album);
                 }
             }
+
+            self.collection.songs.insert(id, audio);
         }
     }
 
     pub fn add_artist(&mut self, name: String) -> Id {
-        for (id, artist) in &self.artists {
+        for (id, artist) in &self.collection.artists {
             if artist.name == name {
                 return *id;
             }
@@ -251,13 +273,13 @@ impl MusicCollection {
         let id = self.artist_id_store.next();
         let artist = Artist { id, name };
 
-        self.artists.insert(id, artist);
+        self.collection.artists.insert(id, artist);
 
         return id;
     }
 
     pub fn get_artist_id_by_name(&self, name: &str) -> Option<Id> {
-        for (id, artist) in &self.artists {
+        for (id, artist) in &self.collection.artists {
             if artist.name == name {
                 return Some(*id);
             }
@@ -267,11 +289,11 @@ impl MusicCollection {
     }
 
     pub fn get_artist(&self, id: &Id) -> Option<&Artist> {
-        self.artists.get(id)
+        self.collection.artists.get(id)
     }
 
     pub fn get_album(&self, id: &Id) -> Option<&Album> {
-        self.albums.get(id)
+        self.collection.albums.get(id)
     }
 
     pub fn index(&mut self, dir_path: PathBuf) {
