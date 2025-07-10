@@ -1,8 +1,8 @@
 use std::{fs::DirBuilder, path::PathBuf};
 
 // TODO: remove pubs
+pub mod di;
 pub mod platform;
-pub mod search;
 pub mod track;
 
 pub struct Lorch;
