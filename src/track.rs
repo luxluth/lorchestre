@@ -16,7 +16,7 @@ use lofty::{
     tag::{Accessor, ItemKey},
 };
 
-use crate::Lorch;
+use crate::{Lorch, di::Di};
 
 #[derive(PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
 pub struct Digest(pub [u8; 16]);
@@ -89,6 +89,7 @@ impl Song {
 #[derive(Debug, Decode, Encode)]
 pub struct Album {
     pub id: Id,
+    pub name: String,
     pub genres: HashSet<String>,
     pub artist: Option<Id>,
     pub year: Option<u32>,
@@ -101,6 +102,7 @@ impl Album {
     fn new(id: Id) -> Self {
         Self {
             id,
+            name: String::new(),
             genres: HashSet::new(),
             artist: None,
             year: None,
@@ -154,21 +156,50 @@ impl IdStore {
     }
 }
 
-#[derive(Default, Debug, Decode, Encode)]
+#[derive(Default, Decode, Encode)]
 pub struct MusicCollection {
     pub artists: HashMap<Id, Artist>,
     pub albums: HashMap<Id, Album>,
     pub songs: HashMap<Id, Song>,
     pub covers: HashMap<Id, Cover>,
+    pub index: Di<IdKey>,
+}
+impl MusicCollection {
+    fn new() -> Self {
+        MusicCollection {
+            index: Di::new(),
+            ..Default::default()
+        }
+    }
 }
 
-#[derive(Default)]
+#[derive(Default, Decode, Encode, Debug)]
+pub enum IdKey {
+    SongTitle(Id),
+    ArtistName(Id),
+    AlbumName(Id),
+
+    #[default]
+    Unknown,
+}
+
 pub struct MusicCollectionIndexer {
     pub collection: MusicCollection,
 
     artist_id_store: IdStore,
     album_id_store: IdStore,
     song_id_store: IdStore,
+}
+
+impl MusicCollectionIndexer {
+    pub fn new() -> Self {
+        Self {
+            collection: MusicCollection::new(),
+            artist_id_store: IdStore::default(),
+            album_id_store: IdStore::default(),
+            song_id_store: IdStore::default(),
+        }
+    }
 }
 
 impl MusicCollectionIndexer {
@@ -193,6 +224,7 @@ impl MusicCollectionIndexer {
             };
 
             let mut audio = Song::new(id, file_path.clone());
+
             audio.bitrate = bitrate;
             audio.duration = duration;
 
@@ -211,6 +243,7 @@ impl MusicCollectionIndexer {
 
             if let Some(title) = tag.title() {
                 audio.title = title.to_string();
+                self.collection.index.insert(title, IdKey::SongTitle(id));
             }
 
             if let Some(artists) = tag.get_string(&ItemKey::TrackArtist) {
@@ -277,6 +310,13 @@ impl MusicCollectionIndexer {
                                 genres.split(' ').map(|x| x.trim().to_string()).collect();
                             album.genres.extend(genres);
                         }
+                    }
+
+                    if let Some(album_name) = tag.album() {
+                        album.name = album_name.to_string();
+                        self.collection
+                            .index
+                            .insert(&album_name, IdKey::AlbumName(id));
                     }
 
                     album.artist = {
@@ -346,6 +386,7 @@ impl MusicCollectionIndexer {
         }
 
         let id = self.artist_id_store.next();
+        self.collection.index.insert(&name, IdKey::ArtistName(id));
         let artist = Artist { id, name };
 
         self.collection.artists.insert(id, artist);
@@ -384,5 +425,7 @@ impl MusicCollectionIndexer {
                 }
             }
         }
+
+        self.collection.index.finalize();
     }
 }
