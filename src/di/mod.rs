@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 
-use bincode::enc::write::Writer;
-use bincode::{BorrowDecode, Decode, Encode};
+use bincode::{Decode, Encode};
 use fuzzy_matcher::{FuzzyMatcher, skim::SkimMatcherV2};
-use kiddo::float::kdtree::KdTree;
-use kiddo::{NearestNeighbour, SquaredEuclidean};
 pub use vectorized::VectorLike;
 
 mod vectorized;
@@ -31,34 +28,6 @@ impl Grammar {
     fn new() -> Self {
         Self::default()
     }
-}
-
-/// Compress zeros in a vector:
-/// - Leading/trailing zeros removed
-/// - Internal runs of zeros collapsed to a single 0.0
-/// Example:
-/// [0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0] → [1.0, 0.0, 2.0, 0.0, 3.0]
-fn compress_zeros_between_values(v: &[f64]) -> Vec<f64> {
-    let mut out = Vec::with_capacity(v.len());
-    let mut seen_nonzero = false;
-    let mut pending_zero = false;
-
-    for &val in v {
-        if val == 0.0 {
-            if seen_nonzero {
-                pending_zero = true;
-            }
-        } else {
-            if pending_zero {
-                out.push(0.0); // single zero for any previous run
-                pending_zero = false;
-            }
-            out.push(val);
-            seen_nonzero = true;
-        }
-    }
-
-    out
 }
 
 fn vec_to_array<const N: usize>(v: &[f64]) -> [f64; N] {
@@ -96,11 +65,9 @@ impl VectorLike for String {
 
         let total: f64 = counts.iter().sum();
         if total == 0.0 {
-            compress_zeros_between_values(&counts)
+            counts
         } else {
-            compress_zeros_between_values(
-                &counts.into_iter().map(|c| c / total).collect::<Vec<f64>>(),
-            )
+            counts.into_iter().map(|c| c / total).collect::<Vec<f64>>()
         }
     }
 
@@ -116,11 +83,9 @@ impl VectorLike for String {
         let total: f64 = counts.iter().sum();
 
         if total == 0.0 {
-            compress_zeros_between_values(&counts)
+            counts
         } else {
-            compress_zeros_between_values(
-                &counts.into_iter().map(|c| c / total).collect::<Vec<f64>>(),
-            )
+            counts.into_iter().map(|c| c / total).collect::<Vec<f64>>()
         }
     }
 }
@@ -147,11 +112,9 @@ impl VectorLike for Vec<String> {
         let total: f64 = counts.iter().sum();
 
         if total == 0.0 {
-            compress_zeros_between_values(&counts)
+            counts
         } else {
-            compress_zeros_between_values(
-                &counts.into_iter().map(|c| c / total).collect::<Vec<f64>>(),
-            )
+            counts.into_iter().map(|c| c / total).collect::<Vec<f64>>()
         }
     }
 
@@ -167,97 +130,20 @@ impl VectorLike for Vec<String> {
         let total: f64 = counts.iter().sum();
 
         if total == 0.0 {
-            compress_zeros_between_values(&counts)
+            counts
         } else {
-            compress_zeros_between_values(
-                &counts.into_iter().map(|c| c / total).collect::<Vec<f64>>(),
-            )
+            counts.into_iter().map(|c| c / total).collect::<Vec<f64>>()
         }
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Encode, Decode)]
 pub struct Di<V> {
     cmds: Option<Vec<InsertCommand<V>>>,
     pub keys: Vec<((Vec<f64>, f64), usize)>,
-    pub values: Vec<V>,
+    pub values: Vec<Vec<V>>,
     pub grammar: Grammar,
-    kd_tree: KdTree<f64, usize, 32, 500, u16>,
-    // pub epsilon: f32,
-}
-
-impl<V: Encode> Encode for Di<V> {
-    fn encode<E: bincode::enc::Encoder>(
-        &self,
-        encoder: &mut E,
-    ) -> Result<(), bincode::error::EncodeError> {
-        let config = encoder.config().clone();
-        let w = encoder.writer();
-        w.write(&bincode::encode_to_vec(&self.keys, config.clone())?)?;
-        w.write(&bincode::encode_to_vec(&self.values, config.clone())?)?;
-        w.write(&bincode::encode_to_vec(&self.grammar, config.clone())?)?;
-
-        let pairs: Vec<(usize, [f64; 32])> = self.kd_tree.iter().collect();
-        w.write(&bincode::encode_to_vec(pairs, config.clone())?)?;
-
-        Ok(())
-    }
-}
-
-impl<Context, V> Decode<Context> for Di<V>
-where
-    V: Decode<Context>,
-{
-    fn decode<D: bincode::de::Decoder<Context = Context>>(
-        decoder: &mut D,
-    ) -> Result<Self, bincode::error::DecodeError> {
-        let keys = bincode::Decode::decode(decoder)?;
-        let values = bincode::Decode::decode(decoder)?;
-        let grammar = bincode::Decode::decode(decoder)?;
-        let pairs: Vec<(usize, [f64; 32])> = bincode::Decode::decode(decoder)?;
-
-        let mut kd_tree: KdTree<f64, usize, 32, 500, u16> = KdTree::new();
-
-        for (item, query) in pairs {
-            kd_tree.add(&query, item)
-        }
-
-        Ok(Self {
-            cmds: Some(vec![]),
-            keys,
-            values,
-            grammar,
-            kd_tree,
-        })
-    }
-}
-
-impl<'de, Context, V> BorrowDecode<'de, Context> for Di<V>
-where
-    V: BorrowDecode<'de, Context>,
-{
-    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
-        decoder: &mut D,
-    ) -> Result<Self, bincode::error::DecodeError> {
-        let keys = bincode::BorrowDecode::borrow_decode(decoder)?;
-        let values = bincode::BorrowDecode::borrow_decode(decoder)?;
-        let grammar = bincode::BorrowDecode::borrow_decode(decoder)?;
-        let pairs: Vec<(usize, [f64; 32])> = bincode::BorrowDecode::borrow_decode(decoder)?;
-
-        let mut kd_tree: KdTree<f64, usize, 32, 500, u16> = KdTree::new();
-
-        for (item, query) in pairs {
-            kd_tree.add(&query, item)
-        }
-
-        Ok(Self {
-            cmds: Some(vec![]),
-            keys,
-            values,
-            grammar,
-            kd_tree,
-        })
-    }
+    pub epsilon: f64,
 }
 
 // #[derive(Default)]
@@ -273,15 +159,17 @@ struct InsertCommand<V> {
     value: V,
 }
 
-impl<V> Di<V> {
-    pub fn new() -> Self {
+impl<V> Di<V>
+where
+    V: Copy,
+{
+    pub fn new(epsilon: f64) -> Self {
         Self {
             cmds: Some(vec![]),
             keys: vec![],
             values: vec![],
             grammar: Grammar::new(),
-            kd_tree: KdTree::new(),
-            // epsilon,
+            epsilon,
         }
     }
 
@@ -300,11 +188,17 @@ impl<V> Di<V> {
         for cmd in self.cmds.take().unwrap() {
             let vec = cmd.key.transform_flat(self);
             let norm = Self::cosine_similarity_norm(&vec);
-            let id = self.values.len();
-            self.kd_tree.add(&vec_to_array::<32>(&vec), id);
+
+            for (i, ((existing_vec, existing_norm), _)) in self.keys.iter().enumerate() {
+                let sim = Self::cosine_similarity(&vec, norm, &existing_vec, *existing_norm);
+                if sim >= self.epsilon {
+                    self.values[i].push(cmd.value);
+                    continue;
+                }
+            }
 
             self.keys.push(((vec, norm), self.values.len()));
-            self.values.push(cmd.value);
+            self.values.push(vec![cmd.value]);
         }
 
         self.cmds = Some(vec![])
@@ -335,33 +229,23 @@ impl<V> Di<V> {
         normalized
     }
 
-    pub fn search<K: ToString>(&self, query: K, max: usize) -> Vec<(&V, f64)> {
+    pub fn search<K: ToString>(&self, query: K, max: usize) -> Vec<(&Vec<V>, f64)> {
         let matcher = SkimMatcherV2::default().smart_case();
         let query_tokens = self.fit_tokens(&matcher, &query.to_string());
-        eprintln!("{query_tokens:?}");
         let query_vec = query_tokens.transform_flat(self);
-        let query_array = vec_to_array::<32>(&query_vec);
         let query_norm = Self::cosine_similarity_norm(&query_vec);
 
-        let neighbors = self
-            .kd_tree
-            .nearest_n::<SquaredEuclidean>(&query_array, max);
         let mut out = vec![];
 
-        for NearestNeighbour {
-            item: index,
-            distance: _,
-        } in neighbors
-        {
-            let (existing_vec, norm) = &self.keys[index].0;
+        for (i, ((existing_vec, norm), _)) in self.keys.iter().enumerate() {
             let sim = Self::cosine_similarity(&query_vec, query_norm, existing_vec, *norm);
 
-            out.push((&self.values[index], sim));
+            out.push((&self.values[i], sim));
         }
 
         out.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
-        out
+        out.into_iter().take(max).collect()
     }
 
     fn cosine_similarity_norm(v: &[f64]) -> f64 {

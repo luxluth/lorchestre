@@ -167,13 +167,13 @@ pub struct MusicCollection {
 impl MusicCollection {
     fn new() -> Self {
         MusicCollection {
-            index: Di::new(),
+            index: Di::new(0.9),
             ..Default::default()
         }
     }
 }
 
-#[derive(Default, Decode, Encode, Debug)]
+#[derive(Default, Decode, Encode, Debug, Clone, Copy)]
 pub enum IdKey {
     SongTitle(Id),
     ArtistName(Id),
