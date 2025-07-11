@@ -1058,7 +1058,6 @@ dependencies = [
  "md5",
  "mime_guess",
  "rodio",
- "rust-tfidf",
  "tokio",
 ]
 
@@ -1467,12 +1466,6 @@ dependencies = [
  "lewton",
  "symphonia",
 ]
-
-[[package]]
-name = "rust-tfidf"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba645a24c2f02d569e5bb4178e3ce8c82fce061888901e939d989ca67f2b4ce6"
 
 [[package]]
 name = "rustc-demangle"

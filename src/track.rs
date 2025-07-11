@@ -316,7 +316,7 @@ impl MusicCollectionIndexer {
                         album.name = album_name.to_string();
                         self.collection
                             .index
-                            .insert(&album_name, IdKey::AlbumName(id));
+                            .insert(&album_name, IdKey::AlbumName(album_id));
                     }
 
                     album.artist = {

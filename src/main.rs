@@ -5,10 +5,10 @@ use lorchestre::track::{IdKey, MusicCollection, MusicCollectionIndexer};
 fn main() {
     let mut indexer = MusicCollectionIndexer::new();
     indexer.index("/home/luxluth/Music/".into());
-    println!("{:#?}", indexer.collection.index.keys);
+    println!("{:#?}", indexer.collection.index.grammar);
 
     let e = Instant::now();
-    let res = indexer.collection.index.search("Kendrick Lamar", 1);
+    let res = indexer.collection.index.search("Ken l", 1);
     eprintln!("{}ms", e.elapsed().as_millis());
     eprintln!("{:?}", res);
 

@@ -338,6 +338,7 @@ impl<V> Di<V> {
     pub fn search<K: ToString>(&self, query: K, max: usize) -> Vec<(&V, f64)> {
         let matcher = SkimMatcherV2::default().smart_case();
         let query_tokens = self.fit_tokens(&matcher, &query.to_string());
+        eprintln!("{query_tokens:?}");
         let query_vec = query_tokens.transform_flat(self);
         let query_array = vec_to_array::<32>(&query_vec);
         let query_norm = Self::cosine_similarity_norm(&query_vec);
@@ -366,13 +367,6 @@ impl<V> Di<V> {
     fn cosine_similarity_norm(v: &[f64]) -> f64 {
         v.iter().map(|x| x * x).sum::<f64>().sqrt()
     }
-
-    // fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
-    //     let dot = a.iter().zip(b).map(|(x, y)| x * y).sum::<f32>();
-    //     let norm_a = a.iter().map(|x| x * x).sum::<f32>().sqrt();
-    //     let norm_b = b.iter().map(|x| x * x).sum::<f32>().sqrt();
-    //     dot / (norm_a * norm_b + 1e-8)
-    // }
 
     fn cosine_similarity(query: &[f64], query_norm: f64, key: &[f64], key_norm: f64) -> f64 {
         let dot = query.iter().zip(key).map(|(x, y)| x * y).sum::<f64>();
