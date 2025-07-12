@@ -1,7 +1,7 @@
 use std::{process::ExitCode, sync::Arc};
 
-use adw::{ApplicationWindow, prelude::*};
-use gtk::Application;
+use adw::{ApplicationWindow, HeaderBar, prelude::*};
+use gtk::{Application, Label};
 // use gtk::prelude::*;
 
 use crate::track::MusicCollection;
@@ -9,6 +9,7 @@ use crate::track::MusicCollection;
 use super::Frontend;
 
 const APP_ID: &str = "dev.luxluth.lorchestre";
+const BASE_CSS: &str = include_str!("style.css");
 
 pub struct Lorchestre {
     collection: MusicCollection,
@@ -17,7 +18,50 @@ pub struct Lorchestre {
 
 impl Lorchestre {}
 
+fn load_css(css: &str, previous_provider: Option<gtk::CssProvider>) {
+    let provider = gtk::CssProvider::new();
+    provider.load_from_string(&css);
+
+    if let Some(previous_provider) = previous_provider {
+        gtk::style_context_remove_provider_for_display(
+            &gtk::gdk::Display::default().expect("Could not connect to a display."),
+            &previous_provider,
+        );
+    }
+
+    gtk::style_context_add_provider_for_display(
+        &gtk::gdk::Display::default().expect("Could not connect to a display."),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
+}
+
 fn activate(mut lorchestre: Arc<Lorchestre>) {
+    let content = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(0)
+        .css_classes(["view"])
+        .build();
+
+    let title_widget = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(4)
+        .halign(gtk::Align::Center)
+        .valign(gtk::Align::Center)
+        .build();
+
+    let title = Label::builder().css_classes(["bold"]).build();
+    title.set_text("L'orchestre");
+
+    title_widget.append(&title);
+
+    let header = HeaderBar::builder()
+        .css_classes(["flat"])
+        .title_widget(&title_widget)
+        .build();
+
+    content.append(&header);
+
     let window = ApplicationWindow::builder()
         .application(&lorchestre.app)
         .title("L'orchestre")
@@ -25,6 +69,7 @@ fn activate(mut lorchestre: Arc<Lorchestre>) {
         .resizable(true)
         .default_width(800)
         .default_height(600)
+        .content(&content)
         .build();
 
     window.present();
@@ -45,6 +90,7 @@ impl Frontend for Lorchestre {
         let app_clone = self.app.clone();
         let lorch_arc = Arc::new(self);
         app_clone.connect_activate(move |_| {
+            load_css(&BASE_CSS, None);
             activate(lorch_arc.clone());
         });
 
