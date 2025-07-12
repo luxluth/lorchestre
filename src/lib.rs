@@ -5,6 +5,8 @@ pub mod di;
 pub mod platform;
 pub mod track;
 
+pub use platform::frontend::Lorchestre;
+
 pub struct Lorch;
 
 impl Lorch {

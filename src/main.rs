@@ -1,30 +1,8 @@
-use std::time::Instant;
+use lorchestre::{Lorchestre, platform::Frontend, track::MusicCollectionIndexer};
 
-use lorchestre::track::{IdKey, MusicCollectionIndexer};
-
-fn main() {
+fn main() -> std::process::ExitCode {
     let mut indexer = MusicCollectionIndexer::new();
     indexer.index("/home/luxluth/Music/".into());
 
-    let e = Instant::now();
-    let res = indexer.collection.index.search("Damso", 1);
-    eprintln!("{}ms", e.elapsed().as_millis());
-    eprintln!("{:?}", res);
-
-    for (key, _) in res {
-        for id_key in key {
-            match id_key {
-                IdKey::SongTitle(id) => {
-                    eprintln!("{:?}", indexer.collection.songs.get(id));
-                }
-                IdKey::ArtistName(id) => {
-                    eprintln!("{:?}", indexer.collection.artists.get(id));
-                }
-                IdKey::AlbumName(id) => {
-                    eprintln!("{:?}", indexer.collection.albums.get(id));
-                }
-                IdKey::Unknown => unreachable!(),
-            }
-        }
-    }
+    Lorchestre::init(indexer.collection).start()
 }
