@@ -2,7 +2,7 @@ use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
     fs,
-    io::Write,
+    io::{Read, Write},
     path::PathBuf,
     time::{Duration, SystemTime},
 };
@@ -86,7 +86,7 @@ impl Song {
     }
 }
 
-#[derive(Debug, Decode, Encode)]
+#[derive(Debug, Decode, Encode, Clone)]
 pub struct Album {
     pub id: Id,
     pub name: String,
@@ -199,6 +199,26 @@ impl MusicCollectionIndexer {
             album_id_store: IdStore::default(),
             song_id_store: IdStore::default(),
         }
+    }
+
+    pub fn load_from_cache(&mut self) {
+        let cache_path = Lorch::cache_path();
+        let mut f = std::fs::File::open(cache_path).unwrap();
+        let config = bincode::config::standard();
+        let mut buf = Vec::new();
+        f.read_to_end(&mut buf).unwrap();
+        let (collection, _): (MusicCollection, usize) =
+            bincode::decode_from_slice(&buf, config).unwrap();
+
+        self.collection = collection;
+    }
+
+    pub fn save(&mut self) {
+        let cache_path = Lorch::cache_path();
+        let mut f = std::fs::File::create(cache_path).unwrap();
+        let config = bincode::config::standard();
+        let data = bincode::encode_to_vec(&self.collection, config).unwrap();
+        f.write_all(&data).unwrap();
     }
 }
 

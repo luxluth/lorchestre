@@ -16,10 +16,10 @@ pub struct AlbumWidget {
     album_name: TemplateChild<gtk::Label>,
     #[template_child]
     artist_name: TemplateChild<gtk::Label>,
+    #[template_child]
+    inner_box: TemplateChild<gtk::Box>,
 
     pub album: RefCell<Option<AlbumObject>>,
-    pub artist: RefCell<Option<String>>,
-    pub cover_path: RefCell<Option<String>>,
 }
 
 #[glib::object_subclass]
@@ -31,7 +31,7 @@ impl ObjectSubclass for AlbumWidget {
 
     fn class_init(class: &mut Self::Class) {
         class.bind_template();
-        class.bind_template_callbacks();
+        UtilityCallbacks::bind_template_callbacks(class);
     }
 
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -39,23 +39,34 @@ impl ObjectSubclass for AlbumWidget {
     }
 }
 
+struct UtilityCallbacks {}
+
 #[gtk::template_callbacks]
-impl AlbumWidget {}
+impl UtilityCallbacks {}
 
 impl ObjectImpl for AlbumWidget {
     fn constructed(&self) {
-        self.cover
-            .get()
-            .set_from_file(self.cover_path.clone().into_inner());
-        if let Some(album_obj) = self.album.clone().into_inner() {
-            if let Some(album) = album_obj.album().clone() {
-                self.album_name.get().set_text(&album.name);
-            }
-        }
+        self.parent_constructed();
+        self.obj().connect_notify(Some("album"), |obj, _| {
+            if let Some(album_obj) = obj.property::<Option<AlbumObject>>("album") {
+                let imp = obj.imp();
+                if let Some(album) = album_obj.album() {
+                    imp.album_name.get().set_text(&album.name);
+                } else {
+                    imp.album_name.get().set_text("");
+                }
 
-        if let Some(artist_name) = self.artist.clone().into_inner() {
-            self.artist_name.get().set_text(&artist_name);
-        }
+                if let Some(path) = album_obj.cover_path() {
+                    imp.cover.get().set_from_file(Some(path));
+                }
+
+                if let Some(artist_name) = album_obj.artist_name() {
+                    imp.artist_name.get().set_text(&artist_name);
+                }
+
+                *imp.album.borrow_mut() = Some(album_obj);
+            }
+        });
     }
 
     fn dispose(&self) {
@@ -66,14 +77,6 @@ impl ObjectImpl for AlbumWidget {
         static PROPERTIES: once_cell::sync::Lazy<Vec<ParamSpec>> =
             once_cell::sync::Lazy::new(|| {
                 vec![
-                    glib::ParamSpecString::builder("artist")
-                        .readwrite()
-                        .default_value(None)
-                        .build(),
-                    glib::ParamSpecString::builder("cover-path")
-                        .readwrite()
-                        .default_value(None)
-                        .build(),
                     glib::ParamSpecObject::builder::<AlbumObject>("album")
                         .readwrite()
                         .build(),
@@ -84,17 +87,9 @@ impl ObjectImpl for AlbumWidget {
 
     fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
         match pspec.name() {
-            "artist" => {
-                let artist: Option<String> = value.get().unwrap();
-                *self.artist.borrow_mut() = artist;
-            }
-            "cover-path" => {
-                let path: Option<String> = value.get().unwrap();
-                *self.cover_path.borrow_mut() = path;
-            }
             "album" => {
-                let album_obj = value.get::<AlbumObject>().unwrap();
-                *self.album.borrow_mut() = Some(album_obj);
+                let album_obj = value.get::<Option<AlbumObject>>().unwrap();
+                *self.album.borrow_mut() = album_obj;
             }
             _ => unimplemented!(),
         }
@@ -102,10 +97,11 @@ impl ObjectImpl for AlbumWidget {
 
     fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
         match pspec.name() {
-            "artist" => self.artist.borrow().to_value(),
-            "cover-path" => self.cover_path.borrow().to_value(),
             "album" => self.album.borrow_mut().to_value(),
-            _ => unimplemented!(),
+            e => {
+                eprintln!("{e} - not unimplemented");
+                unreachable!()
+            }
         }
     }
 }

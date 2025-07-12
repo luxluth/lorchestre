@@ -4,9 +4,11 @@ use adw::{ApplicationWindow, HeaderBar, prelude::*};
 use gtk::{Application, Label};
 // use gtk::prelude::*;
 
-use crate::track::MusicCollection;
-
 use super::Frontend;
+use crate::track::MusicCollection;
+use views::AlbumsView;
+
+mod views;
 
 const APP_ID: &str = "dev.luxluth.lorchestre";
 const BASE_CSS: &str = include_str!("style.css");
@@ -36,7 +38,7 @@ fn load_css(css: &str, previous_provider: Option<gtk::CssProvider>) {
     );
 }
 
-fn activate(mut lorchestre: Arc<Lorchestre>) {
+fn activate(mut _self: Arc<Lorchestre>) {
     let content = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(0)
@@ -61,9 +63,10 @@ fn activate(mut lorchestre: Arc<Lorchestre>) {
         .build();
 
     content.append(&header);
+    content.append(&AlbumsView(&_self.collection));
 
     let window = ApplicationWindow::builder()
-        .application(&lorchestre.app)
+        .application(&_self.app)
         .title("L'orchestre")
         .css_name("window")
         .resizable(true)

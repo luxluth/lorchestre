@@ -30,14 +30,6 @@ impl Grammar {
     }
 }
 
-fn vec_to_array<const N: usize>(v: &[f64]) -> [f64; N] {
-    let compressed = v;
-    let mut arr = [0.0; N];
-    let len = compressed.len().min(N);
-    arr[..len].copy_from_slice(&compressed[..len]);
-    arr
-}
-
 fn tokenize(s: &str) -> impl Iterator<Item = String> + '_ {
     s.split(|c: char| !c.is_alphanumeric())
         .filter(|t| !t.is_empty())

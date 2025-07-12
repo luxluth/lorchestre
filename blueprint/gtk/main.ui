@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkBox" id="albumWidget">
+    <property name="orientation">1</property>
+    <property name="spacing">0</property>
+    <property name="focusable">true</property>
+    <property name="halign">3</property>
+    <property name="valign">3</property>
+    <child>
+      <object class="GtkBox">
+        <property name="width-request">250</property>
+        <property name="height-request">250</property>
+        <property name="css-name">album-art</property>
+        <property name="overflow">1</property>
+        <child>
+          <object class="GtkImage">
+            <property name="name">album_cover</property>
+            <property name="file">/home/luxluth/.cache/lorchestre/__COVERS_STORE/eb54e8a30f2c6aa2365369e97ae8b053.png</property>
+            <property name="vexpand">true</property>
+            <property name="hexpand">true</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="name">album_name</property>
+        <property name="label" translatable="yes">Bad</property>
+        <property name="css-classes">bold</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="name">artist_name</property>
+        <property name="label" translatable="yes">Micheal Jackson</property>
+        <property name="css-classes">dimmed</property>
+      </object>
+    </child>
+  </object>
+</interface>

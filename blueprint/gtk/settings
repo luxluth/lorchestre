@@ -1,0 +1,11 @@
+[re/sonny/Workbench]
+show-console=true
+maximized=true
+width=1920
+height=1168
+edited=true
+user-interface-language='blueprint'
+show-code=false
+code-language=2
+show-style=true
+name='gtk-lorchestre'

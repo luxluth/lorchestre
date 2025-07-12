@@ -21,6 +21,10 @@ impl Lorch {
         cache_dir
     }
 
+    pub fn cache_path() -> PathBuf {
+        Lorch::cache_dir().join("_index")
+    }
+
     pub fn covers_dir() -> PathBuf {
         let store = Lorch::cache_dir().join("__COVERS_STORE");
         if !store.exists() {

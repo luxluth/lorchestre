@@ -4,16 +4,11 @@ use std::cell::RefCell;
 
 use crate::track::Album;
 
+#[derive(Default)]
 pub struct AlbumObject {
     pub album: RefCell<Option<Album>>,
-}
-
-impl Default for AlbumObject {
-    fn default() -> Self {
-        Self {
-            album: RefCell::new(None),
-        }
-    }
+    pub cover_path: RefCell<Option<String>>,
+    pub artist_name: RefCell<Option<String>>,
 }
 
 #[glib::object_subclass]
