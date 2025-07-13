@@ -43,8 +43,6 @@ impl AlbumWidget {
 
 impl Default for AlbumWidget {
     fn default() -> Self {
-        glib::Object::builder()
-            .property("album", None::<AlbumObject>)
-            .build()
+        glib::Object::new()
     }
 }

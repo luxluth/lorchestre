@@ -1,7 +1,7 @@
 use crate::platform::linux::views::album_widget::AlbumWidget;
 use crate::track::MusicCollection;
 use gtk::gio::ListStore;
-use gtk::{GridView, ListItem, ScrolledWindow, prelude::*};
+use gtk::{ListItem, ScrolledWindow, prelude::*};
 use gtk::{NoSelection, SignalListItemFactory};
 
 use super::AlbumObject;
@@ -60,10 +60,17 @@ pub fn AlbumsView(collection: &MusicCollection) -> adw::Bin {
     });
 
     let selection = NoSelection::new(Some(model));
-    let grid_view = GridView::new(Some(selection), Some(item_factory));
-    grid_view.set_max_columns(10);
+    let list = gtk::GridView::builder()
+        .model(&selection)
+        .factory(&item_factory)
+        .margin_bottom(20)
+        .margin_start(10)
+        .margin_top(10)
+        .margin_end(10)
+        .enable_rubberband(true)
+        .build();
 
-    let scrolled = ScrolledWindow::builder().child(&grid_view).build();
+    let scrolled = ScrolledWindow::builder().child(&list).build();
     adw::Bin::builder()
         .child(&scrolled)
         .hexpand(true)

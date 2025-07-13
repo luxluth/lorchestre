@@ -70,7 +70,9 @@ impl ObjectImpl for AlbumWidget {
     }
 
     fn dispose(&self) {
-        self.dispose_template();
+        while let Some(child) = self.obj().first_child() {
+            child.unparent();
+        }
     }
 
     fn properties() -> &'static [ParamSpec] {
@@ -106,4 +108,28 @@ impl ObjectImpl for AlbumWidget {
     }
 }
 
-impl WidgetImpl for AlbumWidget {}
+impl WidgetImpl for AlbumWidget {
+    fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
+        let (_min, natural) = self.inner_box.preferred_size();
+        self.inner_box.allocate(
+            natural.width().max(width),
+            natural.height().max(height),
+            baseline,
+            None,
+        );
+
+        self.parent_size_allocate(width, height, baseline)
+    }
+
+    fn measure(&self, orientation: gtk::Orientation, _for_size: i32) -> (i32, i32, i32, i32) {
+        let child = self.inner_box.get();
+
+        let (min, nat) = child.preferred_size();
+
+        match orientation {
+            gtk::Orientation::Horizontal => (min.width(), nat.width(), -1, -1),
+            gtk::Orientation::Vertical => (min.height(), nat.height(), -1, -1),
+            _ => todo!(),
+        }
+    }
+}

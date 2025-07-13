@@ -9,6 +9,8 @@
         <property name="focusable">true</property>
         <property name="halign">3</property>
         <property name="valign">3</property>
+        <property name="hexpand">false</property>
+        <property name="vexpand">false</property>
         <child>
           <object class="GtkBox">
             <property name="width-request">250</property>
@@ -28,6 +30,10 @@
           <object class="GtkLabel" id="album_name">
             <property name="name">album_name</property>
             <property name="label">@NO NAME</property>
+            <property name="wrap">true</property>
+            <property name="max-width-chars">20</property>
+            <property name="width-chars">20</property>
+            <property name="ellipsize">end</property>
             <property name="css-classes">bold</property>
           </object>
         </child>
@@ -35,6 +41,10 @@
           <object class="GtkLabel" id="artist_name">
             <property name="name">artist_name</property>
             <property name="label">Unknown Artist</property>
+            <property name="wrap">true</property>
+            <property name="max-width-chars">20</property>
+            <property name="width-chars">20</property>
+            <property name="ellipsize">end</property>
             <property name="css-classes">dimmed</property>
           </object>
         </child>
