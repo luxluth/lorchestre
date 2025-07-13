@@ -1,13 +1,10 @@
 use std::cell::RefCell;
 
 use crate::platform::linux::views::AlbumObject;
-use gtk::{
-    glib::{self, ParamSpec, Value},
-    prelude::*,
-    subclass::prelude::*,
-};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
-#[derive(Debug, Default, gtk::CompositeTemplate)]
+#[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
+#[properties(wrapper_type = super::AlbumWidget)]
 #[template(file = "widget.ui")]
 pub struct AlbumWidget {
     #[template_child]
@@ -19,7 +16,17 @@ pub struct AlbumWidget {
     #[template_child]
     inner_box: TemplateChild<gtk::Box>,
 
+    #[property(
+            get = |imp: &Self| imp.album.borrow_mut().clone(),
+            set = Self::set_album,
+    )]
     pub album: RefCell<Option<AlbumObject>>,
+}
+
+impl AlbumWidget {
+    pub fn set_album(&self, value: AlbumObject) {
+        *self.album.borrow_mut() = Some(value);
+    }
 }
 
 #[glib::object_subclass]
@@ -75,36 +82,16 @@ impl ObjectImpl for AlbumWidget {
         }
     }
 
-    fn properties() -> &'static [ParamSpec] {
-        static PROPERTIES: once_cell::sync::Lazy<Vec<ParamSpec>> =
-            once_cell::sync::Lazy::new(|| {
-                vec![
-                    glib::ParamSpecObject::builder::<AlbumObject>("album")
-                        .readwrite()
-                        .build(),
-                ]
-            });
-        PROPERTIES.as_ref()
+    fn properties() -> &'static [glib::ParamSpec] {
+        Self::derived_properties()
     }
 
-    fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
-        match pspec.name() {
-            "album" => {
-                let album_obj = value.get::<Option<AlbumObject>>().unwrap();
-                *self.album.borrow_mut() = album_obj;
-            }
-            _ => unimplemented!(),
-        }
+    fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
+        self.derived_set_property(id, value, pspec)
     }
 
-    fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
-        match pspec.name() {
-            "album" => self.album.borrow_mut().to_value(),
-            e => {
-                eprintln!("{e} - not unimplemented");
-                unreachable!()
-            }
-        }
+    fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+        self.derived_property(id, pspec)
     }
 }
 
