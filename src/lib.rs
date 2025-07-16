@@ -2,10 +2,10 @@ use std::{fs::DirBuilder, path::PathBuf};
 
 // TODO: remove pubs
 pub mod di;
-pub mod platform;
+// pub mod platform;
 pub mod track;
 
-pub use platform::frontend::Lorchestre;
+// pub use platform::frontend::Lorchestre;
 
 pub struct Lorch;
 
