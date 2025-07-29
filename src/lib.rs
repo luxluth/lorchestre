@@ -1,7 +1,7 @@
 use std::{fs::DirBuilder, path::PathBuf};
 
-// TODO: remove pubs
 pub mod di;
+pub mod tron;
 // pub mod platform;
 pub mod track;
 
