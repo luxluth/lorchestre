@@ -19,16 +19,16 @@ tauri = { version = "2", features = [
   "macos-private-api",
 ] }
 lorconf = { path = "../conf" }
-reqwest = { version = "0.12.19", features = ["blocking", "json"] }
+reqwest = { version = "0.13.1", features = ["blocking", "json"] }
 axum = { version = "0.8.4", features = ["json", "ws"] }
-axum-extra = { version = "0.10.1", features = ["query", "typed-header"] }
-axum-range = "0.5.0"
+axum-extra = { version = "0.12.5", features = ["query", "typed-header"] }
+axum-range = "1.0.0"
 color-thief = "0.2.2"
 dirs = "6.0.0"
 glob = "0.3.2"
 image = "0.25.6"
 lofty = "0.22.4"
-md5 = "0.7.0"
+md5 = "0.8.0"
 mime_guess = "2.0.5"
 tokio = { version = "1.45.1", features = ["full"] }
 tower = "0.5.2"
@@ -39,7 +39,7 @@ uuid = { version = "1.17.0", features = ["v4", "fast-rng"] }
 base64 = "0.22.1"
 alrc = { version = "0.1.0", features = ["serde"] }
 tauri-plugin-decorum = "1.1.1"
-tantivy = "0.24.1"
+tantivy = "0.25.0"
 tauri-plugin-dialog = "2.2.1"
 bitcode = "0.6.6"
 tauri-plugin-process = "2.2.1"
