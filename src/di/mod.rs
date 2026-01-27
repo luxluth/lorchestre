@@ -134,16 +134,10 @@ pub struct Di<V> {
     cmds: Option<Vec<InsertCommand<V>>>,
     pub keys: Vec<((Vec<f64>, f64), usize)>,
     pub values: Vec<Vec<V>>,
+    pub postings: HashMap<usize, Vec<usize>>,
     pub grammar: Grammar,
     pub epsilon: f64,
 }
-
-// #[derive(Default)]
-// pub enum Tokenizer {
-//     #[default]
-//     Word,
-//     CharNgram(usize),
-// }
 
 #[derive(Debug, Default, Decode, Encode)]
 struct InsertCommand<V> {
@@ -160,6 +154,7 @@ where
             cmds: Some(vec![]),
             keys: vec![],
             values: vec![],
+            postings: HashMap::new(),
             grammar: Grammar::new(),
             epsilon,
         }
@@ -181,16 +176,30 @@ where
             let vec = cmd.key.transform_flat(self);
             let norm = Self::cosine_similarity_norm(&vec);
 
+            let mut inserted = false;
             for (i, ((existing_vec, existing_norm), _)) in self.keys.iter().enumerate() {
                 let sim = Self::cosine_similarity(&vec, norm, &existing_vec, *existing_norm);
                 if sim >= self.epsilon {
                     self.values[i].push(cmd.value);
-                    continue;
+                    inserted = true;
+                    break;
                 }
             }
 
-            self.keys.push(((vec, norm), self.values.len()));
-            self.values.push(vec![cmd.value]);
+            if !inserted {
+                let key_idx = self.keys.len();
+                self.keys.push(((vec.clone(), norm), self.values.len()));
+                self.values.push(vec![cmd.value]);
+
+                for (token_idx, &weight) in vec.iter().enumerate() {
+                    if weight > 0.0 {
+                        self.postings
+                            .entry(token_idx)
+                            .or_insert_with(Vec::new)
+                            .push(key_idx);
+                    }
+                }
+            }
         }
 
         self.cmds = Some(vec![])
@@ -200,7 +209,7 @@ where
         let mut normalized = vec![];
 
         for token in tokenize(text) {
-            if let Some((best_token, _score)) = self
+            let mut matches: Vec<(String, i64)> = self
                 .grammar
                 .tokens
                 .iter()
@@ -212,8 +221,11 @@ where
                         None
                     }
                 })
-                .max_by_key(|&(_, score)| score)
-            {
+                .collect();
+
+            matches.sort_by_key(|&(_, score)| std::cmp::Reverse(score));
+
+            for (best_token, _) in matches.into_iter().take(10) {
                 normalized.push(best_token);
             }
         }
@@ -227,12 +239,28 @@ where
         let query_vec = query_tokens.transform_flat(self);
         let query_norm = Self::cosine_similarity_norm(&query_vec);
 
+        // Find candidate keys using inverted index
+        let mut candidates: std::collections::HashSet<usize> = std::collections::HashSet::new();
+        for (token_idx, &weight) in query_vec.iter().enumerate() {
+            if weight > 0.0 {
+                if let Some(postings) = self.postings.get(&token_idx) {
+                    candidates.extend(postings.iter().copied());
+                }
+            }
+        }
+
         let mut out = vec![];
 
-        for (i, ((existing_vec, norm), _)) in self.keys.iter().enumerate() {
-            let sim = Self::cosine_similarity(&query_vec, query_norm, existing_vec, *norm);
-
-            out.push((&self.values[i], sim));
+        if candidates.is_empty() && query_norm > 0.0 {
+            // Fallback for rare edge cases or empty postings
+            // If candidates is empty but we have query vector, it means no document has these tokens.
+            // So return empty result.
+        } else {
+            for key_idx in candidates {
+                let ((existing_vec, norm), value_idx) = &self.keys[key_idx];
+                let sim = Self::cosine_similarity(&query_vec, query_norm, existing_vec, *norm);
+                out.push((&self.values[*value_idx], sim));
+            }
         }
 
         out.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
@@ -250,7 +278,28 @@ where
     }
 }
 
-// fn tokenize_ngrams(text: &str, n: usize) -> Vec<String> {
-//     let chars: Vec<char> = text.to_lowercase().chars().collect();
-//     chars.windows(n).map(|w| w.iter().collect()).collect()
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_search_multiple_results() {
+        let mut di = Di::<&str>::new(0.9);
+
+        di.insert("Le temps", "Song 1");
+        di.insert("Lemon tree", "Song 2");
+        di.insert("La mer", "Song 3");
+
+        di.finalize();
+
+        // "le" matches "Le temps" (exact token "le").
+        // "le" matches "Lemon tree" (fuzzy token "lemon").
+        let results = di.search("le", 10);
+        println!("Found {} results", results.len());
+        for (vals, score) in &results {
+            println!("Score: {}, Values: {:?}", score, vals);
+        }
+
+        assert!(results.len() >= 2, "Should return at least 2 results (Le temps and Lemon tree)");
+    }
+}

@@ -16,7 +16,7 @@ use lofty::{
     tag::{Accessor, ItemKey},
 };
 
-use crate::{Lorch, di::Di};
+use crate::{Utils, di::Di};
 
 #[derive(PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
 pub struct Digest(pub [u8; 16]);
@@ -136,7 +136,7 @@ impl Cover {
         }
     }
     pub fn get_path(&self) -> PathBuf {
-        Lorch::covers_dir().join(&format!("{:x}{}", self.id.digest().unwrap(), self.ext))
+        Utils::covers_dir().join(&format!("{:x}{}", self.id.digest().unwrap(), self.ext))
     }
 }
 
@@ -183,7 +183,7 @@ pub enum IdKey {
     Unknown,
 }
 
-pub struct MusicCollectionIndexer {
+pub struct Orchestra {
     pub collection: MusicCollection,
 
     artist_id_store: IdStore,
@@ -191,7 +191,7 @@ pub struct MusicCollectionIndexer {
     song_id_store: IdStore,
 }
 
-impl MusicCollectionIndexer {
+impl Orchestra {
     pub fn new() -> Self {
         Self {
             collection: MusicCollection::new(),
@@ -201,20 +201,32 @@ impl MusicCollectionIndexer {
         }
     }
 
-    pub fn load_from_cache(&mut self) {
-        let cache_path = Lorch::cache_path();
-        let mut f = std::fs::File::open(cache_path).unwrap();
-        let config = bincode::config::standard();
-        let mut buf = Vec::new();
-        f.read_to_end(&mut buf).unwrap();
-        let (collection, _): (MusicCollection, usize) =
-            bincode::decode_from_slice(&buf, config).unwrap();
-
-        self.collection = collection;
+    pub fn load_from_cache(&mut self) -> bool {
+        let cache_path = Utils::cache_path();
+        if let Ok(mut f) = std::fs::File::open(cache_path) {
+            let config = bincode::config::standard();
+            let mut buf = Vec::new();
+            if f.read_to_end(&mut buf).is_ok() {
+                match bincode::decode_from_slice(&buf, config) {
+                    Ok((collection, _)) => {
+                        self.collection = collection;
+                        return true;
+                    }
+                    Err(_) => {
+                        self.collection = MusicCollection::new();
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     pub fn save(&mut self) {
-        let cache_path = Lorch::cache_path();
+        let cache_path = Utils::cache_path();
         let mut f = std::fs::File::create(cache_path).unwrap();
         let config = bincode::config::standard();
         let data = bincode::encode_to_vec(&self.collection, config).unwrap();
@@ -222,7 +234,7 @@ impl MusicCollectionIndexer {
     }
 }
 
-impl MusicCollectionIndexer {
+impl Orchestra {
     pub fn index_file(&mut self, file_path: PathBuf) {
         let id = self
             .song_id_store

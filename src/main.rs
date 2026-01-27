@@ -1,32 +1,28 @@
-use log::info;
-use lorchestre::{Lorch, track::MusicCollectionIndexer};
-
-use cstr::cstr;
-use qmetaobject::prelude::*;
-
-#[derive(QObject, Default)]
-struct Lorchestre {
-    base: qt_base_class!(trait QObject),
-}
+use freya::{
+    prelude::{AppComponent, Color, LaunchConfig, WindowConfig, launch},
+    winit::platform::wayland::WindowAttributesExtWayland,
+};
+use lorchestre::{track::Orchestra, ui::start_view::StartPage};
 
 fn main() {
-    qmetaobject::log::init_qt_to_rust();
     let _ = env_logger::try_init();
 
-    let mut indexer = MusicCollectionIndexer::new();
-    if Lorch::cache_path().exists() {
-        indexer.load_from_cache();
-    } else {
-        indexer.index("/home/luxluth/Music/".into());
-        indexer.save();
+    let (width, height) = (600, 600);
+
+    let mut orchestra = Orchestra::new();
+    if !orchestra.load_from_cache() {
+        orchestra.index("/home/luxluth/Music/".into());
+        orchestra.save();
     }
 
-    qml_register_type::<Lorchestre>(cstr!("Lorchestre"), 1, 0, cstr!("Lorchestre"));
-    let mut engine = QmlEngine::new();
-    let collection = indexer.collection.index.search("Risk", 10);
-    println!("{collection:?}");
+    let start_view = StartPage;
+    let config = WindowConfig::new(AppComponent::new(start_view))
+        .with_size(width as f64, height as f64)
+        .with_title("Orchestre")
+        .with_background(Color::TRANSPARENT)
+        .with_decorations(false)
+        .with_transparency(true)
+        .with_window_attributes(|attr, _ev| attr.with_name("orchestre", ""));
 
-    engine.load_data(include_str!("./app.qml").into());
-
-    engine.exec();
+    launch(LaunchConfig::new().with_window(config));
 }

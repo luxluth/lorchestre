@@ -1,15 +1,12 @@
 use std::{fs::DirBuilder, path::PathBuf};
 
 pub mod di;
-pub mod tron;
-// pub mod platform;
 pub mod track;
+pub mod ui;
 
-// pub use platform::frontend::Lorchestre;
+pub struct Utils;
 
-pub struct Lorch;
-
-impl Lorch {
+impl Utils {
     pub fn cache_dir() -> PathBuf {
         let cache_dir = dirs::cache_dir().unwrap().join("lorchestre");
         if !cache_dir.exists() {
@@ -22,11 +19,11 @@ impl Lorch {
     }
 
     pub fn cache_path() -> PathBuf {
-        Lorch::cache_dir().join("_index")
+        Utils::cache_dir().join("_index")
     }
 
     pub fn covers_dir() -> PathBuf {
-        let store = Lorch::cache_dir().join("__COVERS_STORE");
+        let store = Utils::cache_dir().join("__COVERS_STORE");
         if !store.exists() {
             let _ = DirBuilder::new().recursive(true).create(store.as_path());
         }
