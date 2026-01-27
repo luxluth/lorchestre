@@ -156,7 +156,7 @@ impl IdStore {
     }
 }
 
-#[derive(Default, Decode, Encode)]
+#[derive(Default, Decode, Encode, Debug)]
 pub struct MusicCollection {
     pub artists: HashMap<Id, Artist>,
     pub albums: HashMap<Id, Album>,
