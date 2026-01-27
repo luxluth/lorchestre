@@ -300,6 +300,9 @@ mod tests {
             println!("Score: {}, Values: {:?}", score, vals);
         }
 
-        assert!(results.len() >= 2, "Should return at least 2 results (Le temps and Lemon tree)");
+        assert!(
+            results.len() >= 2,
+            "Should return at least 2 results (Le temps and Lemon tree)"
+        );
     }
 }
