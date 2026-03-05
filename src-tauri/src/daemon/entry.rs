@@ -61,11 +61,6 @@ enum AppMessage {
     LocalSearch(String),
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct SearchQuery {
-    q: String,
-}
-
 async fn on_connect(ws: WebSocketUpgrade, State(state): State<AppData>) -> impl IntoResponse {
     ws.on_upgrade(move |socket| handle_socket(socket, state))
 }

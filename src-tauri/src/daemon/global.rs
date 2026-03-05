@@ -148,13 +148,11 @@ impl Track {
                 }
             };
 
-            if let Some(year) = tag.year() {
-                audio.album_year = Some(year);
-            } else if let Some(year) = tag.get_string(&ItemKey::Unknown("TDOR".into())) {
-                audio.album_year = Some(year.parse().unwrap_or(0));
+            if let Some(year) = tag.date() {
+                audio.album_year = Some(year.year as u32);
             }
 
-            if let Some(encoder) = tag.get_string(&ItemKey::EncoderSettings) {
+            if let Some(encoder) = tag.get_string(ItemKey::EncoderSettings) {
                 audio.encoder = encoder.to_string();
             }
 
@@ -169,7 +167,7 @@ impl Track {
             if let Some(title) = tag.title() {
                 audio.title = title.to_string();
             }
-            if let Some(artists) = tag.get_string(&ItemKey::TrackArtist) {
+            if let Some(artists) = tag.get_string(ItemKey::TrackArtist) {
                 audio.artists = artists
                     .split(';')
                     .filter(|x| !x.is_empty())
@@ -181,7 +179,7 @@ impl Track {
                 audio.album = album.to_string();
             }
 
-            if let Some(album_artist) = tag.get_string(&ItemKey::OriginalArtist) {
+            if let Some(album_artist) = tag.get_string(ItemKey::OriginalArtist) {
                 audio.album_artist = Some(album_artist.to_string());
             }
 
@@ -265,7 +263,7 @@ impl Track {
             audio.duration = duration.as_secs();
             audio.bitrate = bitrate;
 
-            let lyrics = tag.get_string(&ItemKey::Lyrics);
+            let lyrics = tag.get_string(ItemKey::Lyrics);
             if lyrics.is_some() {
                 audio.embeded_lyrics = Some(lyrics.unwrap().to_string());
             }
