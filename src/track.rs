@@ -86,18 +86,88 @@ impl Song {
     }
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Default, Encode, Decode)]
+pub struct Timestamp {
+    pub year: u16,
+    pub month: Option<u8>,
+    pub day: Option<u8>,
+    pub hour: Option<u8>,
+    pub minute: Option<u8>,
+    pub second: Option<u8>,
+}
+
+impl Timestamp {
+    pub fn from_lofty(time: lofty::tag::items::Timestamp) -> Self {
+        return Self {
+            year: time.year,
+            month: time.month,
+            day: time.day,
+            hour: time.hour,
+            minute: time.minute,
+            second: time.second,
+        };
+    }
+}
+
+impl PartialOrd for Timestamp {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Timestamp {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.year
+            .cmp(&other.year)
+            .then(self.month.cmp(&other.month))
+            .then(self.day.cmp(&other.day))
+            .then(self.hour.cmp(&other.hour))
+            .then(self.minute.cmp(&other.minute))
+            .then(self.second.cmp(&other.second))
+    }
+}
+
+impl std::fmt::Display for Timestamp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:04}", self.year)?;
+
+        if let Some(month) = self.month {
+            write!(f, "-{:02}", month)?;
+
+            if let Some(day) = self.day {
+                write!(f, "-{:02}", day)?;
+
+                if let Some(hour) = self.hour {
+                    write!(f, "T{:02}", hour)?;
+
+                    if let Some(minute) = self.minute {
+                        write!(f, ":{:02}", minute)?;
+
+                        if let Some(second) = self.second {
+                            write!(f, ":{:02}", second)?;
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Decode, Encode, Clone)]
 pub struct Album {
     pub id: Id,
     pub name: String,
     pub genres: HashSet<String>,
     pub artist: Option<Id>,
-    pub year: Option<u32>,
+    pub date: Option<Timestamp>,
     pub songs: Vec<Id>,
     pub disc_total: u32,
     pub songs_count: u32,
     pub cover: Option<Id>,
 }
+
 impl Album {
     fn new(id: Id) -> Self {
         Self {
@@ -105,7 +175,7 @@ impl Album {
             name: String::new(),
             genres: HashSet::new(),
             artist: None,
-            year: None,
+            date: None,
             songs: vec![],
             disc_total: 0,
             songs_count: 0,
@@ -269,7 +339,7 @@ impl Orchestra {
                 }
             };
 
-            if let Some(encoder) = tag.get_string(&ItemKey::EncoderSettings) {
+            if let Some(encoder) = tag.get_string(ItemKey::EncoderSettings) {
                 audio.encoder = encoder.to_string();
             }
 
@@ -278,7 +348,7 @@ impl Orchestra {
                 self.collection.index.insert(title, IdKey::SongTitle(id));
             }
 
-            if let Some(artists) = tag.get_string(&ItemKey::TrackArtist) {
+            if let Some(artists) = tag.get_string(ItemKey::TrackArtist) {
                 audio.artists = artists
                     .split(';')
                     .filter(|x| !x.is_empty())
@@ -291,14 +361,14 @@ impl Orchestra {
                 audio.track = no;
             }
 
-            if let Some(lyrics) = tag.get_string(&ItemKey::Lyrics) {
+            if let Some(lyrics) = tag.get_string(ItemKey::Lyrics) {
                 audio.embeded_lyrics = Some(lyrics.to_string());
             }
 
             if let Some(album) = tag.album() {
                 let mut bytes = album.as_bytes().to_vec();
                 let album_artist = {
-                    if let Some(album_artist) = tag.get_string(&ItemKey::AlbumArtist) {
+                    if let Some(album_artist) = tag.get_string(ItemKey::AlbumArtist) {
                         album_artist
                     } else {
                         if let Some(id) = audio.artists.first() {
@@ -352,7 +422,7 @@ impl Orchestra {
                     }
 
                     album.artist = {
-                        if let Some(album_artist) = tag.get_string(&ItemKey::OriginalArtist) {
+                        if let Some(album_artist) = tag.get_string(ItemKey::OriginalArtist) {
                             self.get_artist_id_by_name(album_artist)
                         } else {
                             if let Some(id) = audio.artists.first() {
@@ -363,10 +433,8 @@ impl Orchestra {
                         }
                     };
 
-                    if let Some(year) = tag.year() {
-                        album.year = Some(year);
-                    } else if let Some(year) = tag.get_string(&ItemKey::Unknown("date".into())) {
-                        album.year = Some(year.parse().unwrap_or(0));
+                    if let Some(date) = tag.date() {
+                        album.date = Some(Timestamp::from_lofty(date));
                     }
 
                     album.songs.push(audio.id);
