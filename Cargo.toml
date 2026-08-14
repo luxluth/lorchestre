@@ -7,19 +7,21 @@ edition = "2024"
 alrc = "0.1.0"
 bincode = { git = "https://git.sr.ht/~stygianentity/bincode" }
 dirs = "6.0.0"
-env_logger = "0.11.8"
-# version = "=0.4.0-rc.6"
-freya = { path = "../../contrib/freya/crates/freya/" , features = ["vulkan"]}
+env_logger = "0.11"
 fuzzy-matcher = "0.3.7"
 glob = "0.3.2"
-lofty = "0.23.2"
-log = "0.4.29"
-md5 = "0.8.0"
+lofty = "0.25"
+log = "0.4"
+md5 = "0.8"
 mime_guess = "2.0.5"
+mtk = { git = "https://github.com/luxluth/mtk.git", version = "0.0.1" }
 rodio = { version = "0.22.2", features = ["symphonia-all"] }
-rust-i18n = "3.1.5"
-# once_cell = "1.21.3"
-tokio = { version = "1.46.1", features = ["full"] }
+rust-i18n = "4.2"
+tokio = { version = "1.53", features = ["full"] }
+cpal = "0.18"
+symphonia = { version = "0.6.1", features = ["mp3"] }
+symphonia-bundle-mp3 = "0.6.1"
 
-[target.'cfg(target_os = "linux")'.dependencies]
-
+[target.'cfg(any(target_os = "linux", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly"))'.dependencies]
+cpal = { version = "0.18", features = ["pipewire"] }
+pipewire = "0.10.0"
