@@ -1,0 +1,5 @@
+# ref: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/layers/vk_layer_settings.txt
+
+# See: https://github.com/gfx-rs/wgpu/issues/9855
+# fixed on trunk as of 2026-07-16, not in a release as of 2026-08-05
+khronos_validation.message_id_filter = VUID-vkAcquireNextImageKHR-fence-01287,VUID-vkDestroyFence-fence-01120

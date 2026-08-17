@@ -18,10 +18,4 @@ mtk = { git = "https://github.com/luxluth/mtk.git", version = "0.0.1" }
 rodio = { version = "0.22.2", features = ["symphonia-all"] }
 rust-i18n = "4.2"
 tokio = { version = "1.53", features = ["full"] }
-cpal = "0.18"
-symphonia = { version = "0.6.1", features = ["mp3"] }
-symphonia-bundle-mp3 = "0.6.1"
-
-[target.'cfg(any(target_os = "linux", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly"))'.dependencies]
-cpal = { version = "0.18", features = ["pipewire"] }
-pipewire = "0.10.0"
+symphonia = { version = "0.6.1", features = ["all"] }

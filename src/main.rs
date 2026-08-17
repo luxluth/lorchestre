@@ -1,9 +1,9 @@
-use lorchestre::track::Orchestra;
+use lorchestre::Orchestra;
 use mtk::{
     Size, Style, clr,
     ui::{
         View, ViewStyleExt,
-        widgets::{column, container, text},
+        widgets::{column, text},
     },
     windowing::{Window, WindowAttributes},
 };
@@ -14,11 +14,11 @@ enum OrchestraMsg {}
 fn update(state: &mut Orchestra, msg: OrchestraMsg) {}
 
 fn app_view(_state: &Orchestra) -> impl View<Orchestra, Message = OrchestraMsg> + use<> {
-    container(vec![text("")]).style(
+    column(vec![text("")]).style(
         Style::new()
             .padding(10.0)
-            .width(Size::Percent(1.0))
-            .height(Size::Percent(1.0))
+            .width(Size::Fill)
+            .height(Size::Fill)
             .bg_color(clr!(red)),
     )
 }
