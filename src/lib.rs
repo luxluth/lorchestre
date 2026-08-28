@@ -47,6 +47,7 @@ impl Utils {
     }
 }
 
+#[derive(Debug)]
 pub struct Orchestra {
     pub collection: MusicCollection,
 

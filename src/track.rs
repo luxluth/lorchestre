@@ -207,6 +207,12 @@ pub struct IdStore {
     current: usize,
 }
 
+impl std::fmt::Debug for IdStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "IdStore({})", self.current)
+    }
+}
+
 impl IdStore {
     pub fn next(&mut self) -> Id {
         self.current += 1;

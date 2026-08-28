@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex, mpsc::Sender};
+
 use lorchestre::Orchestra;
 use mtk::{
     Size, Style, clr,
@@ -5,21 +7,43 @@ use mtk::{
         View, ViewStyleExt,
         widgets::{column, text},
     },
-    windowing::{Window, WindowAttributes},
+    windowing::{Window, WindowAttributes, WindowHandle},
 };
 
 #[derive(Clone)]
-enum OrchestraMsg {}
+enum OrchestraMsg {
+    Init,
+}
 
-fn update(state: &mut Orchestra, msg: OrchestraMsg) {}
+struct OrchestraManager {
+    orchestra: Orchestra,
+    win_handle: Mutex<Option<WindowHandle<OrchestraMsg>>>,
+    // sender_to_orchestrator: Sender<String>,
+}
 
-fn app_view(_state: &Orchestra) -> impl View<Orchestra, Message = OrchestraMsg> + use<> {
+impl std::fmt::Display for OrchestraManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "OrchestraManager(index@{})",
+            self.orchestra.collection.index.values.len()
+        )
+    }
+}
+
+fn update(state: &mut Arc<OrchestraManager>, msg: OrchestraMsg) {
+    println!("{state}");
+}
+
+fn app_view(
+    _state: &Arc<OrchestraManager>,
+) -> impl View<Arc<OrchestraManager>, Message = OrchestraMsg> + use<> {
     column(vec![text("")]).style(
         Style::new()
             .padding(10.0)
             .width(Size::Fill)
             .height(Size::Fill)
-            .bg_color(clr!(red)),
+            .bg_color(clr!(0x242424FF)),
     )
 }
 
@@ -37,7 +61,20 @@ fn main() {
         orchestra.save();
     }
 
-    let mut window = Window::with(orchestra, update, app_view);
+    let orchestra_mgr = Arc::new(OrchestraManager {
+        orchestra,
+        win_handle: Mutex::new(None),
+    });
+
+    let mut window = Window::with(orchestra_mgr.clone(), update, app_view);
+
+    if let Ok(mut handle_lock) = orchestra_mgr.win_handle.lock() {
+        let handle = window.handle();
+        let _ = handle.send(OrchestraMsg::Init);
+
+        *handle_lock = Some(handle);
+    }
+
     window.present_with(
         WindowAttributes::default()
             .with_title("Orchestre")
