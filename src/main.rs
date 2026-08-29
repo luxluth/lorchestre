@@ -1,5 +1,6 @@
 use std::sync::mpsc::Sender;
 
+mod fonts;
 mod orchestra;
 mod pages;
 
@@ -19,18 +20,19 @@ enum Page {
 pub struct Supervisor {
     pub mu_sx: Sender<MuCommand>,
     current_page: Page,
+    pub log: Option<String>,
 }
 
 fn update(state: &mut Supervisor, msg: OrchestraMsg) {
     match msg {
         OrchestraMsg::Ready => {
-            eprintln!("(ready)");
+            state.log = None;
         }
         OrchestraMsg::NeedIndexing => {
             let _ = state.mu_sx.send(MuCommand::StartIndexing);
         }
         OrchestraMsg::Indexing(file_path) => {
-            println!("+ {}", file_path.as_os_str().to_string_lossy())
+            state.log = Some(format!("+ {}", file_path.as_os_str().to_string_lossy()))
         }
     }
 }
@@ -59,9 +61,15 @@ fn main() {
     let orchestra_mgr = Supervisor {
         mu_sx,
         current_page: Page::Landing,
+        log: None,
     };
 
-    let mut window = Window::with(orchestra_mgr, update, app);
+    let mut window = Window::with(orchestra_mgr, update, app)
+        .with_font_bytes(fonts::IOSEVKA_REGULAR_BYTES)
+        .with_font_bytes(fonts::IOSEVKA_BOLD_BYTES)
+        .with_font_bytes(fonts::IOSEVKA_ITALIC_BYTES)
+        .with_font_bytes(fonts::IOSEVKA_BOLDITALIC_BYTES);
+
     mu.spawn(window.handle());
 
     #[cfg(feature = "debug")]

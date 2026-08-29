@@ -108,7 +108,7 @@ impl Orchestra {
             .song_id_store
             .digest(format!("{}", file_path.to_str().unwrap()).as_bytes());
 
-        eprintln!("..index@{id:?} :: {file_path:?}");
+        // eprintln!("..index@{id:?} :: {file_path:?}");
 
         if let Ok(tagged_file) = Probe::open(&file_path).unwrap().read() {
             let properties = tagged_file.properties();

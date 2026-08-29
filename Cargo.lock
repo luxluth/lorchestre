@@ -2454,7 +2454,7 @@ dependencies = [
 [[package]]
 name = "mtk"
 version = "0.0.1"
-source = "git+https://github.com/luxluth/mtk.git#773a3510d02b4f13323ba6b575e4b831e3957a09"
+source = "git+https://github.com/luxluth/mtk.git#f45b972aa290962677f3cf56dccd0fa2ed987097"
 dependencies = [
  "arboard",
  "bindgen",
@@ -2478,7 +2478,7 @@ dependencies = [
 [[package]]
 name = "mtk-macro"
 version = "0.0.1"
-source = "git+https://github.com/luxluth/mtk.git#773a3510d02b4f13323ba6b575e4b831e3957a09"
+source = "git+https://github.com/luxluth/mtk.git#f45b972aa290962677f3cf56dccd0fa2ed987097"
 dependencies = [
  "proc-macro2",
  "quote",
