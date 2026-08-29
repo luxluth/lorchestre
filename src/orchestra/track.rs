@@ -8,7 +8,7 @@ use std::{
 use bincode::{Decode, Encode};
 use lofty::picture::MimeType;
 
-use crate::{Utils, di::Di};
+use super::{Utils, di::Di};
 
 #[derive(PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
 pub struct Digest(pub [u8; 16]);

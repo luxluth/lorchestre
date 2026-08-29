@@ -13,11 +13,14 @@ use lofty::{
     tag::{Accessor, ItemKey},
 };
 
-use crate::track::{Album, Artist, Cover, Id, IdKey, IdStore, MusicCollection, Song, Timestamp};
+use mtk::windowing::WindowHandle;
+use track::{Album, Artist, Cover, Id, IdKey, IdStore, MusicCollection, Song, Timestamp};
+
+use crate::orchestra::mu_thread::OrchestraMsg;
 
 pub mod di;
+pub mod mu_thread;
 pub mod track;
-pub mod ui;
 
 pub struct Utils;
 
@@ -309,7 +312,7 @@ impl Orchestra {
         self.collection.albums.get(id)
     }
 
-    pub fn index(&mut self, dir_path: PathBuf) {
+    pub fn index(&mut self, dir_path: PathBuf, h: &WindowHandle<OrchestraMsg>) {
         self.add_artist("@UNKOWN@".to_string());
         if let Ok(paths) = glob(&format!("{}/**/*", dir_path.display())) {
             for inode in paths.flatten() {
@@ -317,6 +320,7 @@ impl Orchestra {
                     let guess =
                         mime_guess::from_path(&inode).first_or("text/plain".parse().unwrap());
                     if guess.type_() == mime_guess::mime::AUDIO {
+                        let _ = h.send(OrchestraMsg::Indexing(inode.clone()));
                         self.index_file(inode);
                     }
                 }

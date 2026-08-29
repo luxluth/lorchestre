@@ -1,50 +1,51 @@
-use std::sync::{Arc, Mutex, mpsc::Sender};
+use std::sync::mpsc::Sender;
 
-use lorchestre::Orchestra;
+mod orchestra;
+mod pages;
+
 use mtk::{
-    Size, Style, clr,
-    ui::{
-        View, ViewStyleExt,
-        widgets::{column, text},
-    },
-    windowing::{Window, WindowAttributes, WindowHandle},
+    animation::Curve,
+    ui::{Transition, View, router},
+    windowing::{Window, WindowAttributes},
 };
 
-#[derive(Clone)]
-enum OrchestraMsg {
-    Init,
+use crate::orchestra::mu_thread::{Mu, MuCommand, OrchestraMsg};
+
+#[derive(PartialEq, Clone, Copy)]
+enum Page {
+    Landing,
 }
 
-struct OrchestraManager {
-    orchestra: Orchestra,
-    win_handle: Mutex<Option<WindowHandle<OrchestraMsg>>>,
-    // sender_to_orchestrator: Sender<String>,
+pub struct Supervisor {
+    pub mu_sx: Sender<MuCommand>,
+    current_page: Page,
 }
 
-impl std::fmt::Display for OrchestraManager {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "OrchestraManager(index@{})",
-            self.orchestra.collection.index.values.len()
-        )
+fn update(state: &mut Supervisor, msg: OrchestraMsg) {
+    match msg {
+        OrchestraMsg::Ready => {
+            eprintln!("(ready)");
+        }
+        OrchestraMsg::NeedIndexing => {
+            let _ = state.mu_sx.send(MuCommand::StartIndexing);
+        }
+        OrchestraMsg::Indexing(file_path) => {
+            println!("+ {}", file_path.as_os_str().to_string_lossy())
+        }
     }
 }
 
-fn update(state: &mut Arc<OrchestraManager>, msg: OrchestraMsg) {
-    println!("{state}");
+fn app(state: &Supervisor) -> impl View<Supervisor, Message = OrchestraMsg> + use<> {
+    router(state.current_page, render_page(state)).transition(Transition::Fade {
+        duration_ms: 220.0,
+        curve: Curve::ease_out(),
+    })
 }
 
-fn app_view(
-    _state: &Arc<OrchestraManager>,
-) -> impl View<Arc<OrchestraManager>, Message = OrchestraMsg> + use<> {
-    column(vec![text("")]).style(
-        Style::new()
-            .padding(10.0)
-            .width(Size::Fill)
-            .height(Size::Fill)
-            .bg_color(clr!(0x242424FF)),
-    )
+fn render_page(state: &Supervisor) -> impl View<Supervisor, Message = OrchestraMsg> + use<> {
+    match state.current_page {
+        Page::Landing => pages::landing::render(state),
+    }
 }
 
 fn main() {
@@ -52,34 +53,26 @@ fn main() {
 
     let (width, height) = (600, 600);
 
-    let mut orchestra = Orchestra::new();
-    if !orchestra.load_from_cache() {
-        let music_dir =
-            dirs::audio_dir().unwrap_or_else(|| dirs::home_dir().unwrap().join("Music"));
-        eprintln!("{music_dir:?}");
-        orchestra.index(music_dir);
-        orchestra.save();
-    }
+    let mu = Mu::new();
+    let mu_sx = mu.sender();
 
-    let orchestra_mgr = Arc::new(OrchestraManager {
-        orchestra,
-        win_handle: Mutex::new(None),
-    });
+    let orchestra_mgr = Supervisor {
+        mu_sx,
+        current_page: Page::Landing,
+    };
 
-    let mut window = Window::with(orchestra_mgr.clone(), update, app_view);
+    let mut window = Window::with(orchestra_mgr, update, app);
+    mu.spawn(window.handle());
 
-    if let Ok(mut handle_lock) = orchestra_mgr.win_handle.lock() {
-        let handle = window.handle();
-        let _ = handle.send(OrchestraMsg::Init);
-
-        *handle_lock = Some(handle);
-    }
+    #[cfg(feature = "debug")]
+    window.enable_terminal_debugger();
 
     window.present_with(
         WindowAttributes::default()
             .with_title("Orchestre")
             .with_size((width, height).into())
             .with_app_id("orchestre")
+            .with_min_size(Some((970, 630).into()))
             .with_resizable(true),
     );
 }
