@@ -218,6 +218,7 @@ impl SoundBlobPainter {
                     if let Ok(decoder) = rodio::Decoder::try_from(file) {
                         let player = rodio::Player::connect_new(sink_handle.mixer());
                         player.append(decoder);
+                        player.set_speed(432.0 / 440.0);
                         player.play();
                         audio_player = Some(Arc::new(player));
                         audio_sink = Some(Arc::new(sink_handle));
