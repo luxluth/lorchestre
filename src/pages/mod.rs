@@ -1,4 +1,4 @@
-use mtk::{Color, clr, hsl};
+use mtk::{Color, Style, clr, hsl, text_property::FontWeight};
 
 pub mod landing;
 pub mod library;
@@ -30,6 +30,30 @@ impl Theme {
         hsl!(0, 58.6 / 100.0, 49.2 / 100.0),
         hsl!(360, 79.0 / 100.0, 49.2 / 100.0)
     );
+    colored!(teal_gray, clr!(0x2f2f2fff), clr!(0xddddddff));
+    colored!(teal_gray_accent, clr!(0x222222ff), clr!(0x9a9a9aff));
+
+    pub fn heading(&self) -> impl Fn(Style) -> Style + '_ {
+        return move |s| {
+            s.update_text_style(|t| {
+                t.font_size = 48.0;
+                t.color = self.fg();
+                t.font_family = "Inter Variable".to_string();
+                t.font_weight = FontWeight::BOLD;
+            })
+        };
+    }
+
+    pub fn subtitle(&self) -> impl Fn(Style) -> Style + '_ {
+        return move |s| {
+            s.update_text_style(|t| {
+                t.font_size = 14.0;
+                t.color = self.fg();
+                t.font_family = "Inter Variable".to_string();
+            })
+            .opacity(0.5)
+        };
+    }
 }
 
 macro_rules! view_enum {

@@ -1,11 +1,18 @@
 use std::{
     path::PathBuf,
-    sync::mpsc::{self, Sender},
+    sync::{
+        Arc,
+        mpsc::{self, Sender},
+    },
 };
 
+use arc_swap::ArcSwap;
 use mtk::windowing::WindowHandle;
 
-use crate::{orchestra::Orchestra, pages::landing::LandingMsg};
+use crate::{
+    orchestra::Orchestra,
+    pages::{landing::LandingMsg, library::LibraryMsg},
+};
 
 pub enum MuCommand {
     StartIndexing(PathBuf),
@@ -14,7 +21,7 @@ pub enum MuCommand {
 
 #[derive(Clone)]
 pub enum OrchestraMsg {
-    Ready,
+    Ready(Arc<ArcSwap<Orchestra>>),
     NeedIndexing,
     Indexing(PathBuf),
 }
@@ -23,6 +30,7 @@ pub enum OrchestraMsg {
 pub enum AppMsg {
     Orchestra(OrchestraMsg),
     Landing(LandingMsg),
+    Library(LibraryMsg),
 }
 
 pub struct Mu {
@@ -44,9 +52,12 @@ impl Mu {
         std::thread::Builder::new()
             .name("mumanager".to_string())
             .spawn(move || {
-                let mut orchestra = Orchestra::new();
-                if orchestra.load_from_cache() {
-                    let _ = handle.send(AppMsg::Orchestra(OrchestraMsg::Ready));
+                let orchestra = Arc::new(ArcSwap::from_pointee(Orchestra::new()));
+
+                let mut init_orch = Orchestra::new();
+                if init_orch.load_from_cache() {
+                    orchestra.store(Arc::new(init_orch));
+                    let _ = handle.send(AppMsg::Orchestra(OrchestraMsg::Ready(orchestra.clone())));
                 } else {
                     let _ = handle.send(AppMsg::Orchestra(OrchestraMsg::NeedIndexing));
                 }
@@ -54,9 +65,12 @@ impl Mu {
                 while let Ok(cmd) = self.rx.recv() {
                     match cmd {
                         MuCommand::StartIndexing(dir) => {
-                            orchestra.index(dir, &handle);
-                            orchestra.save();
-                            let _ = handle.send(AppMsg::Orchestra(OrchestraMsg::Ready));
+                            let mut new_orch = (**orchestra.load()).clone();
+                            new_orch.index(dir, &handle);
+                            new_orch.save();
+                            orchestra.store(Arc::new(new_orch));
+                            let _ = handle
+                                .send(AppMsg::Orchestra(OrchestraMsg::Ready(orchestra.clone())));
                         }
                         MuCommand::PickFolder(to_msg) => {
                             let h = handle.clone();

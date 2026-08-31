@@ -42,7 +42,7 @@ pub struct Artist {
     pub name: String,
 }
 
-#[derive(Debug, Decode, Encode)]
+#[derive(Debug, Decode, Encode, Clone, PartialEq, Eq)]
 pub struct Song {
     pub id: Id,
     pub title: String,
@@ -176,7 +176,7 @@ impl Album {
     }
 }
 
-#[derive(Default, Debug, Decode, Encode)]
+#[derive(Default, Debug, Decode, Encode, Clone)]
 pub struct Cover {
     pub id: Id,
     pub ext: String,
@@ -202,7 +202,7 @@ impl Cover {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct IdStore {
     current: usize,
 }
@@ -224,7 +224,7 @@ impl IdStore {
     }
 }
 
-#[derive(Default, Decode, Encode, Debug)]
+#[derive(Default, Decode, Encode, Debug, Clone)]
 pub struct MusicCollection {
     pub artists: HashMap<Id, Artist>,
     pub albums: HashMap<Id, Album>,

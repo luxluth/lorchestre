@@ -6,7 +6,7 @@ pub use vectorized::VectorLike;
 
 mod vectorized;
 
-#[derive(Debug, Default, Decode, Encode)]
+#[derive(Debug, Default, Decode, Encode, Clone)]
 pub struct Grammar {
     pub tokens: Vec<(String, usize)>,  // token + frequency
     pub index: HashMap<String, usize>, // token → index in tokens
@@ -129,7 +129,7 @@ impl VectorLike for Vec<String> {
     }
 }
 
-#[derive(Debug, Default, Encode, Decode)]
+#[derive(Debug, Default, Encode, Decode, Clone)]
 pub struct Di<V> {
     cmds: Option<Vec<InsertCommand<V>>>,
     pub keys: Vec<((Vec<f64>, f64), usize)>,
@@ -139,7 +139,7 @@ pub struct Di<V> {
     pub epsilon: f64,
 }
 
-#[derive(Debug, Default, Decode, Encode)]
+#[derive(Debug, Default, Decode, Encode, Clone)]
 struct InsertCommand<V> {
     key: String,
     value: V,

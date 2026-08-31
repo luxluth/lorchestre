@@ -50,7 +50,7 @@ impl Utils {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Orchestra {
     pub collection: MusicCollection,
 
@@ -310,6 +310,14 @@ impl Orchestra {
 
     pub fn get_album(&self, id: &Id) -> Option<&Album> {
         self.collection.albums.get(id)
+    }
+
+    pub fn get_cover(&self, id: &Id) -> Option<&Cover> {
+        self.collection.covers.get(id)
+    }
+
+    pub fn get_song(&self, id: &Id) -> Option<&Song> {
+        self.collection.songs.get(id)
     }
 
     pub fn index(&mut self, dir_path: PathBuf, h: &WindowHandle<AppMsg>) {

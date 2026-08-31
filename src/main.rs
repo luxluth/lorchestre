@@ -1,4 +1,9 @@
-use std::{path::PathBuf, sync::mpsc::Sender};
+use std::{
+    path::PathBuf,
+    sync::{Arc, mpsc::Sender},
+};
+
+use arc_swap::ArcSwap;
 
 mod fonts;
 mod icons;
@@ -13,10 +18,14 @@ use mtk::{
 };
 
 use crate::{
-    orchestra::mu_thread::{AppMsg, Mu, MuCommand, OrchestraMsg},
+    orchestra::{
+        Orchestra,
+        mu_thread::{AppMsg, Mu, MuCommand, OrchestraMsg},
+    },
     pages::{
         PageView, Theme,
         landing::{LandingMsg, LandingState},
+        library::{LibraryMsg, LibraryState},
     },
 };
 
@@ -31,15 +40,18 @@ pub struct Supervisor {
     current_page: Page,
     pub mu_sx: Sender<MuCommand>,
     pub landing: LandingState,
+    pub library: LibraryState,
     pub theme: Theme,
+    pub orchestra: Option<Arc<ArcSwap<Orchestra>>>,
 }
 
 fn update(state: &mut Supervisor, msg: AppMsg) {
     match msg {
         AppMsg::Orchestra(omsg) => match omsg {
-            OrchestraMsg::Ready => {
+            OrchestraMsg::Ready(orch) => {
                 state.landing.log = None;
                 state.landing.is_indexing = true;
+                state.orchestra = Some(orch);
                 state.current_page = Page::Library;
             }
             OrchestraMsg::NeedIndexing => {
@@ -71,6 +83,11 @@ fn update(state: &mut Supervisor, msg: AppMsg) {
                 }));
             }
         },
+        AppMsg::Library(msg) => match msg {
+            LibraryMsg::HoverSong(id) => {
+                state.library.hovered_song = Some(id);
+            }
+        },
     }
 }
 
@@ -87,7 +104,10 @@ fn render_page(state: &Supervisor) -> impl View<Supervisor, Message = AppMsg> + 
             pages::landing::render(&state.landing, state.theme)
                 .adapt(Supervisor::landing, AppMsg::Landing),
         ),
-        Page::Library => PageView::Library(pages::library::render(state, state.theme)),
+        Page::Library => PageView::Library(
+            pages::library::render(&state.library, state.orchestra.clone(), state.theme)
+                .adapt(Supervisor::library, AppMsg::Library),
+        ),
     }
 }
 
@@ -103,7 +123,9 @@ fn main() {
         mu_sx,
         current_page: Page::Landing,
         landing: LandingState::default(),
-        theme: Theme::Light,
+        library: LibraryState::default(),
+        theme: Theme::Dark,
+        orchestra: None,
     };
 
     let mut window = Window::with(orchestra_mgr, update, app)
