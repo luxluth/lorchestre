@@ -37,7 +37,7 @@ impl Theme {
         return move |s| {
             s.update_text_style(|t| {
                 t.font_size = 48.0;
-                t.color = self.fg();
+                t.color = clr!(ll_blue);
                 t.font_family = "Inter Variable".to_string();
                 t.font_weight = FontWeight::BOLD;
             })

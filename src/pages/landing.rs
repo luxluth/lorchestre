@@ -4,6 +4,7 @@ use mtk::{
     AlignItems, AlignSelf, JustifyContent, Lens, ObjectFit, PositionStrategy, Size, Style, SvgData,
     TextStyle,
     animation::Curve,
+    clr,
     text_property::FontWeight,
     ui::{
         EventKind, View, ViewEventExt, ViewStyleExt,
@@ -118,8 +119,8 @@ pub fn render(
 ) -> impl View<LandingState, Message = LandingMsg> + use<> {
     column((
         svg(SvgData::from_str(BANNER).unwrap())
-            .color(theme.fg())
-            .fit(mtk::ObjectFit::Contain)
+            .color(clr!(white))
+            .fit(ObjectFit::Contain)
             .style(
                 Style::new()
                     .width(Size::Percent(0.70))
@@ -130,11 +131,10 @@ pub fn render(
         state.is_indexing.then_some(
             column((progress_bar(0.0)
                 .indeterminate(true)
-                .fill_color(theme.fg())
-                .track_color(theme.bg()),))
+                .fill_color(clr!(white))
+                .track_color(clr!(ll_blue)),))
             .style(
                 Style::new()
-                    .border(1., theme.border())
                     .corner_radius(20.)
                     .width(Size::Fixed(200))
                     .height(Size::Fixed(10)),
@@ -161,7 +161,9 @@ pub fn render(
             Style::new()
                 .set_text_style(
                     TextStyle::new()
-                        .color(theme.fg().with_alpha(125))
+                        .color(clr!(white))
+                        .font_weight(FontWeight::BOLD)
+                        .font_size(14.)
                         .font_family("Iosevka"),
                 )
                 .position(PositionStrategy::absolute().bottom(10.).left(10.).build()),
@@ -174,6 +176,6 @@ pub fn render(
             .align_items(AlignItems::Center)
             .justify_content(JustifyContent::Center)
             .gap(24.0)
-            .bg_color(theme.bg()),
+            .bg_color(clr!(ll_blue)),
     )
 }

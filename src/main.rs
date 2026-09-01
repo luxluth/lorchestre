@@ -124,7 +124,7 @@ fn main() {
         current_page: Page::Landing,
         landing: LandingState::default(),
         library: LibraryState::default(),
-        theme: Theme::Dark,
+        theme: Theme::Light,
         orchestra: None,
     };
 

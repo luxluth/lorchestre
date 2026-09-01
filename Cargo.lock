@@ -2236,9 +2236,9 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "libredox"
-version = "0.1.21"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7955dfc218a8afb29dfeffd540e3a6e96baeb94fe7138228dd7cc6937fbbf96"
+checksum = "8d8f1ea3f21fd3405dcaf6c9b5c1630af9afc422d9073ea39c5f6d6c772e08ed"
 dependencies = [
  "bitflags 2.13.1",
  "libc",
@@ -2480,7 +2480,7 @@ dependencies = [
 [[package]]
 name = "mtk"
 version = "0.0.1"
-source = "git+https://github.com/luxluth/mtk.git#ac96d4b258900ce695729e83e19e602756816f88"
+source = "git+https://github.com/luxluth/mtk.git#16d3cfd9b0fe7907b6b672c50d93751ed546e271"
 dependencies = [
  "arboard",
  "bindgen",
@@ -2504,11 +2504,11 @@ dependencies = [
 [[package]]
 name = "mtk-macro"
 version = "0.0.1"
-source = "git+https://github.com/luxluth/mtk.git#ac96d4b258900ce695729e83e19e602756816f88"
+source = "git+https://github.com/luxluth/mtk.git#16d3cfd9b0fe7907b6b672c50d93751ed546e271"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.119",
+ "syn 3.0.4",
 ]
 
 [[package]]

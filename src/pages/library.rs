@@ -2,12 +2,11 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use mtk::{
-    AlignItems, Edges, Lens, ObjectFit, Size, Style, SvgData, TextStyle,
-    text_property::Alignment,
+    AlignItems, Edges, JustifyContent, Lens, ObjectFit, Size, Style, SvgData, TextStyle,
+    text_property::{Alignment, FontWeight},
     ui::{
         EventKind, View, ViewEventExt, ViewStyleExt,
-        memoize::memoize,
-        widgets::{ScrollAxis, async_image, column, row, scroll_view, svg, text},
+        widgets::{async_image, column, container, row, svg, text, virtual_list},
     },
 };
 
@@ -32,12 +31,19 @@ pub enum LibraryMsg {
 
 pub fn song_pill(
     song: &Song,
+    hsid: Option<Id>,
     orchestra: &Option<Arc<ArcSwap<Orchestra>>>,
     theme: Theme,
+    index: usize,
 ) -> impl View<LibraryState, Message = LibraryMsg> + use<> {
     let orch = orchestra.as_ref().unwrap();
     let guard = orch.load();
     let id = song.id;
+    let mut is_hovered: bool = false;
+    if let Some(hsid) = hsid {
+        is_hovered = hsid == id;
+    }
+
     let artists: Vec<_> = song
         .artists
         .iter()
@@ -53,13 +59,37 @@ pub fn song_pill(
         }
     }
 
+    let leading = container((
+        is_hovered.then_some(
+            svg(SvgData::from_str(PLAY).unwrap())
+                .color(theme.fg())
+                .fill(theme.fg())
+                .stroke_width(0.)
+                .fit(ObjectFit::Contain)
+                .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),
+        ),
+        (!is_hovered).then_some(
+            text(&format!("{}", index + 1)).style(
+                Style::new().set_text_style(
+                    TextStyle::new()
+                        .font_size(14.)
+                        .color(theme.fg().with_alpha(180))
+                        .font_weight(FontWeight::BOLD)
+                        .font_family("Iosevka"),
+                ),
+            ),
+        ),
+    ))
+    .style(
+        Style::new()
+            .width(Size::Fixed(28))
+            .height(Size::Fixed(18))
+            .align_items(AlignItems::Center)
+            .justify_content(JustifyContent::Center),
+    );
+
     row((
-        svg(SvgData::from_str(PLAY).unwrap())
-            .color(theme.fg())
-            .fill(theme.fg())
-            .stroke_width(0.)
-            .fit(ObjectFit::Contain)
-            .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),
+        leading,
         text(&song.title).style(
             Style::new().set_text_style(
                 TextStyle::new()
@@ -72,7 +102,7 @@ pub fn song_pill(
             Style::new().set_text_style(
                 TextStyle::new()
                     .font_size(14.)
-                    .color(theme.fg().with_alpha(120))
+                    .color(theme.fg().with_alpha(180))
                     .italic()
                     .font_family("Inter Variable"),
             ),
@@ -82,7 +112,7 @@ pub fn song_pill(
                 .set_text_style(
                     TextStyle::new()
                         .font_size(14.)
-                        .color(theme.fg().with_alpha(90))
+                        .color(theme.fg().with_alpha(180))
                         .alignment(Alignment::End)
                         .italic()
                         .font_family("Iosevka"),
@@ -96,7 +126,6 @@ pub fn song_pill(
             .corner_radius(4.0)
             .width(Size::Percent(1.0))
             .align_items(AlignItems::Center)
-            // .justify_content(JustifyContent::SpaceBetween)
             .gap(14.0)
             .padding(7.0)
             .on_hover(|s| s.border(1.0, theme.teal_gray_accent())),
@@ -120,9 +149,12 @@ fn hovered_song_card(
         let cover = guard.get_cover(cover_id)?;
 
         Some(
-            async_image(cover.get_path())
-                .fit(ObjectFit::Cover)
-                .style(Style::new().width(Size::Fill).aspect_ratio(1.0)),
+            async_image(cover.get_path()).fit(ObjectFit::Cover).style(
+                Style::new()
+                    .width(Size::Fill)
+                    .aspect_ratio(1.0)
+                    .corner_radius(8.),
+            ),
         )
     }),))
     .style(Style::new().width(Size::Percent(0.4)))
@@ -138,14 +170,30 @@ pub fn render(
 
     let song_count = guard.collection.songs.len();
 
-    let mut songs_items = Vec::new();
+    let mut songs: Vec<Song> = guard.collection.songs.values().cloned().collect();
+    songs.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
 
-    for (_, song) in &guard.collection.songs {
-        let orch = orchestra.clone();
-        songs_items.push(memoize(song.clone(), move |song| {
-            song_pill(song, &orch, theme)
-        }));
-    }
+    let orch_clone = orchestra.clone();
+    let hsid = state.hovered_song;
+    const ITEM_HEIGHT: f32 = 45.0;
+
+    let songs_list = virtual_list(songs, ITEM_HEIGHT, move |i, song| {
+        container((song_pill(song, hsid, &orch_clone, theme, i),)).style(
+            Style::new()
+                .width(Size::Percent(1.0))
+                .height(Size::Fixed(ITEM_HEIGHT as u32))
+                .min_height(ITEM_HEIGHT)
+                .max_height(ITEM_HEIGHT)
+                .flex_shrink(0.0)
+                .padding_edges(Edges::tb(4.5)),
+        )
+    })
+    .buffer(5)
+    .style(
+        Style::new()
+            .width(Size::Percent(0.6))
+            .height(Size::Percent(1.0)),
+    );
 
     column((
         column((
@@ -158,14 +206,7 @@ pub fn render(
             .style(Style::new().apply(theme.subtitle())),
         )),
         row((
-            scroll_view(column(songs_items).style(Style::new().width(Size::Percent(1.)).gap(9.)))
-                .axis(ScrollAxis::Vertical)
-                .style(
-                    Style::new()
-                        .width(Size::Percent(0.6))
-                        .height(Size::Percent(1.0))
-                        .padding_edges(Edges::tb(10.)),
-                ),
+            songs_list,
             hovered_song_card(state, &orchestra, theme),
         ))
         .style(
