@@ -14,7 +14,7 @@ lofty = "0.25"
 log = "0.4"
 md5 = "0.8"
 mime_guess = "2.0.5"
-mtk = { git = "https://github.com/luxluth/mtk.git", version = "0.0.1" }
+mtk-rs = { git = "https://github.com/luxluth/mtk.git", branch = "master" }
 rodio = { version = "0.22.2", features = ["symphonia-all"] }
 rust-i18n = "4.2"
 tokio = { version = "1.53", features = ["full"] }
@@ -24,4 +24,4 @@ arc-swap = "1.9.2"
 
 [features]
 default = []
-debug = ["mtk/debugger"]
+debug = ["mtk-rs/debugger"]

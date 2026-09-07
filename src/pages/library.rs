@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use mtk::{
-    AlignItems, Edges, JustifyContent, Lens, ObjectFit, Size, Style, SvgData, TextStyle,
+    AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Size, Style, SvgData,
+    TextStyle,
+    animation::Curve,
+    clr,
     text_property::{Alignment, FontWeight},
     ui::{
         EventKind, View, ViewEventExt, ViewStyleExt,
@@ -11,7 +14,7 @@ use mtk::{
 };
 
 use crate::{
-    icons::PLAY,
+    icons::{LIST_SORT_ASCENDING, LIST_SORT_DESCENDING, PLAY},
     orchestra::{
         Orchestra,
         track::{Id, Song},
@@ -22,11 +25,14 @@ use crate::{
 #[derive(Lens, Clone, Debug, Default)]
 pub struct LibraryState {
     pub hovered_song: Option<Id>,
+    pub active_filter: Filter,
 }
 
 #[derive(Clone, Debug)]
 pub enum LibraryMsg {
     HoverSong(Id),
+    SetFilterTag(FilterTag),
+    SetFilterOrder(Order),
 }
 
 pub fn song_pill(
@@ -133,6 +139,112 @@ pub fn song_pill(
     .on_event(EventKind::HoverIn, move |_| Some(LibraryMsg::HoverSong(id)))
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum FilterTag {
+    #[default]
+    Songs,
+    Albums,
+    Artists,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum Order {
+    #[default]
+    Asc,
+    Desc,
+}
+
+impl Order {
+    pub fn flip(&self) -> Order {
+        match self {
+            Order::Asc => Order::Desc,
+            _ => Order::Asc,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct Filter {
+    pub tag: FilterTag,
+    pub order: Order,
+}
+
+impl FilterTag {
+    pub fn name(&self) -> String {
+        match self {
+            FilterTag::Songs => "Songs".to_string(),
+            FilterTag::Albums => "Albums".to_string(),
+            FilterTag::Artists => "Artists".to_string(),
+        }
+    }
+}
+
+pub fn page_filter(
+    state: &LibraryState,
+    theme: Theme,
+) -> impl View<LibraryState, Message = LibraryMsg> + use<> {
+    let filters: Vec<_> = vec![FilterTag::Songs, FilterTag::Albums, FilterTag::Artists]
+        .iter()
+        .map(|f| {
+            let fi = *f;
+            text(&f.name().to_uppercase())
+                .style(
+                    Style::new()
+                        .padding_xy(18., 4.5)
+                        .corner_radius(40.)
+                        .bg_color(if state.active_filter.tag == *f {
+                            clr!(ll_blue)
+                        } else {
+                            clr!(ll_blue).with_alpha(38)
+                        })
+                        .set_text_style(
+                            TextStyle::new()
+                                .font_size(16.)
+                                .font_weight(FontWeight::BOLD)
+                                .color(if state.active_filter.tag == *f {
+                                    clr!(white)
+                                } else {
+                                    theme.fg()
+                                }),
+                        )
+                        .on_active(|s| s.scale(0.96))
+                        .transition_all(100., Curve::ease_in_out()),
+                )
+                .on_event(EventKind::Click, move |_: &LibraryState| {
+                    Some(LibraryMsg::SetFilterTag(fi))
+                })
+        })
+        .collect();
+
+    row((
+        container(filters).style(Style::new().gap(13.).flex_direction(FlexDirection::Row)),
+        container((svg(if state.active_filter.order == Order::Asc {
+            SvgData::from_str(LIST_SORT_ASCENDING).unwrap()
+        } else {
+            SvgData::from_str(LIST_SORT_DESCENDING).unwrap()
+        })
+        .color(theme.fg())
+        .fit(ObjectFit::Contain)
+        .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),))
+        .style(
+            Style::new()
+                .padding(4.)
+                .corner_radius(50.)
+                .bg_color(clr!(ll_blue).with_alpha(38))
+                .on_active(|s| s.scale(0.96))
+                .transition_all(100., Curve::ease_in_out()),
+        )
+        .on_event(EventKind::Click, |e: &LibraryState| {
+            Some(LibraryMsg::SetFilterOrder(e.active_filter.order.flip()))
+        }),
+    ))
+    .style(
+        Style::new()
+            .justify_content(JustifyContent::SpaceBetween)
+            .width(Size::Fill),
+    )
+}
+
 fn hovered_song_card(
     state: &LibraryState,
     orchestra: &Option<Arc<ArcSwap<Orchestra>>>,
@@ -189,11 +301,7 @@ pub fn render(
         )
     })
     .buffer(5)
-    .style(
-        Style::new()
-            .width(Size::Percent(0.6))
-            .height(Size::Percent(1.0)),
-    );
+    .style(Style::new().width(Size::Percent(1.0)).height(Size::Fill));
 
     column((
         column((
@@ -206,7 +314,13 @@ pub fn render(
             .style(Style::new().apply(theme.subtitle())),
         )),
         row((
-            songs_list,
+            column((page_filter(state, theme), songs_list)).style(
+                Style::new()
+                    .height(Size::Percent(1.0))
+                    .width(Size::Percent(0.6))
+                    .padding_edges(Edges::all(0.).bottom(20.))
+                    .gap(20.),
+            ),
             hovered_song_card(state, &orchestra, theme),
         ))
         .style(
@@ -221,7 +335,7 @@ pub fn render(
             .width(Size::Fill)
             .height(Size::Fill)
             .gap(28.)
-            .padding_edges(Edges::lr(45.).top(40.))
+            .padding_edges(Edges::lr(30.).top(20.).right(60.))
             .bg_color(theme.bg()),
     )
 }

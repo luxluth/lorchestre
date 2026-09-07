@@ -87,6 +87,12 @@ fn update(state: &mut Supervisor, msg: AppMsg) {
             LibraryMsg::HoverSong(id) => {
                 state.library.hovered_song = Some(id);
             }
+            LibraryMsg::SetFilterTag(filter_tag) => {
+                state.library.active_filter.tag = filter_tag;
+            }
+            LibraryMsg::SetFilterOrder(order) => {
+                state.library.active_filter.order = order;
+            }
         },
     }
 }
