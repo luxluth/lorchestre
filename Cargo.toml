@@ -1,19 +1,20 @@
 [package]
-name = "lorchestre"
+name = "orchestre"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 alrc = "0.1.0"
 bincode = { git = "https://git.sr.ht/~stygianentity/bincode" }
-dirs = "6.0.0"
+dirs = "7.0.0"
 env_logger = "0.11"
 fuzzy-matcher = "0.3.7"
-glob = "0.3.2"
+glob = "0.3.4"
 lofty = "0.25"
 log = "0.4"
 md5 = "0.8"
 mime_guess = "2.0.5"
+# mtk-rs = "=0.1.0-beta.2"
 mtk-rs = { git = "https://github.com/luxluth/mtk.git", branch = "master" }
 rodio = { version = "0.22.2", features = ["symphonia-all"] }
 rust-i18n = "4.2"

@@ -166,7 +166,7 @@ pub fn render(
                         .font_size(14.)
                         .font_family("Iosevka"),
                 )
-                .position(PositionStrategy::absolute().bottom(10.).left(10.).build()),
+                .position(PositionStrategy::absolute().bottom(10.).left(10.)),
         ),
     ))
     .style(

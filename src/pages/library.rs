@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use mtk::{
-    AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Size, Style, SvgData,
-    TextStyle,
+    AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Overflow, ScrollbarStyle,
+    Size, Style, SvgData, TextStyle,
     animation::Curve,
     clr,
     text_property::{Alignment, FontWeight},
@@ -94,7 +94,7 @@ pub fn song_pill(
             .justify_content(JustifyContent::Center),
     );
 
-    row((
+    container((row((
         leading,
         text(&song.title).style(
             Style::new().set_text_style(
@@ -130,13 +130,19 @@ pub fn song_pill(
         Style::new()
             .border(1.0, theme.teal_gray())
             .corner_radius(4.0)
+            .overflow(Overflow::Hidden)
             .width(Size::Percent(1.0))
             .align_items(AlignItems::Center)
             .gap(14.0)
             .padding(7.0)
             .on_hover(|s| s.border(1.0, theme.teal_gray_accent())),
     )
-    .on_event(EventKind::HoverIn, move |_| Some(LibraryMsg::HoverSong(id)))
+    .on_event(EventKind::HoverIn, move |_| Some(LibraryMsg::HoverSong(id))),))
+    .style(
+        Style::new()
+            .width(Size::Percent(1.0))
+            .padding_edges(Edges::all(0.).right(10.)),
+    )
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -225,6 +231,7 @@ pub fn page_filter(
         })
         .color(theme.fg())
         .fit(ObjectFit::Contain)
+        .stroke_width(4.)
         .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),))
         .style(
             Style::new()
@@ -289,6 +296,12 @@ pub fn render(
     let hsid = state.hovered_song;
     const ITEM_HEIGHT: f32 = 45.0;
 
+    let scrollbar_style = ScrollbarStyle {
+        thumb_color: clr!(ll_blue),
+        track_color: Some(theme.fg().with_alpha(38)),
+        ..Default::default()
+    };
+
     let songs_list = virtual_list(songs, ITEM_HEIGHT, move |i, song| {
         container((song_pill(song, hsid, &orch_clone, theme, i),)).style(
             Style::new()
@@ -301,7 +314,13 @@ pub fn render(
         )
     })
     .buffer(5)
-    .style(Style::new().width(Size::Percent(1.0)).height(Size::Fill));
+    .scrollbar(scrollbar_style)
+    .style(
+        Style::new()
+            .width(Size::Percent(1.0))
+            .height(Size::Fill)
+            .flex_grow(1.),
+    );
 
     column((
         column((

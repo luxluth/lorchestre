@@ -130,11 +130,21 @@ fn main() {
         current_page: Page::Landing,
         landing: LandingState::default(),
         library: LibraryState::default(),
-        theme: Theme::Light,
+        theme: Theme::Dark,
         orchestra: None,
     };
 
+    #[cfg(feature = "debug")]
     let mut window = Window::with(orchestra_mgr, update, app)
+        .with_font_bytes(fonts::IOSEVKA_REGULAR_BYTES)
+        .with_font_bytes(fonts::IOSEVKA_BOLD_BYTES)
+        .with_font_bytes(fonts::IOSEVKA_ITALIC_BYTES)
+        .with_font_bytes(fonts::IOSEVKA_BOLDITALIC_BYTES)
+        .with_font_bytes(fonts::INTER_VARIABLE_REGULAR_BYTES)
+        .with_font_bytes(fonts::INTER_VARIABLE_ITALIC_BYTES);
+
+    #[cfg(not(feature = "debug"))]
+    let window = Window::with(orchestra_mgr, update, app)
         .with_font_bytes(fonts::IOSEVKA_REGULAR_BYTES)
         .with_font_bytes(fonts::IOSEVKA_BOLD_BYTES)
         .with_font_bytes(fonts::IOSEVKA_ITALIC_BYTES)
