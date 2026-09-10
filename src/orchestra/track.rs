@@ -8,6 +8,8 @@ use std::{
 use bincode::{Decode, Encode};
 use lofty::picture::MimeType;
 
+use crate::orchestra::kmeans::Swatch;
+
 use super::{Utils, di::Di};
 
 #[derive(PartialEq, Eq, Clone, Copy, Hash, Default, Decode, Encode)]
@@ -180,6 +182,7 @@ impl Album {
 pub struct Cover {
     pub id: Id,
     pub ext: String,
+    pub swatches: Vec<Swatch>,
 }
 
 impl Cover {
@@ -195,6 +198,7 @@ impl Cover {
                 MimeType::Unknown(o) => format!(".{o}"),
                 _ => ".png".to_string(),
             },
+            swatches: Vec::new(),
         }
     }
     pub fn get_path(&self) -> PathBuf {

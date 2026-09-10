@@ -344,28 +344,53 @@ pub fn page_filter(
 fn hovered_song_card(
     state: &LibraryState,
     orchestra: &Option<Arc<ArcSwap<Orchestra>>>,
-    _theme: Theme,
+    theme: Theme,
 ) -> impl View<LibraryState, Message = LibraryMsg> + use<> {
     let orch = orchestra.as_ref().unwrap();
     let guard = orch.load();
 
-    column((state.hovered_song.as_ref().and_then(|id| {
-        let song = guard.get_song(id).unwrap();
-        let album_id = song.album?;
-        let album = guard.get_album(&album_id)?;
-        let cover_id = album.cover.as_ref()?;
-        let cover = guard.get_cover(cover_id)?;
+    column((
+        state.hovered_song.as_ref().and_then(|id| {
+            let song = guard.get_song(id).unwrap();
+            let album_id = song.album?;
+            let album = guard.get_album(&album_id)?;
+            let cover_id = album.cover.as_ref()?;
+            let cover = guard.get_cover(cover_id)?;
 
-        Some(
-            async_image(cover.get_path()).fit(ObjectFit::Cover).style(
-                Style::new()
-                    .width(Size::Fill)
-                    .aspect_ratio(1.0)
-                    .corner_radius(8.),
+            let main_color = cover
+                .swatches
+                .first()
+                .map(|e| e.to_color())
+                .unwrap_or(theme.fg());
+
+            Some(
+                async_image(cover.get_path()).fit(ObjectFit::Cover).style(
+                    Style::new()
+                        .width(Size::Fill)
+                        .aspect_ratio(1.0)
+                        .bg_color(main_color)
+                        .corner_radius(8.),
+                ),
+            )
+        }),
+        state.hovered_song.is_none().then_some(
+            Some(text("Hover above an interactable element on the left")).style(
+                Style::new().width(Size::Fill).set_text_style(
+                    TextStyle::new()
+                        .italic()
+                        .color(theme.fg().with_alpha(38))
+                        .wrap(true),
+                ),
             ),
-        )
-    }),))
-    .style(Style::new().width(Size::Percent(0.4)))
+        ),
+    ))
+    .style(
+        Style::new()
+            .width(Size::Percent(0.4))
+            .padding(10.)
+            .corner_radius(12.)
+            .border(2., theme.fg().with_alpha(38)),
+    )
 }
 
 pub fn render(

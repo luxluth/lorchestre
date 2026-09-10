@@ -19,6 +19,7 @@ use track::{Album, Artist, Cover, Id, IdKey, IdStore, MusicCollection, Song, Tim
 use crate::orchestra::mu_thread::{AppMsg, OrchestraMsg};
 
 pub mod di;
+pub mod kmeans;
 pub mod mu_thread;
 pub mod track;
 
@@ -203,7 +204,6 @@ impl Orchestra {
 
                     album.songs.push(audio.id);
                 } else {
-                    // let Album { id, genres, artist, year, songs, disc_total, songs_count }
                     let mut album = Album::new(album_id);
                     audio.album = Some(album_id);
 
@@ -262,11 +262,15 @@ impl Orchestra {
                             let mime = cover.mime_type().unwrap();
                             let data = cover.data().to_vec();
 
-                            let cover = Cover::new(cover_id, mime);
+                            let mut cover = Cover::new(cover_id, mime);
                             let cover_path = cover.get_path();
 
-                            let mut f = fs::File::create(cover_path).unwrap();
+                            let mut f = fs::File::create(&cover_path).unwrap();
                             f.write_all(&data).unwrap();
+
+                            let swatches =
+                                kmeans::extract_album_palette(cover_path, 5).unwrap_or(Vec::new());
+                            cover.swatches = swatches;
 
                             album.cover = Some(cover.id);
                             self.collection.covers.insert(cover_id, cover);
