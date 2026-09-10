@@ -93,6 +93,15 @@ fn update(state: &mut Supervisor, msg: AppMsg) {
             LibraryMsg::SetFilterOrder(order) => {
                 state.library.active_filter.order = order;
             }
+            LibraryMsg::SetSortMetric(sort_metric) => {
+                state.library.active_filter.metric = sort_metric;
+            }
+            LibraryMsg::ClickArtist(artist_id, _) => {
+                let orch = state.orchestra.as_ref().unwrap();
+                let guard = orch.load();
+                let artist = guard.get_artist(&artist_id);
+                println!("{artist:?}");
+            }
         },
     }
 }

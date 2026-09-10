@@ -149,8 +149,13 @@ impl Orchestra {
             }
 
             if let Some(artists) = tag.get_string(ItemKey::TrackArtist) {
+                let spliter = artists
+                    .contains('/')
+                    .then_some(Some('/'))
+                    .unwrap_or(Some(';'))
+                    .unwrap();
                 audio.artists = artists
-                    .split(';')
+                    .split(spliter)
                     .filter(|x| !x.is_empty())
                     .map(|x| self.add_artist(x.trim().to_string()))
                     .collect();

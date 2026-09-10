@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use mtk::{Color, Style, clr, hsl, text_property::FontWeight};
 
 pub mod landing;
@@ -124,3 +126,22 @@ view_enum!(PageView, PageElement, {
     Landing(A),
     Library(B),
 });
+
+pub trait TimeFormat {
+    fn format_into_2_digit_seconds_multiple_part(&self) -> String;
+}
+
+impl TimeFormat for Duration {
+    fn format_into_2_digit_seconds_multiple_part(&self) -> String {
+        let total_secs = self.as_secs();
+        let hours = total_secs / 3600;
+        let mins = (total_secs / 60) % 60;
+        let secs = total_secs % 60;
+
+        if hours > 0 {
+            format!("{hours}:{mins:02}:{secs:02}")
+        } else {
+            format!("{mins}:{secs:02}")
+        }
+    }
+}

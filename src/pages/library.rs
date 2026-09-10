@@ -3,23 +3,25 @@ use std::sync::Arc;
 use arc_swap::ArcSwap;
 use mtk::{
     AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Overflow, ScrollbarStyle,
-    Size, Style, SvgData, TextStyle,
+    Size, Style, SvgData, TextSpan, TextStyle,
     animation::Curve,
     clr,
     text_property::{Alignment, FontWeight},
     ui::{
         EventKind, View, ViewEventExt, ViewStyleExt,
-        widgets::{async_image, column, container, row, svg, text, virtual_list},
+        widgets::{
+            SpanGeometry, async_image, column, container, rich_text, row, svg, text, virtual_list,
+        },
     },
 };
 
 use crate::{
-    icons::{LIST_SORT_ASCENDING, LIST_SORT_DESCENDING, PLAY},
+    icons::{A_LARGE_SMALL, CALENDAR, LIST_SORT_ASCENDING, LIST_SORT_DESCENDING, PLAY},
     orchestra::{
         Orchestra,
         track::{Id, Song},
     },
-    pages::Theme,
+    pages::{Theme, TimeFormat},
 };
 
 #[derive(Lens, Clone, Debug, Default)]
@@ -33,6 +35,14 @@ pub enum LibraryMsg {
     HoverSong(Id),
     SetFilterTag(FilterTag),
     SetFilterOrder(Order),
+    ClickArtist(Id, SpanGeometry),
+    SetSortMetric(SortMetric),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ArtistLink {
+    Separator,
+    Link(Id),
 }
 
 pub fn song_pill(
@@ -58,9 +68,20 @@ pub fn song_pill(
 
     let mut artist_names = String::new();
 
+    let mut artistlinks_spans: Vec<TextSpan<ArtistLink>> = Vec::new();
+
     for (i, artist) in artists.iter().enumerate() {
+        let span = TextSpan::new(artist_names.len()..(artist_names.len() + artist.name.len()))
+            .color(theme.fg().with_alpha(180))
+            .hover_underline()
+            .id(ArtistLink::Link(artist.id));
+        artistlinks_spans.push(span);
         artist_names.push_str(&artist.name);
         if i < artists.len() - 1 {
+            let span = TextSpan::new(artist_names.len()..(artist_names.len() + 2))
+                .color(theme.fg().with_alpha(180))
+                .id(ArtistLink::Separator);
+            artistlinks_spans.push(span);
             artist_names.push_str(", ");
         }
     }
@@ -104,16 +125,20 @@ pub fn song_pill(
                     .font_family("Inter Variable"),
             ),
         ),
-        text(&artist_names).style(
-            Style::new().set_text_style(
+        rich_text(&artist_names)
+            .spans(artistlinks_spans)
+            .text_style(
                 TextStyle::new()
                     .font_size(14.)
                     .color(theme.fg().with_alpha(180))
                     .italic()
                     .font_family("Inter Variable"),
-            ),
-        ),
-        text(&format!("{:?}", song.duration)).style(
+            )
+            .on_span_click(|token, geom| match token {
+                ArtistLink::Separator => None,
+                ArtistLink::Link(id) => Some(LibraryMsg::ClickArtist(id, geom)),
+            }),
+        text(&song.duration.format_into_2_digit_seconds_multiple_part()).style(
             Style::new()
                 .set_text_style(
                     TextStyle::new()
@@ -156,8 +181,38 @@ pub enum FilterTag {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Order {
     #[default]
-    Asc,
     Desc,
+    Asc,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum SortMetric {
+    #[default]
+    ByDate,
+    ByTitle,
+}
+
+impl SortMetric {
+    pub const ALL: [SortMetric; 2] = [SortMetric::ByDate, SortMetric::ByTitle];
+
+    pub fn name(&self) -> String {
+        match self {
+            SortMetric::ByDate => "Date".to_string(),
+            SortMetric::ByTitle => "Title".to_string(),
+        }
+    }
+
+    pub fn svg(&self) -> SvgData {
+        match self {
+            SortMetric::ByDate => SvgData::from_str(CALENDAR).unwrap(),
+            SortMetric::ByTitle => SvgData::from_str(A_LARGE_SMALL).unwrap(),
+        }
+    }
+
+    pub fn cycle(&self) -> SortMetric {
+        let current_idx = Self::ALL.iter().position(|m| m == self).unwrap_or(0);
+        Self::ALL[(current_idx + 1) % Self::ALL.len()]
+    }
 }
 
 impl Order {
@@ -167,12 +222,20 @@ impl Order {
             _ => Order::Asc,
         }
     }
+
+    pub fn svg(&self) -> SvgData {
+        match self {
+            Order::Desc => SvgData::from_str(LIST_SORT_DESCENDING).unwrap(),
+            Order::Asc => SvgData::from_str(LIST_SORT_ASCENDING).unwrap(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Filter {
     pub tag: FilterTag,
     pub order: Order,
+    pub metric: SortMetric,
 }
 
 impl FilterTag {
@@ -224,26 +287,52 @@ pub fn page_filter(
 
     row((
         container(filters).style(Style::new().gap(13.).flex_direction(FlexDirection::Row)),
-        container((svg(if state.active_filter.order == Order::Asc {
-            SvgData::from_str(LIST_SORT_ASCENDING).unwrap()
-        } else {
-            SvgData::from_str(LIST_SORT_DESCENDING).unwrap()
-        })
-        .color(theme.fg())
-        .fit(ObjectFit::Contain)
-        .stroke_width(4.)
-        .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),))
-        .style(
-            Style::new()
-                .padding(4.)
-                .corner_radius(50.)
-                .bg_color(clr!(ll_blue).with_alpha(38))
-                .on_active(|s| s.scale(0.96))
-                .transition_all(100., Curve::ease_in_out()),
-        )
-        .on_event(EventKind::Click, |e: &LibraryState| {
-            Some(LibraryMsg::SetFilterOrder(e.active_filter.order.flip()))
-        }),
+        row((
+            row((
+                container((svg(state.active_filter.metric.svg())
+                    .color(theme.fg())
+                    .fit(ObjectFit::Contain)
+                    .stroke_width(3.)
+                    .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),)),
+                text(state.active_filter.metric.name()).style(
+                    Style::new().set_text_style(
+                        TextStyle::new()
+                            .font_size(16.)
+                            .font_weight(FontWeight::BOLD)
+                            .color(theme.fg()),
+                    ),
+                ),
+            ))
+            .style(
+                Style::new()
+                    .padding_xy(18., 4.5)
+                    .gap(4.)
+                    .corner_radius(40.)
+                    .bg_color(clr!(ll_blue).with_alpha(38))
+                    .on_active(|s| s.scale(0.96))
+                    .transition_all(100., Curve::ease_in_out()),
+            )
+            .on_event(EventKind::Click, |e: &LibraryState| {
+                Some(LibraryMsg::SetSortMetric(e.active_filter.metric.cycle()))
+            }),
+            container((svg(state.active_filter.order.svg())
+                .color(theme.fg())
+                .fit(ObjectFit::Contain)
+                .stroke_width(4.)
+                .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),))
+            .style(
+                Style::new()
+                    .padding(4.)
+                    .corner_radius(50.)
+                    .bg_color(clr!(ll_blue).with_alpha(38))
+                    .on_active(|s| s.scale(0.96))
+                    .transition_all(100., Curve::ease_in_out()),
+            )
+            .on_event(EventKind::Click, |e: &LibraryState| {
+                Some(LibraryMsg::SetFilterOrder(e.active_filter.order.flip()))
+            }),
+        ))
+        .style(Style::new().gap(6.)),
     ))
     .style(
         Style::new()
@@ -290,7 +379,25 @@ pub fn render(
     let song_count = guard.collection.songs.len();
 
     let mut songs: Vec<Song> = guard.collection.songs.values().cloned().collect();
-    songs.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+
+    songs.sort_by(|a, b| {
+        let ordering = match state.active_filter.metric {
+            SortMetric::ByDate => a
+                .created_at
+                .cmp(&b.created_at)
+                .then_with(|| a.title.cmp(&b.title)),
+            SortMetric::ByTitle => a
+                .title
+                .chars()
+                .map(|c| c.to_ascii_lowercase())
+                .cmp(b.title.chars().map(|c| c.to_ascii_lowercase())),
+        };
+
+        match state.active_filter.order {
+            Order::Asc => ordering,
+            Order::Desc => ordering.reverse(),
+        }
+    });
 
     let orch_clone = orchestra.clone();
     let hsid = state.hovered_song;
