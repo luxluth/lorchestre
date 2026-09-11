@@ -149,23 +149,9 @@ fn main() {
         orchestra: None,
     };
 
-    #[cfg(feature = "debug")]
-    let mut window = Window::with(orchestra_mgr, update, app)
-        .with_font_bytes(fonts::IOSEVKA_REGULAR_BYTES)
-        .with_font_bytes(fonts::IOSEVKA_BOLD_BYTES)
-        .with_font_bytes(fonts::IOSEVKA_ITALIC_BYTES)
-        .with_font_bytes(fonts::IOSEVKA_BOLDITALIC_BYTES)
-        .with_font_bytes(fonts::INTER_VARIABLE_REGULAR_BYTES)
-        .with_font_bytes(fonts::INTER_VARIABLE_ITALIC_BYTES);
-
-    #[cfg(not(feature = "debug"))]
-    let window = Window::with(orchestra_mgr, update, app)
-        .with_font_bytes(fonts::IOSEVKA_REGULAR_BYTES)
-        .with_font_bytes(fonts::IOSEVKA_BOLD_BYTES)
-        .with_font_bytes(fonts::IOSEVKA_ITALIC_BYTES)
-        .with_font_bytes(fonts::IOSEVKA_BOLDITALIC_BYTES)
-        .with_font_bytes(fonts::INTER_VARIABLE_REGULAR_BYTES)
-        .with_font_bytes(fonts::INTER_VARIABLE_ITALIC_BYTES);
+    let mut window = Window::with(orchestra_mgr, update, app);
+    window = fonts::Font::Iosevka.load(window);
+    window = fonts::Font::InterVariable.load(window);
 
     mu.spawn(window.handle());
 

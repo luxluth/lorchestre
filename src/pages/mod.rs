@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use mtk::{Color, Style, clr, hsl, text_property::FontWeight};
 
+use crate::fonts::Font::InterVariable;
+
 pub mod landing;
 pub mod library;
 
@@ -40,7 +42,7 @@ impl Theme {
             s.update_text_style(|t| {
                 t.font_size = 48.0;
                 t.color = clr!(ll_blue);
-                t.font_family = "Inter Variable".to_string();
+                t.font_family = InterVariable.name();
                 t.font_weight = FontWeight::BOLD;
             })
         };

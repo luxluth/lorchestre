@@ -13,6 +13,7 @@ use mtk::{
 };
 
 use crate::{
+    fonts::Font::{InterVariable, Iosevka},
     icons::{CHECK, FOLDER},
     pages::Theme,
 };
@@ -62,14 +63,14 @@ pub fn music_dir_component(
             text("Click to choose the folder to index").style(
                 Style::new().set_text_style(
                     TextStyle::new()
-                        .font_family("Inter Variable")
+                        .font_family(InterVariable.name())
                         .color(theme.fg())
                         .font_weight(FontWeight::BOLD),
                 ),
             ),
             text(music_dir).style(Style::new().set_text_style(TextStyle {
                 color: theme.fg().with_alpha(125),
-                font_family: "Iosevka".into(),
+                font_family: Iosevka.name(),
                 font_size: 13.0,
                 vertical_alignment: mtk::style::VerticalAlignment::Center,
                 ..Default::default()
@@ -145,7 +146,7 @@ pub fn render(
                 text(e).style(
                     Style::new().set_text_style(
                         TextStyle::new()
-                            .family("Inter Variable")
+                            .family(InterVariable.name())
                             .color(theme.error())
                             .weight(FontWeight::BOLD),
                     ),
@@ -164,7 +165,7 @@ pub fn render(
                         .color(clr!(white))
                         .font_weight(FontWeight::BOLD)
                         .font_size(14.)
-                        .font_family("Iosevka"),
+                        .font_family(Iosevka.name()),
                 )
                 .position(PositionStrategy::absolute().bottom(10.).left(10.)),
         ),

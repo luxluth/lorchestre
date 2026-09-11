@@ -3,7 +3,7 @@ use std::sync::Arc;
 use arc_swap::ArcSwap;
 use mtk::{
     AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Overflow, ScrollbarStyle,
-    Size, Style, SvgData, TextSpan, TextStyle, TransitionProperty,
+    Size, Style, SvgData, TextSpan, TextStyle, TransitionProperty, VerticalAlignment,
     animation::Curve,
     clr,
     text_property::{Alignment, FontWeight},
@@ -16,6 +16,7 @@ use mtk::{
 };
 
 use crate::{
+    fonts::Font::{InterVariable, Iosevka},
     icons::{
         A_LARGE_SMALL, CALENDAR, DISC_ALBUM, LIST_SORT_ASCENDING, LIST_SORT_DESCENDING, MIC_VOCAL,
         PLAY,
@@ -81,7 +82,7 @@ pub fn song_pill(
                         .font_size(14.)
                         .color(theme.fg().with_alpha(180))
                         .font_weight(FontWeight::BOLD)
-                        .font_family("Iosevka"),
+                        .font_family(Iosevka.name()),
                 ),
             ),
         ),
@@ -101,7 +102,7 @@ pub fn song_pill(
                 TextStyle::new()
                     .font_size(14.)
                     .color(theme.fg())
-                    .font_family("Inter Variable"),
+                    .font_family(InterVariable.name()),
             ),
         ),
         rich_text(&artist_names)
@@ -111,7 +112,7 @@ pub fn song_pill(
                     .font_size(14.)
                     .color(theme.fg().with_alpha(180))
                     .italic()
-                    .font_family("Inter Variable"),
+                    .font_family(InterVariable.name()),
             )
             .on_span_click(|token, geom| match token {
                 ArtistLink::Separator => None,
@@ -125,7 +126,7 @@ pub fn song_pill(
                         .color(theme.fg().with_alpha(180))
                         .alignment(Alignment::End)
                         .italic()
-                        .font_family("Iosevka"),
+                        .font_family(Iosevka.name()),
                 )
                 .flex_grow(1.),
         ),
@@ -162,6 +163,15 @@ pub enum Order {
     #[default]
     Desc,
     Asc,
+}
+
+impl Order {
+    pub fn name(&self) -> String {
+        match self {
+            Order::Asc => "Ascending Order".to_string(),
+            Order::Desc => "Descending Order".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -286,6 +296,7 @@ pub fn page_filter(
                             TextStyle::new()
                                 .font_size(16.)
                                 .font_weight(FontWeight::BOLD)
+                                .font_family(InterVariable.name())
                                 .color(if state.active_filter.tag == *f {
                                     clr!(white)
                                 } else {
@@ -315,6 +326,7 @@ pub fn page_filter(
                     Style::new().set_text_style(
                         TextStyle::new()
                             .font_size(16.)
+                            .font_family(InterVariable.name())
                             .font_weight(FontWeight::BOLD)
                             .color(theme.fg()),
                     ),
@@ -332,12 +344,25 @@ pub fn page_filter(
             .on_event(EventKind::Click, |e: &LibraryState| {
                 Some(LibraryMsg::SetSortMetric(e.active_filter.metric.cycle()))
             }),
-            container((svg_display!(
-                state.active_filter.order.svg(),
-                theme.fg(),
-                18,
-                4.
-            ),))
+            container((
+                svg_display!(state.active_filter.order.svg(), theme.fg(), 18, 4.)
+                    .tooltip(&state.active_filter.order.name())
+                    // .delay_ms(250)
+                    .override_style(
+                        Style::new()
+                            .bg_color(theme.bg())
+                            .border(1., theme.border())
+                            .corner_radius(4.)
+                            .padding_xy(8., 4.)
+                            .set_text_style(
+                                TextStyle::new()
+                                    .color(theme.fg())
+                                    .font_family(InterVariable.name())
+                                    .font_size(12.)
+                                    .vertical_alignment(VerticalAlignment::Center),
+                            ),
+                    ),
+            ))
             .style(
                 Style::new()
                     .padding(4.)
@@ -407,6 +432,7 @@ fn hovered_song_card(
                 Style::new().width(Size::Fill).set_text_style(
                     TextStyle::new()
                         .italic()
+                        .font_family(InterVariable.name())
                         .color(theme.fg().with_alpha(133))
                         .wrap(true),
                 ),
@@ -429,6 +455,7 @@ fn hovered_song_card(
                             Style::new().flex_grow(1.).width(Size::Fill).set_text_style(
                                 TextStyle::new()
                                     .font_size(14.)
+                                    .font_family(InterVariable.name())
                                     .font_weight(FontWeight::BOLD)
                                     .wrap(true)
                                     .color(theme.fg()),
@@ -452,7 +479,7 @@ fn hovered_song_card(
                                     .wrap(true)
                                     .color(theme.fg().with_alpha(180))
                                     .italic()
-                                    .font_family("Inter Variable"),
+                                    .font_family(InterVariable.name()),
                             )
                             .on_span_click(|token, geom| match token {
                                 ArtistLink::Separator => None,
