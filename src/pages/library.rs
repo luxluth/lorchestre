@@ -3,7 +3,7 @@ use std::sync::Arc;
 use arc_swap::ArcSwap;
 use mtk::{
     AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Overflow, ScrollbarStyle,
-    Size, Style, SvgData, TextSpan, TextStyle,
+    Size, Style, SvgData, TextSpan, TextStyle, TransitionProperty,
     animation::Curve,
     clr,
     text_property::{Alignment, FontWeight},
@@ -16,12 +16,16 @@ use mtk::{
 };
 
 use crate::{
-    icons::{A_LARGE_SMALL, CALENDAR, LIST_SORT_ASCENDING, LIST_SORT_DESCENDING, PLAY},
+    icons::{
+        A_LARGE_SMALL, CALENDAR, DISC_ALBUM, LIST_SORT_ASCENDING, LIST_SORT_DESCENDING, MIC_VOCAL,
+        PLAY,
+    },
     orchestra::{
         Orchestra,
         track::{Id, Song},
     },
     pages::{Theme, TimeFormat},
+    svg_display,
 };
 
 #[derive(Lens, Clone, Debug, Default)]
@@ -37,6 +41,7 @@ pub enum LibraryMsg {
     SetFilterOrder(Order),
     ClickArtist(Id, SpanGeometry),
     SetSortMetric(SortMetric),
+    ClickAlbum(Id),
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -52,39 +57,13 @@ pub fn song_pill(
     theme: Theme,
     index: usize,
 ) -> impl View<LibraryState, Message = LibraryMsg> + use<> {
-    let orch = orchestra.as_ref().unwrap();
-    let guard = orch.load();
     let id = song.id;
     let mut is_hovered: bool = false;
     if let Some(hsid) = hsid {
         is_hovered = hsid == id;
     }
 
-    let artists: Vec<_> = song
-        .artists
-        .iter()
-        .filter_map(|sid| guard.get_artist(&sid))
-        .collect();
-
-    let mut artist_names = String::new();
-
-    let mut artistlinks_spans: Vec<TextSpan<ArtistLink>> = Vec::new();
-
-    for (i, artist) in artists.iter().enumerate() {
-        let span = TextSpan::new(artist_names.len()..(artist_names.len() + artist.name.len()))
-            .color(theme.fg().with_alpha(180))
-            .hover_underline()
-            .id(ArtistLink::Link(artist.id));
-        artistlinks_spans.push(span);
-        artist_names.push_str(&artist.name);
-        if i < artists.len() - 1 {
-            let span = TextSpan::new(artist_names.len()..(artist_names.len() + 2))
-                .color(theme.fg().with_alpha(180))
-                .id(ArtistLink::Separator);
-            artistlinks_spans.push(span);
-            artist_names.push_str(", ");
-        }
-    }
+    let (artist_names, artistlinks_spans) = get_artist_links(song, orchestra, theme);
 
     let leading = container((
         is_hovered.then_some(
@@ -248,6 +227,43 @@ impl FilterTag {
     }
 }
 
+fn get_artist_links(
+    song: &Song,
+    orchestra: &Option<Arc<ArcSwap<Orchestra>>>,
+    theme: Theme,
+) -> (String, Vec<TextSpan<ArtistLink>>) {
+    let orch = orchestra.as_ref().unwrap();
+    let guard = orch.load();
+
+    let artists: Vec<_> = song
+        .artists
+        .iter()
+        .filter_map(|sid| guard.get_artist(&sid))
+        .collect();
+
+    let mut artist_names = String::new();
+
+    let mut artistlinks_spans: Vec<TextSpan<ArtistLink>> = Vec::new();
+
+    for (i, artist) in artists.iter().enumerate() {
+        let span = TextSpan::new(artist_names.len()..(artist_names.len() + artist.name.len()))
+            .color(theme.fg().with_alpha(180))
+            .hover_underline()
+            .id(ArtistLink::Link(artist.id));
+        artistlinks_spans.push(span);
+        artist_names.push_str(&artist.name);
+        if i < artists.len() - 1 {
+            let span = TextSpan::new(artist_names.len()..(artist_names.len() + 2))
+                .color(theme.fg().with_alpha(180))
+                .id(ArtistLink::Separator);
+            artistlinks_spans.push(span);
+            artist_names.push_str(", ");
+        }
+    }
+
+    (artist_names, artistlinks_spans)
+}
+
 pub fn page_filter(
     state: &LibraryState,
     theme: Theme,
@@ -289,11 +305,12 @@ pub fn page_filter(
         container(filters).style(Style::new().gap(13.).flex_direction(FlexDirection::Row)),
         row((
             row((
-                container((svg(state.active_filter.metric.svg())
-                    .color(theme.fg())
-                    .fit(ObjectFit::Contain)
-                    .stroke_width(3.)
-                    .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),)),
+                container((svg_display!(
+                    state.active_filter.metric.svg(),
+                    theme.fg(),
+                    18,
+                    3.
+                ),)),
                 text(state.active_filter.metric.name()).style(
                     Style::new().set_text_style(
                         TextStyle::new()
@@ -315,11 +332,12 @@ pub fn page_filter(
             .on_event(EventKind::Click, |e: &LibraryState| {
                 Some(LibraryMsg::SetSortMetric(e.active_filter.metric.cycle()))
             }),
-            container((svg(state.active_filter.order.svg())
-                .color(theme.fg())
-                .fit(ObjectFit::Contain)
-                .stroke_width(4.)
-                .style(Style::new().width(Size::Fixed(18)).height(Size::Fixed(18))),))
+            container((svg_display!(
+                state.active_filter.order.svg(),
+                theme.fg(),
+                18,
+                4.
+            ),))
             .style(
                 Style::new()
                     .padding(4.)
@@ -364,13 +382,24 @@ fn hovered_song_card(
                 .unwrap_or(theme.fg());
 
             Some(
-                async_image(cover.get_path()).fit(ObjectFit::Cover).style(
-                    Style::new()
-                        .width(Size::Fill)
-                        .aspect_ratio(1.0)
-                        .bg_color(main_color)
-                        .corner_radius(8.),
-                ),
+                async_image(cover.get_path())
+                    .fit(ObjectFit::Cover)
+                    .style(
+                        Style::new()
+                            .width(Size::Fill)
+                            .aspect_ratio(1.0)
+                            .bg_color(main_color)
+                            .corner_radius(8.)
+                            .border(0., main_color)
+                            .on_hover(|s| s.border(5., main_color))
+                            .on_active(|s| s.scale(0.96))
+                            .transition(TransitionProperty::BorderColor, 200., Curve::ease_in_out())
+                            .transition(TransitionProperty::Border, 200., Curve::ease_in_out())
+                            .transition(TransitionProperty::Scale, 100., Curve::ease_in_out()),
+                    )
+                    .on_event(EventKind::Click, move |_| {
+                        Some(LibraryMsg::ClickAlbum(album_id))
+                    }),
             )
         }),
         state.hovered_song.is_none().then_some(
@@ -378,16 +407,103 @@ fn hovered_song_card(
                 Style::new().width(Size::Fill).set_text_style(
                     TextStyle::new()
                         .italic()
-                        .color(theme.fg().with_alpha(38))
+                        .color(theme.fg().with_alpha(133))
                         .wrap(true),
                 ),
             ),
         ),
+        state.hovered_song.as_ref().and_then(|id| {
+            let song = guard.get_song(id).unwrap();
+            let album_id = song.album?;
+            let album = guard.get_album(&album_id)?;
+
+            let (artist_names, artistlinks_spans) = get_artist_links(song, orchestra, theme);
+
+            // let track_fmt = format!("Track N°{}", song.track);
+
+            Some(
+                column((
+                    row((
+                        svg_display!(SvgData::from_str(DISC_ALBUM).unwrap(), theme.fg(), 18, 3.),
+                        text(&album.name).style(
+                            Style::new().flex_grow(1.).width(Size::Fill).set_text_style(
+                                TextStyle::new()
+                                    .font_size(14.)
+                                    .font_weight(FontWeight::BOLD)
+                                    .wrap(true)
+                                    .color(theme.fg()),
+                            ),
+                        ),
+                    ))
+                    .style(
+                        Style::new()
+                            .gap(10.)
+                            .align_items(AlignItems::Center)
+                            .height(Size::Fit)
+                            .width(Size::Fill),
+                    ),
+                    row((
+                        svg_display!(SvgData::from_str(MIC_VOCAL).unwrap(), theme.fg(), 18, 3.),
+                        rich_text(&artist_names)
+                            .spans(artistlinks_spans)
+                            .text_style(
+                                TextStyle::new()
+                                    .font_size(14.)
+                                    .wrap(true)
+                                    .color(theme.fg().with_alpha(180))
+                                    .italic()
+                                    .font_family("Inter Variable"),
+                            )
+                            .on_span_click(|token, geom| match token {
+                                ArtistLink::Separator => None,
+                                ArtistLink::Link(id) => Some(LibraryMsg::ClickArtist(id, geom)),
+                            })
+                            .style(Style::new().flex_grow(1.).width(Size::Fill)),
+                    ))
+                    .style(
+                        Style::new()
+                            .gap(10.)
+                            .align_items(AlignItems::Center)
+                            .height(Size::Fit)
+                            .width(Size::Fill),
+                    ),
+                    // row((text(&track_fmt)
+                    //     .style(
+                    //         Style::new().set_text_style(
+                    //             TextStyle::new()
+                    //                 .align(Alignment::Right)
+                    //                 .font_size(14.)
+                    //                 .wrap(true)
+                    //                 .color(theme.fg().with_alpha(180))
+                    //                 .italic()
+                    //                 .font_family("Inter Variable"),
+                    //         ),
+                    //     )
+                    //     .style(Style::new().flex_grow(1.).width(Size::Fill)),))
+                    // .style(
+                    //     Style::new()
+                    //         .gap(10.)
+                    //         .align_items(AlignItems::Center)
+                    //         .height(Size::Fit)
+                    //         .width(Size::Fill),
+                    // ),
+                ))
+                .style(
+                    Style::new()
+                        .bg_color(clr!(ll_blue).with_alpha(38))
+                        .corner_radius(8.)
+                        .height(Size::Fit)
+                        .width(Size::Fill)
+                        .padding(10.),
+                ),
+            )
+        }),
     ))
     .style(
         Style::new()
             .width(Size::Percent(0.4))
             .padding(10.)
+            .gap(10.)
             .corner_radius(12.)
             .border(2., theme.fg().with_alpha(38)),
     )

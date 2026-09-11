@@ -1562,9 +1562,9 @@ dependencies = [
 
 [[package]]
 name = "granit-parser"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65ec0d45986cd51c847c75c5b69a00852c4fc84d0e5e79f041173f73437d0cdf"
+checksum = "48aa83cc6ac4dc610adf5501a5392b4bcc543b2c1f24eaf77469a96e31ec9abe"
 dependencies = [
  "arraydeque",
  "smallvec",
@@ -1865,9 +1865,9 @@ checksum = "65b27460c2c92b037f3f94c538ed9a3342f3fdf923606781629ccb35f82d042a"
 
 [[package]]
 name = "imgref"
-version = "1.12.2"
+version = "1.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89194689a993ab15268672e99e7b0e19da2da3268ac682e8f02d29d4d1434cd7"
+checksum = "6e44b0a4eaa4c82f441d50a963f2d5f05a787240aeee097597033e72accfd22f"
 
 [[package]]
 name = "indexmap"
@@ -2617,12 +2617,12 @@ dependencies = [
 [[package]]
 name = "mtk-layout"
 version = "0.1.0-beta.2"
-source = "git+https://github.com/luxluth/mtk.git?branch=master#b285a19c02060df864a95d6064f9f39da4539ebd"
+source = "git+https://github.com/luxluth/mtk.git?branch=master#43d648128562259bb93959d05407a71b875b4b82"
 
 [[package]]
 name = "mtk-macro"
 version = "0.1.0-beta.2"
-source = "git+https://github.com/luxluth/mtk.git?branch=master#b285a19c02060df864a95d6064f9f39da4539ebd"
+source = "git+https://github.com/luxluth/mtk.git?branch=master#43d648128562259bb93959d05407a71b875b4b82"
 dependencies = [
  "quote",
  "syn 3.0.5",
@@ -2631,7 +2631,7 @@ dependencies = [
 [[package]]
 name = "mtk-rs"
 version = "0.1.0-beta.2"
-source = "git+https://github.com/luxluth/mtk.git?branch=master#b285a19c02060df864a95d6064f9f39da4539ebd"
+source = "git+https://github.com/luxluth/mtk.git?branch=master#43d648128562259bb93959d05407a71b875b4b82"
 dependencies = [
  "accesskit",
  "arboard",
@@ -3589,7 +3589,7 @@ version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
 dependencies = [
- "toml_edit 0.25.13+spec-1.1.0",
+ "toml_edit 0.25.15+spec-1.1.0",
 ]
 
 [[package]]
@@ -5410,9 +5410,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.25.13+spec-1.1.0"
+version = "0.25.15+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6975367e4d2ef766d86af01ffad14b622fecc8d4357a998fbc4deb6e9bacaf9b"
+checksum = "1340ea94a5856333492c9064b02c778b191dd2c853778d9609debdcdfea3a614"
 dependencies = [
  "indexmap",
  "toml_datetime 1.1.1+spec-1.1.0",

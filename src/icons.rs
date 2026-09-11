@@ -11,3 +11,29 @@ pub const DECIMALS_ARROW_RIGHT: &str = include_str!("./assets/icons/decimals-arr
 
 pub const CALENDAR: &str = include_str!("./assets/icons/calendar.svg");
 pub const A_LARGE_SMALL: &str = include_str!("./assets/icons/a-large-small.svg");
+
+pub const DISC_ALBUM: &str = include_str!("./assets/icons/disc-album.svg");
+pub const MIC_VOCAL: &str = include_str!("./assets/icons/mic-vocal.svg");
+
+#[macro_export]
+macro_rules! svg_display {
+    ($data:expr, $color:expr, $size:expr) => {
+        container((svg($data).color($color).fit(ObjectFit::Contain).style(
+            Style::new()
+                .width(Size::Fixed($size))
+                .height(Size::Fixed($size)),
+        ),))
+    };
+
+    ($data:expr, $color:expr, $size:expr, $stroke_w:expr) => {
+        container((svg($data)
+            .color($color)
+            .fit(ObjectFit::Contain)
+            .stroke_width($stroke_w)
+            .style(
+                Style::new()
+                    .width(Size::Fixed($size))
+                    .height(Size::Fixed($size)),
+            ),))
+    };
+}

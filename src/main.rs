@@ -102,6 +102,12 @@ fn update(state: &mut Supervisor, msg: AppMsg) {
                 let artist = guard.get_artist(&artist_id);
                 println!("{artist:?}");
             }
+            LibraryMsg::ClickAlbum(album_id) => {
+                let orch = state.orchestra.as_ref().unwrap();
+                let guard = orch.load();
+                let album = guard.get_album(&album_id);
+                println!("{album:?}");
+            }
         },
     }
 }
@@ -139,7 +145,7 @@ fn main() {
         current_page: Page::Landing,
         landing: LandingState::default(),
         library: LibraryState::default(),
-        theme: Theme::Dark,
+        theme: Theme::Light,
         orchestra: None,
     };
 
