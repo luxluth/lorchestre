@@ -547,9 +547,9 @@ dependencies = [
 
 [[package]]
 name = "bytemuck_derive"
-version = "1.12.0"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc0e56a716f1e132ff6bf4bdac1c944a3fcdc1cae65f70a4a2a1ac3b401d2d1f"
+checksum = "6a1f896587b6f2c069c73d2f0913e2d590c3990285cd2f0b6aa02b786b4c679c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1959,11 +1959,12 @@ dependencies = [
 
 [[package]]
 name = "jiff-core"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7feca88439efe53da3754500c1851dedf3cb36c524dd5cf8225cc0794de95d09"
+checksum = "5e52fe76043ccecc9005d2305ebaadf7d7fc0cc89ca6baa10a94d6bc68c7128c"
 dependencies = [
  "defmt",
+ "log",
 ]
 
 [[package]]
@@ -2383,9 +2384,9 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "libredox"
-version = "0.1.23"
+version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d8f1ea3f21fd3405dcaf6c9b5c1630af9afc422d9073ea39c5f6d6c772e08ed"
+checksum = "6480ccc157a1389bb2e4891b24751b0f798ba640d22386f23143fbcc89da195a"
 dependencies = [
  "bitflags 2.13.2",
  "libc",
@@ -2617,12 +2618,12 @@ dependencies = [
 [[package]]
 name = "mtk-layout"
 version = "0.1.0-beta.2"
-source = "git+https://github.com/luxluth/mtk.git?branch=master#f72375fffd02ae0db469c56c300d40f57af160b8"
+source = "git+https://github.com/luxluth/mtk.git?branch=master#81e5efc5f22d6b0152e71de3408e05b242baac98"
 
 [[package]]
 name = "mtk-macro"
 version = "0.1.0-beta.2"
-source = "git+https://github.com/luxluth/mtk.git?branch=master#f72375fffd02ae0db469c56c300d40f57af160b8"
+source = "git+https://github.com/luxluth/mtk.git?branch=master#81e5efc5f22d6b0152e71de3408e05b242baac98"
 dependencies = [
  "quote",
  "syn 3.0.5",
@@ -2631,7 +2632,7 @@ dependencies = [
 [[package]]
 name = "mtk-rs"
 version = "0.1.0-beta.2"
-source = "git+https://github.com/luxluth/mtk.git?branch=master#f72375fffd02ae0db469c56c300d40f57af160b8"
+source = "git+https://github.com/luxluth/mtk.git?branch=master#81e5efc5f22d6b0152e71de3408e05b242baac98"
 dependencies = [
  "accesskit",
  "arboard",

@@ -11,7 +11,7 @@ use mtk::windowing::WindowHandle;
 
 use crate::{
     orchestra::Orchestra,
-    pages::{landing::LandingMsg, library::LibraryMsg},
+    pages::{album::AlbumMsg, landing::LandingMsg, library::LibraryMsg},
 };
 
 pub enum MuCommand {
@@ -31,6 +31,7 @@ pub enum AppMsg {
     Orchestra(OrchestraMsg),
     Landing(LandingMsg),
     Library(LibraryMsg),
+    AlbumPage(AlbumMsg),
 }
 
 pub struct Mu {

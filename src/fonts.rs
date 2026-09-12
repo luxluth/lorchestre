@@ -9,17 +9,23 @@ pub const INTER_VARIABLE_REGULAR_BYTES: &[u8] = include_bytes!("./assets/fonts/I
 pub const INTER_VARIABLE_ITALIC_BYTES: &[u8] =
     include_bytes!("./assets/fonts/InterVariable-Italic.ttf");
 
+pub const NOTOSANS_JP_VARIABLE: &[u8] = include_bytes!("./assets/fonts/NotoSansJP-Variable.ttf");
+pub const NOTOSANS_KR_VARIABLE: &[u8] = include_bytes!("./assets/fonts/NotoSansKR-Variable.ttf");
+pub const NOTOSANS_SC_VARIABLE: &[u8] = include_bytes!("./assets/fonts/NotoSansSC-Variable.ttf");
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Font {
     Iosevka,
     InterVariable,
+    NotoSansCJK,
 }
 
 impl Font {
     pub fn name(&self) -> String {
         match self {
             Font::Iosevka => "Iosevka".to_string(),
-            Font::InterVariable => "Inter Variable".to_string(),
+            Font::InterVariable => format!("Inter Variable, {}", Font::NotoSansCJK.name()),
+            Font::NotoSansCJK => "Noto Sans JP, Noto Sans SC, Noto Sans KR".to_string(),
         }
     }
 }
@@ -39,6 +45,10 @@ impl Font {
             Font::InterVariable => window
                 .with_font_bytes(INTER_VARIABLE_REGULAR_BYTES)
                 .with_font_bytes(INTER_VARIABLE_ITALIC_BYTES),
+            Font::NotoSansCJK => window
+                .with_font_bytes(NOTOSANS_SC_VARIABLE)
+                .with_font_bytes(NOTOSANS_JP_VARIABLE)
+                .with_font_bytes(NOTOSANS_KR_VARIABLE),
         }
     }
 }

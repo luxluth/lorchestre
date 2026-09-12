@@ -4,6 +4,7 @@ use mtk::{Color, Style, clr, hsl, text_property::FontWeight};
 
 use crate::fonts::Font::InterVariable;
 
+pub mod album;
 pub mod landing;
 pub mod library;
 
@@ -127,6 +128,7 @@ macro_rules! view_enum {
 view_enum!(PageView, PageElement, {
     Landing(A),
     Library(B),
+    Album(C),
 });
 
 pub trait TimeFormat {

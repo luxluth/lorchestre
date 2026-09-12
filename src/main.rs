@@ -24,6 +24,7 @@ use crate::{
     },
     pages::{
         PageView, Theme,
+        album::{AlbumMsg, AlbumState},
         landing::{LandingMsg, LandingState},
         library::{LibraryMsg, LibraryState},
     },
@@ -33,6 +34,7 @@ use crate::{
 enum Page {
     Landing,
     Library,
+    Album,
 }
 
 #[derive(Lens)]
@@ -41,6 +43,7 @@ pub struct Supervisor {
     pub mu_sx: Sender<MuCommand>,
     pub landing: LandingState,
     pub library: LibraryState,
+    pub album_page: AlbumState,
     pub theme: Theme,
     pub orchestra: Option<Arc<ArcSwap<Orchestra>>>,
 }
@@ -103,10 +106,17 @@ fn update(state: &mut Supervisor, msg: AppMsg) {
                 println!("{artist:?}");
             }
             LibraryMsg::ClickAlbum(album_id) => {
-                let orch = state.orchestra.as_ref().unwrap();
-                let guard = orch.load();
-                let album = guard.get_album(&album_id);
-                println!("{album:?}");
+                state.album_page = AlbumState { album_id };
+                state.current_page = Page::Album;
+            }
+            LibraryMsg::SetListRunOffset(offset) => {
+                state.library.list_run_offset = offset;
+            }
+        },
+
+        AppMsg::AlbumPage(msg) => match msg {
+            AlbumMsg::GotoLibrary => {
+                state.current_page = Page::Library;
             }
         },
     }
@@ -129,6 +139,10 @@ fn render_page(state: &Supervisor) -> impl View<Supervisor, Message = AppMsg> + 
             pages::library::render(&state.library, state.orchestra.clone(), state.theme)
                 .adapt(Supervisor::library, AppMsg::Library),
         ),
+        Page::Album => PageView::Album(
+            pages::album::render(&state.album_page, state.orchestra.clone(), state.theme)
+                .adapt(Supervisor::album_page, AppMsg::AlbumPage),
+        ),
     }
 }
 
@@ -145,6 +159,7 @@ fn main() {
         current_page: Page::Landing,
         landing: LandingState::default(),
         library: LibraryState::default(),
+        album_page: AlbumState::default(),
         theme: Theme::Light,
         orchestra: None,
     };
@@ -152,6 +167,7 @@ fn main() {
     let mut window = Window::with(orchestra_mgr, update, app);
     window = fonts::Font::Iosevka.load(window);
     window = fonts::Font::InterVariable.load(window);
+    window = fonts::Font::NotoSansCJK.load(window);
 
     mu.spawn(window.handle());
 

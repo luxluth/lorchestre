@@ -2,8 +2,9 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use mtk::{
-    AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Overflow, ScrollbarStyle,
-    Size, Style, SvgData, TextSpan, TextStyle, TransitionProperty, VerticalAlignment,
+    AlignItems, Edges, FlexDirection, JustifyContent, Lens, ObjectFit, Overflow, ScrollOffset,
+    ScrollbarStyle, Size, Style, SvgData, TextSpan, TextStyle, TransitionProperty,
+    VerticalAlignment,
     animation::Curve,
     clr,
     text_property::{Alignment, FontWeight},
@@ -33,6 +34,7 @@ use crate::{
 pub struct LibraryState {
     pub hovered_song: Option<Id>,
     pub active_filter: Filter,
+    pub list_run_offset: f32,
 }
 
 #[derive(Clone, Debug)]
@@ -43,6 +45,7 @@ pub enum LibraryMsg {
     ClickArtist(Id, SpanGeometry),
     SetSortMetric(SortMetric),
     ClickAlbum(Id),
+    SetListRunOffset(f32),
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -595,7 +598,9 @@ pub fn render(
             .width(Size::Percent(1.0))
             .height(Size::Fill)
             .flex_grow(1.),
-    );
+    )
+    .scroll_offset(ScrollOffset::Percent(state.list_run_offset))
+    .on_scroll(|_, s| Some(LibraryMsg::SetListRunOffset(s.scroll_pct())));
 
     column((
         column((
