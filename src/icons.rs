@@ -15,6 +15,10 @@ pub const A_LARGE_SMALL: &str = include_str!("./assets/icons/a-large-small.svg")
 pub const DISC_ALBUM: &str = include_str!("./assets/icons/disc-album.svg");
 pub const MIC_VOCAL: &str = include_str!("./assets/icons/mic-vocal.svg");
 
+pub const X: &str = include_str!("./assets/icons/x.svg");
+
+pub const IMAGE_FRAME_39: &[u8] = include_bytes!("./assets/images/Frame 39.png");
+
 #[macro_export]
 macro_rules! svg_display {
     ($data:expr, $color:expr, $size:expr) => {
