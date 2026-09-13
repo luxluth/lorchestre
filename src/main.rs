@@ -11,9 +11,8 @@ mod orchestra;
 mod pages;
 
 use mtk::{
-    Lens,
-    animation::Curve,
-    ui::{Transition, View, ViewAdaptExt, router},
+    BoxedView, BoxedViewExt, Lens, Motion, PageTransition,
+    ui::{View, ViewAdaptExt, router},
     windowing::{Window, WindowAttributes},
 };
 
@@ -23,7 +22,7 @@ use crate::{
         mu_thread::{AppMsg, Mu, MuCommand, OrchestraMsg},
     },
     pages::{
-        PageView, Theme,
+        Theme,
         album::{AlbumMsg, AlbumState},
         landing::{LandingMsg, LandingState},
         library::{LibraryMsg, LibraryState},
@@ -123,26 +122,37 @@ fn update(state: &mut Supervisor, msg: AppMsg) {
 }
 
 fn app(state: &Supervisor) -> impl View<Supervisor, Message = AppMsg> + use<> {
-    router(state.current_page, render_page(state)).transition(Transition::Fade {
-        duration_ms: 220.0,
-        curve: Curve::ease_out(),
+    router(state.current_page, render_page(state)).transition_spec(|from, to| match from {
+        Page::Landing => PageTransition::fade().duration_ms(220.0),
+        Page::Library => match to {
+            Page::Album => {
+                PageTransition::asymmetric(Motion::slide_in_bottom(), Motion::stationary())
+                    .duration_ms(220.0)
+            }
+            _ => PageTransition::fade().duration_ms(220.0),
+        },
+        Page::Album => PageTransition::asymmetric(Motion::fade_in(), Motion::slide_out_bottom())
+            .duration_ms(220.0),
     })
 }
 
-fn render_page(state: &Supervisor) -> impl View<Supervisor, Message = AppMsg> + use<> {
+fn render_page(state: &Supervisor) -> BoxedView<Supervisor, AppMsg> {
     match state.current_page {
-        Page::Landing => PageView::Landing(
-            pages::landing::render(&state.landing, state.theme)
-                .adapt(Supervisor::landing, AppMsg::Landing),
-        ),
-        Page::Library => PageView::Library(
+        Page::Landing => pages::landing::render(&state.landing, state.theme)
+            .adapt(Supervisor::landing, AppMsg::Landing)
+            .boxed(),
+
+        Page::Library => {
             pages::library::render(&state.library, state.orchestra.clone(), state.theme)
-                .adapt(Supervisor::library, AppMsg::Library),
-        ),
-        Page::Album => PageView::Album(
+                .adapt(Supervisor::library, AppMsg::Library)
+                .boxed()
+        }
+
+        Page::Album => {
             pages::album::render(&state.album_page, state.orchestra.clone(), state.theme)
-                .adapt(Supervisor::album_page, AppMsg::AlbumPage),
-        ),
+                .adapt(Supervisor::album_page, AppMsg::AlbumPage)
+                .boxed()
+        }
     }
 }
 

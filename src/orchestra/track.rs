@@ -202,7 +202,10 @@ impl Cover {
         }
     }
     pub fn get_path(&self) -> PathBuf {
-        Utils::covers_dir().join(&format!("{:x}{}", self.id.digest().unwrap(), self.ext))
+        match self.id {
+            Id::Unresolved => Utils::covers_dir().join(&format!("__unresolved{}", self.ext)),
+            _ => Utils::covers_dir().join(&format!("{:x}{}", self.id.digest().unwrap(), self.ext)),
+        }
     }
 }
 

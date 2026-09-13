@@ -56,80 +56,10 @@ impl Theme {
                 t.color = self.fg();
                 t.font_family = "Inter Variable".to_string();
             })
-            .opacity(0.5)
+            .opacity(0.7)
         };
     }
 }
-
-macro_rules! view_enum {
-    ($enum_name:ident, $el_name:ident, { $($variant:ident($ty:ident)),* $(,)? }) => {
-        pub enum $enum_name<$($ty),*> {
-            $($variant($ty)),*
-        }
-
-        pub enum $el_name<$($ty),*> {
-            $($variant($ty)),*
-        }
-
-        impl<State, Msg, $($ty),*> mtk::ui::View<State> for $enum_name<$($ty),*>
-        where
-            $($ty: mtk::ui::View<State, Message = Msg>),*
-        {
-            type Element = $el_name<$($ty::Element),*>;
-            type Message = Msg;
-
-            fn build(&self, ctx: &mut mtk::Context) -> Self::Element {
-                match self {
-                    $($enum_name::$variant(v) => $el_name::$variant(v.build(ctx))),*
-                }
-            }
-
-            fn rebuild(&self, prev: &Self, ctx: &mut mtk::Context, element: &mut Self::Element) {
-                match (self, prev, element) {
-                    $(($enum_name::$variant(new_v), $enum_name::$variant(old_v), $el_name::$variant(el)) => {
-                        new_v.rebuild(old_v, ctx, el);
-                    })*
-                    _ => {}
-                }
-            }
-
-            fn teardown(&self, ctx: &mut mtk::Context, element: &mut Self::Element) {
-                match (self, element) {
-                    $(($enum_name::$variant(v), $el_name::$variant(el)) => v.teardown(ctx, el),)*
-                    _ => {}
-                }
-            }
-
-            fn get_node(&self, element: &Self::Element) -> mtk::Node {
-                match (self, element) {
-                    $(($enum_name::$variant(v), $el_name::$variant(el)) => v.get_node(el),)*
-                    _ => mtk::Node::get_invalid(),
-                }
-            }
-
-            fn handle_event(
-                &self,
-                element: &mut Self::Element,
-                state: &State,
-                event: mtk::ui::Event,
-                ctx: &mut mtk::Context,
-            ) -> (mtk::ui::event::EventResult, Option<Self::Message>) {
-                match (self, element) {
-                    $(($enum_name::$variant(v), $el_name::$variant(el)) => {
-                        v.handle_event(el, state, event, ctx)
-                    })*
-                    _ => (mtk::ui::event::EventResult::Ignored, None),
-                }
-            }
-        }
-    };
-}
-
-view_enum!(PageView, PageElement, {
-    Landing(A),
-    Library(B),
-    Album(C),
-});
 
 pub trait TimeFormat {
     fn format_into_2_digit_seconds_multiple_part(&self) -> String;

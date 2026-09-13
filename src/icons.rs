@@ -16,8 +16,7 @@ pub const DISC_ALBUM: &str = include_str!("./assets/icons/disc-album.svg");
 pub const MIC_VOCAL: &str = include_str!("./assets/icons/mic-vocal.svg");
 
 pub const X: &str = include_str!("./assets/icons/x.svg");
-
-pub const IMAGE_FRAME_39: &[u8] = include_bytes!("./assets/images/Frame 39.png");
+pub const CHEVRON_DOWN: &str = include_str!("./assets/icons/chevron-down.svg");
 
 #[macro_export]
 macro_rules! svg_display {

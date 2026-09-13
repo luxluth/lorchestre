@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use mtk::{
-    Edges, JustifyContent, Lens, ObjectFit, ScrollbarStyle, Size, Style, SvgData,
-    TransitionProperty, ViewStyleExt,
+    BoxShadow, Edges, JustifyContent, Lens, ObjectFit, ScrollAxis, ScrollbarStyle, Size, Style,
+    SvgData, TransitionProperty, ViewStyleExt,
     animation::Curve,
+    rgba,
     ui::{
         EventKind, View, ViewEventExt,
-        widgets::{column, container, row, scroll_view, svg, text},
+        widgets::{async_image, column, container, row, scroll_view, svg, text},
     },
 };
 
@@ -37,26 +38,21 @@ pub fn render(
     let guard = orch.load();
 
     let album = guard.get_album(&state.album_id).unwrap();
-    let cover = guard.get_cover(&album.cover.unwrap_or_default());
+    let cover = guard.get_cover(&album.cover.unwrap_or_default()).unwrap();
     let (main_bg, main_fg) = cover
-        .clone()
-        .map(|cover| {
-            cover
-                .swatches
-                .first()
-                .map(|e| {
-                    (
-                        e.to_color(),
-                        e.to_color().get_tinted_contrast_text(4.5, 0.12),
-                    )
-                })
-                .unwrap_or((theme.bg(), theme.fg()))
+        .swatches
+        .first()
+        .map(|e| {
+            (
+                e.to_color(),
+                e.to_color().get_tinted_contrast_text(4.5, 0.12),
+            )
         })
-        .unwrap();
+        .unwrap_or((theme.bg(), theme.fg()));
 
     let scrollbar_style = ScrollbarStyle {
         thumb_color: main_fg,
-        track_color: Some(main_bg.with_alpha(38)),
+        track_color: Some(main_bg.with_alpha(120)),
         ..Default::default()
     };
 
@@ -79,15 +75,20 @@ pub fn render(
                 ),
             ))
             .style(Style::new().width(Size::Fill).height(Size::Fit)),
-            svg_display!(SvgData::from_str(icons::X).unwrap(), main_fg, 38, 2.)
-                .style(
-                    Style::new()
-                        .opacity(0.7)
-                        .on_hover(|s| s.opacity(1.))
-                        .on_active(|s| s.scale(0.98))
-                        .transition(TransitionProperty::Opacity, 150., Curve::ease_in_out()),
-                )
-                .on_event(EventKind::Click, |_| Some(AlbumMsg::GotoLibrary)),
+            svg_display!(
+                SvgData::from_str(icons::CHEVRON_DOWN).unwrap(),
+                main_fg,
+                38,
+                2.
+            )
+            .style(
+                Style::new()
+                    .opacity(0.7)
+                    .on_hover(|s| s.opacity(1.))
+                    .on_active(|s| s.scale(0.98))
+                    .transition(TransitionProperty::Opacity, 150., Curve::ease_in_out()),
+            )
+            .on_event(EventKind::Click, |_| Some(AlbumMsg::GotoLibrary)),
         ))
         .style(
             Style::new()
@@ -97,9 +98,27 @@ pub fn render(
                 // .align_items(AlignItems::Center)
                 .justify_content(JustifyContent::SpaceBetween),
         ),
-        scroll_view(text(""))
-            .scrollbar(scrollbar_style)
-            .style(Style::new().height(Size::Fill).width(Size::Fill)),
+        scroll_view(
+            container((async_image(cover.get_path()).fit(ObjectFit::Cover).style(
+                Style::new()
+                    .width(Size::Fixed(300))
+                    .aspect_ratio(1.0)
+                    .border(1., main_fg.with_alpha(20))
+                    .box_shadow(BoxShadow::new(rgba!(0, 0, 0, 45)).offset(0., 2.).blur(6.))
+                    .add_box_shadow(
+                        BoxShadow::new(rgba!(0, 0, 0, 35))
+                            .offset(0., 14.)
+                            .blur(28.)
+                            .spread(-4.),
+                    )
+                    .box_shadow(BoxShadow::sm())
+                    .corner_radius(8.),
+            ),))
+            .style(Style::new().padding_xy(30., 10.)),
+        )
+        .axis(ScrollAxis::Vertical)
+        .scrollbar(scrollbar_style)
+        .style(Style::new().height(Size::Fill).width(Size::Fill)),
     ))
     .style(
         Style::new()

@@ -58,6 +58,8 @@ pub struct Orchestra {
     artist_id_store: IdStore,
     album_id_store: IdStore,
     song_id_store: IdStore,
+
+    __default_cover: Cover,
 }
 
 impl Orchestra {
@@ -67,10 +69,13 @@ impl Orchestra {
             artist_id_store: IdStore::default(),
             album_id_store: IdStore::default(),
             song_id_store: IdStore::default(),
+
+            __default_cover: Cover::new(Id::Unresolved, &lofty::picture::MimeType::Png),
         }
     }
 
     pub fn load_from_cache(&mut self) -> bool {
+        self.save_or_load_default_cover();
         let cache_path = Utils::cache_path();
         if let Ok(mut f) = std::fs::File::open(cache_path) {
             let config = bincode::config::standard();
@@ -322,7 +327,10 @@ impl Orchestra {
     }
 
     pub fn get_cover(&self, id: &Id) -> Option<&Cover> {
-        self.collection.covers.get(id)
+        self.collection
+            .covers
+            .get(id)
+            .or(Some(&self.__default_cover))
     }
 
     pub fn get_song(&self, id: &Id) -> Option<&Song> {
@@ -344,6 +352,31 @@ impl Orchestra {
             }
         }
 
+        self.save_or_load_default_cover();
         self.collection.index.finalize();
     }
+
+    pub fn save_or_load_default_cover(&mut self) {
+        let mut cover = Cover::new(Id::Unresolved, &lofty::picture::MimeType::Png);
+        let cover_path = cover.get_path();
+
+        if cover_path.exists() {
+            let swatches = kmeans::extract_album_palette(cover_path, 5).unwrap_or(Vec::new());
+            cover.swatches = swatches;
+
+            self.__default_cover = cover;
+
+            return;
+        }
+
+        let mut f = fs::File::create(&cover_path).unwrap();
+        f.write_all(IMAGE_FRAME_39).unwrap();
+
+        let swatches = kmeans::extract_album_palette(cover_path, 5).unwrap_or(Vec::new());
+        cover.swatches = swatches;
+
+        self.__default_cover = cover;
+    }
 }
+
+pub const IMAGE_FRAME_39: &[u8] = include_bytes!("../assets/images/Frame 39.png");
